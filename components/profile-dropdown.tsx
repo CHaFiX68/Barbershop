@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { signOut, useSession } from "@/lib/auth-client";
+import Avatar from "./avatar";
+import AvatarEditorModal from "./avatar-editor-modal";
 
 export default function ProfileDropdown() {
   const { data: session } = useSession();
@@ -12,6 +14,8 @@ export default function ProfileDropdown() {
   const [nameValue, setNameValue] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  const [isAvatarEditorOpen, setIsAvatarEditorOpen] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const nameInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
@@ -22,6 +26,12 @@ export default function ProfileDropdown() {
       setDisplayName(session.user.name);
     }
   }, [session?.user?.name]);
+
+  useEffect(() => {
+    if (session?.user) {
+      setAvatarUrl(session.user.image ?? null);
+    }
+  }, [session?.user?.image]);
 
   useEffect(() => {
     if (isEditingName && nameInputRef.current) {
@@ -56,7 +66,6 @@ export default function ProfileDropdown() {
   if (!session?.user) return null;
 
   const effectiveName = displayName || session.user.name;
-  const initial = effectiveName?.[0]?.toUpperCase() ?? "?";
 
   const handleLogout = async () => {
     setIsOpen(false);
@@ -117,6 +126,12 @@ export default function ProfileDropdown() {
     }
   };
 
+  const handleAvatarUploadSuccess = (url: string) => {
+    setAvatarUrl(url);
+    setIsAvatarEditorOpen(false);
+    router.refresh();
+  };
+
   return (
     <div className="relative" ref={dropdownRef}>
       <button
@@ -126,9 +141,7 @@ export default function ProfileDropdown() {
         aria-label="Меню профілю"
         aria-expanded={isOpen}
       >
-        <div className="w-8 h-8 bg-[var(--color-text)] text-[var(--color-bg)] rounded-[6px] flex items-center justify-center text-[13px] font-medium">
-          {initial}
-        </div>
+        <Avatar src={avatarUrl} name={effectiveName} size={32} />
         <span className="text-[13px] text-[var(--color-text)]">
           {effectiveName}
         </span>
@@ -153,9 +166,12 @@ export default function ProfileDropdown() {
       {isOpen && (
         <div className="absolute top-full right-0 mt-2 w-[280px] bg-white border border-[var(--color-line)] rounded-[12px] shadow-[0_12px_32px_rgba(0,0,0,0.08)] overflow-hidden z-50">
           <div className="p-[18px] border-b border-[var(--color-line)] flex items-center gap-3">
-            <div className="w-12 h-12 bg-[var(--color-text)] text-[var(--color-bg)] rounded-[8px] flex items-center justify-center text-[18px] font-medium flex-shrink-0">
-              {initial}
-            </div>
+            <Avatar
+              src={avatarUrl}
+              name={effectiveName}
+              size={48}
+              onClick={() => setIsAvatarEditorOpen(true)}
+            />
             <div className="flex flex-col gap-0.5 min-w-0 flex-1">
               {isEditingName ? (
                 <input
@@ -265,6 +281,12 @@ export default function ProfileDropdown() {
           </div>
         </div>
       )}
+
+      <AvatarEditorModal
+        isOpen={isAvatarEditorOpen}
+        onClose={() => setIsAvatarEditorOpen(false)}
+        onSuccess={handleAvatarUploadSuccess}
+      />
     </div>
   );
 }
