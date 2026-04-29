@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx create-next-app@latest . --typescript --tailwind --app --no-src-dir --import-alias \"@/*\" --eslint --use-npm --no-git --yes)",
+      "Bash(rm package.json)",
+      "Bash(mkdir _tmp_app)",
+      "Bash(npx create-next-app@latest barbershop-app --typescript --tailwind --app --no-src-dir --import-alias \"@/*\" --eslint --use-npm --no-git --yes)",
+      "Read(//c/c/Projects/Barbershop/_tmp_app/**)",
+      "Bash(shopt -s dotglob)",
+      "Bash(mv _tmp_app/barbershop-app/* ./)",
+      "Bash(shopt -u dotglob)",
+      "Bash(npm run *)",
+      "Bash(npx eslint *)",
+      "Bash(npm install *)",
+      "Bash(node -e \"const z = require\\('zod'\\); try { const s = z.string\\(\\).trim\\(\\).toLowerCase\\(\\).email\\('test'\\); console.log\\('OK email\\(\\) works'\\); } catch \\(e\\) { console.log\\('FAIL', e.message\\); }\")"
+    ],
+    "additionalDirectories": [
+      "C:\\Projects\\Barbershop"
+    ]
+  }
+}

@@ -1,0 +1,146 @@
+@import "tailwindcss";
+
+:root {
+  --color-bg: #ffffff;
+  --color-text: #0a0a0a;
+  --color-text-muted: #6b6b6b;
+  --color-line: #e5e5e5;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+}
+
+@theme inline {
+  --color-bg: var(--color-bg);
+  --color-text: var(--color-text);
+  --color-text-muted: var(--color-text-muted);
+  --color-line: var(--color-line);
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-xl: var(--radius-xl);
+}
+
+html,
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+body {
+  font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.font-display {
+  font-family: var(--font-display), ui-serif, Georgia, serif;
+}
+
+.font-body {
+  font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+}
+
+.nav-link {
+  position: relative;
+  display: inline-block;
+}
+
+.nav-link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -4px;
+  width: 100%;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s ease;
+}
+
+.nav-link:hover::after {
+  transform: scaleX(1);
+}
+
+.barber-name-hover {
+  position: relative;
+  display: inline-block;
+}
+
+.barber-name-hover::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  width: 100%;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s ease;
+}
+
+.group:hover .barber-name-hover::after {
+  transform: scaleX(1);
+}
+
+.pattern-diagonal {
+  background-color: #1a1a1a;
+  background-image: repeating-linear-gradient(
+    45deg,
+    rgba(255, 255, 255, 0.06) 0,
+    rgba(255, 255, 255, 0.06) 1px,
+    transparent 1px,
+    transparent 14px
+  );
+}
+
+.pattern-dots {
+  background-color: #2a2a2a;
+  background-image: radial-gradient(
+    rgba(255, 255, 255, 0.12) 1px,
+    transparent 1px
+  );
+  background-size: 16px 16px;
+}
+
+.pattern-grid {
+  background-color: #0f0f0f;
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+.pattern-cross {
+  background-color: #f5f5f5;
+  background-image: repeating-linear-gradient(
+      45deg,
+      rgba(0, 0, 0, 0.06) 0,
+      rgba(0, 0, 0, 0.06) 1px,
+      transparent 1px,
+      transparent 12px
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      rgba(0, 0, 0, 0.06) 0,
+      rgba(0, 0, 0, 0.06) 1px,
+      transparent 1px,
+      transparent 12px
+    );
+}
+
+.pattern-stripes {
+  background-color: #ededed;
+  background-image: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.07) 0,
+    rgba(0, 0, 0, 0.07) 1px,
+    transparent 1px,
+    transparent 10px
+  );
+}
