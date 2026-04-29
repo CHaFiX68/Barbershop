@@ -27,12 +27,11 @@ export default function HeroSlider() {
   const goTo = (i: number) => setCurrent(i);
 
   return (
-    <section className="pt-8 md:pt-12">
-      <div className="max-w-[1536px] mx-auto px-6">
-        <div
-          className="relative overflow-hidden bg-black rounded-[24px]"
-          style={{ aspectRatio: "16 / 8", maxHeight: "75vh" }}
-        >
+    <section>
+      <div className="max-w-[1536px] mx-auto px-6 pt-6">
+       <div className="max-w-6xl mx-auto">
+        <div className="relative">
+        <div className="relative aspect-[16/8] bg-[#1C1B19] overflow-hidden rounded-[24px]">
           <div
             className="absolute inset-0 z-0 flex h-full w-full"
             style={{
@@ -51,12 +50,40 @@ export default function HeroSlider() {
 
           <div className="absolute inset-0 z-10 bg-black/55" aria-hidden="true" />
 
+          <div
+            className="absolute top-6 sm:top-8 left-6 sm:left-12 z-30 flex items-center gap-2.5 pointer-events-none"
+            style={{
+              fontSize: "10px",
+              letterSpacing: "0.2em",
+              textTransform: "uppercase",
+              color: "rgba(237,234,229,0.7)",
+            }}
+          >
+            <span
+              className="inline-block w-1.5 h-1.5 rounded-full"
+              style={{ backgroundColor: "#7BB389" }}
+              aria-hidden="true"
+            />
+            Сьогодні відкрито · 10:00 — 21:00
+          </div>
+          <div
+            className="absolute top-6 sm:top-8 right-6 sm:right-12 z-30 font-display pointer-events-none"
+            style={{
+              fontSize: "11px",
+              letterSpacing: "0.15em",
+              color: "rgba(237,234,229,0.5)",
+            }}
+            aria-hidden="true"
+          >
+            — 01
+          </div>
+
           <div className="absolute inset-0 z-20 flex flex-col items-start justify-center text-left text-white px-8 sm:px-12 md:px-16 lg:px-20 pointer-events-none">
             <h1
               className="font-display max-w-2xl"
               style={{
                 fontWeight: 600,
-                fontSize: "clamp(40px, 7vw, 96px)",
+                fontSize: "clamp(34px, 6vw, 80px)",
                 lineHeight: 1.05,
               }}
             >
@@ -65,13 +92,13 @@ export default function HeroSlider() {
             </h1>
             <p
               className="mt-6 max-w-md text-white/85"
-              style={{ fontSize: "16px", lineHeight: 1.6 }}
+              style={{ fontSize: "14px", lineHeight: 1.6 }}
             >
               {HERO_CONTENT.tagline}
             </p>
             <a
               href={HERO_CONTENT.ctaHref}
-              className="mt-8 pointer-events-auto inline-flex items-center justify-center bg-white text-black border border-white px-6 py-3 transition-colors hover:bg-transparent hover:text-white rounded-[8px]"
+              className="mt-8 pointer-events-auto inline-flex items-center justify-center bg-[#EDEAE5] text-[#1C1B19] border border-[#EDEAE5] px-5 py-2.5 transition-colors hover:bg-transparent hover:text-[#EDEAE5] rounded-[8px]"
               style={{ fontSize: "14px", fontWeight: 500 }}
             >
               {HERO_CONTENT.ctaLabel}
@@ -82,7 +109,7 @@ export default function HeroSlider() {
             type="button"
             onClick={goPrev}
             aria-label="Попередній слайд"
-            className="absolute top-1/2 -translate-y-1/2 left-4 sm:left-8 z-30 pointer-events-auto w-10 h-10 sm:w-14 sm:h-14 flex items-center justify-center bg-transparent text-white border border-white/40 hover:bg-white hover:text-black hover:border-white transition-colors cursor-pointer"
+            className="absolute top-1/2 -translate-y-1/2 left-4 sm:left-8 z-30 pointer-events-auto w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center bg-transparent text-white border border-white/40 hover:bg-white hover:text-black hover:border-white transition-colors cursor-pointer"
             style={{ borderRadius: "9999px" }}
           >
             <svg
@@ -104,7 +131,7 @@ export default function HeroSlider() {
             type="button"
             onClick={goNext}
             aria-label="Наступний слайд"
-            className="absolute top-1/2 -translate-y-1/2 right-4 sm:right-8 z-30 pointer-events-auto w-10 h-10 sm:w-14 sm:h-14 flex items-center justify-center bg-transparent text-white border border-white/40 hover:bg-white hover:text-black hover:border-white transition-colors cursor-pointer"
+            className="absolute top-1/2 -translate-y-1/2 right-4 sm:right-8 z-30 pointer-events-auto w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center bg-transparent text-white border border-white/40 hover:bg-white hover:text-black hover:border-white transition-colors cursor-pointer"
             style={{ borderRadius: "9999px" }}
           >
             <svg
@@ -146,6 +173,8 @@ export default function HeroSlider() {
             })}
           </div>
         </div>
+        </div>
+       </div>
       </div>
     </section>
   );

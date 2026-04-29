@@ -21,8 +21,9 @@ export default function Header() {
   const close = () => setOpen(false);
 
   return (
-    <header className="sticky top-0 z-40 bg-white border-b border-[var(--color-line)]">
-      <div className="max-w-[1536px] mx-auto px-6 h-16 md:h-20 flex items-center justify-between">
+    <header className="sticky top-0 z-40 bg-[#EDEAE5]/85 backdrop-blur-[8px] border-b border-[var(--color-line)]">
+      <div className="max-w-[1536px] mx-auto px-6">
+       <div className="max-w-6xl mx-auto h-16 md:h-20 flex items-center justify-between">
         <a
           href="#"
           aria-label="BARBER&CO"
@@ -60,11 +61,13 @@ export default function Header() {
           <span className="block w-6 h-px bg-[var(--color-text)]" />
           <span className="block w-6 h-px bg-[var(--color-text)]" />
         </button>
+       </div>
       </div>
 
       {open && (
-        <div className="fixed inset-0 z-50 bg-white flex flex-col">
-          <div className="max-w-[1536px] mx-auto px-6 h-16 w-full flex items-center justify-between border-b border-[var(--color-line)]">
+        <div className="fixed inset-0 z-50 bg-[var(--color-bg)] flex flex-col">
+          <div className="max-w-[1536px] mx-auto px-6 w-full border-b border-[var(--color-line)]">
+           <div className="max-w-6xl mx-auto h-16 flex items-center justify-between">
             <span
               className="font-display text-xl tracking-tight"
               style={{ fontWeight: 600 }}
@@ -80,6 +83,7 @@ export default function Header() {
               <span className="absolute left-1/2 top-1/2 w-6 h-px bg-[var(--color-text)] -translate-x-1/2 -translate-y-1/2 rotate-45" />
               <span className="absolute left-1/2 top-1/2 w-6 h-px bg-[var(--color-text)] -translate-x-1/2 -translate-y-1/2 -rotate-45" />
             </button>
+           </div>
           </div>
           <nav className="flex-1 flex flex-col items-center justify-center gap-8">
             {NAV_ITEMS.map((item) => (
