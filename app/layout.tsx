@@ -1,6 +1,8 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import { Fraunces, DM_Sans } from "next/font/google";
 import "./globals.css";
+import AuthModal from "@/components/auth/auth-modal";
 
 const fraunces = Fraunces({
   variable: "--font-display",
@@ -35,6 +37,9 @@ export default function RootLayout({
     >
       <body className="min-h-screen flex flex-col bg-[var(--color-bg)] text-[var(--color-text)]">
         {children}
+        <Suspense fallback={null}>
+          <AuthModal />
+        </Suspense>
       </body>
     </html>
   );

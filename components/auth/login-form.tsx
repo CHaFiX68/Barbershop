@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signIn } from "@/lib/auth-client";
@@ -9,6 +9,7 @@ import { signInSchema, type SignInInput } from "@/lib/validation";
 import AuthCard from "./auth-card";
 import AuthInput from "./auth-input";
 import AuthButton from "./auth-button";
+import AuthModalTrigger from "./auth-modal-trigger";
 
 function mapSignInError(message: string | undefined): string {
   if (!message) return "Не вдалось увійти. Спробуй ще раз";
@@ -19,8 +20,14 @@ function mapSignInError(message: string | undefined): string {
   return "Не вдалось увійти. Спробуй ще раз";
 }
 
-export default function LoginForm() {
+type Props = {
+  hideCard?: boolean;
+  inModal?: boolean;
+};
+
+export default function LoginForm({ hideCard, inModal }: Props) {
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") ?? "/";
   const {
@@ -32,6 +39,16 @@ export default function LoginForm() {
     resolver: zodResolver(signInSchema),
   });
 
+  const closeModalAndRefresh = () => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("auth");
+    const query = params.toString();
+    router.replace(query ? `${pathname}?${query}` : pathname, {
+      scroll: false,
+    });
+    router.refresh();
+  };
+
   const onSubmit = async (data: SignInInput) => {
     try {
       const result = await signIn.email({
@@ -42,15 +59,19 @@ export default function LoginForm() {
         setError("root", { message: mapSignInError(result.error.message) });
         return;
       }
-      router.push(callbackUrl);
-      router.refresh();
+      if (inModal) {
+        closeModalAndRefresh();
+      } else {
+        router.push(callbackUrl);
+        router.refresh();
+      }
     } catch {
       setError("root", { message: "Не вдалось увійти. Спробуй ще раз" });
     }
   };
 
-  return (
-    <AuthCard>
+  const content = (
+    <>
       <h1
         className="font-display mb-2"
         style={{ fontWeight: 600, fontSize: "32px" }}
@@ -62,9 +83,18 @@ export default function LoginForm() {
         style={{ fontSize: "14px" }}
       >
         Ще не маєш акаунту?{" "}
-        <Link href="/register" className="nav-link text-[var(--color-text)]">
-          Зареєструватись
-        </Link>
+        {inModal ? (
+          <AuthModalTrigger
+            mode="register"
+            className="nav-link text-[var(--color-text)]"
+          >
+            Зареєструватись
+          </AuthModalTrigger>
+        ) : (
+          <Link href="/register" className="nav-link text-[var(--color-text)]">
+            Зареєструватись
+          </Link>
+        )}
       </p>
 
       <form onSubmit={handleSubmit(onSubmit)} noValidate>
@@ -91,6 +121,9 @@ export default function LoginForm() {
           Увійти
         </AuthButton>
       </form>
-    </AuthCard>
+    </>
   );
+
+  if (hideCard) return content;
+  return <AuthCard>{content}</AuthCard>;
 }

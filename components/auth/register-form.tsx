@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signUp } from "@/lib/auth-client";
@@ -9,6 +9,7 @@ import { signUpSchema, type SignUpInput } from "@/lib/validation";
 import AuthCard from "./auth-card";
 import AuthInput from "./auth-input";
 import AuthButton from "./auth-button";
+import AuthModalTrigger from "./auth-modal-trigger";
 
 function mapSignUpError(message: string | undefined): string {
   if (!message) return "Не вдалось створити акаунт. Спробуй ще раз";
@@ -19,8 +20,19 @@ function mapSignUpError(message: string | undefined): string {
   return "Не вдалось створити акаунт. Спробуй ще раз";
 }
 
-export default function RegisterForm() {
+type Props = {
+  hideCard?: boolean;
+  inModal?: boolean;
+  onRegistered?: (email: string, password: string) => void;
+};
+
+export default function RegisterForm({
+  hideCard,
+  inModal,
+  onRegistered,
+}: Props) {
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") ?? "/";
   const {
@@ -31,6 +43,16 @@ export default function RegisterForm() {
   } = useForm<SignUpInput>({
     resolver: zodResolver(signUpSchema),
   });
+
+  const closeModalAndRefresh = () => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("auth");
+    const query = params.toString();
+    router.replace(query ? `${pathname}?${query}` : pathname, {
+      scroll: false,
+    });
+    router.refresh();
+  };
 
   const onSubmit = async (data: SignUpInput) => {
     try {
@@ -43,15 +65,34 @@ export default function RegisterForm() {
         setError("root", { message: mapSignUpError(result.error.message) });
         return;
       }
-      router.push(callbackUrl);
-      router.refresh();
+      if (onRegistered) {
+        const otpRes = await fetch("/api/auth/send-otp", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: data.email }),
+        });
+        if (!otpRes.ok) {
+          setError("root", {
+            message: "Акаунт створено, але не вдалось надіслати код. Спробуй ще раз",
+          });
+          return;
+        }
+        onRegistered(data.email, data.password);
+        return;
+      }
+      if (inModal) {
+        closeModalAndRefresh();
+      } else {
+        router.push(callbackUrl);
+        router.refresh();
+      }
     } catch {
       setError("root", { message: "Не вдалось створити акаунт. Спробуй ще раз" });
     }
   };
 
-  return (
-    <AuthCard>
+  const content = (
+    <>
       <h1
         className="font-display mb-2"
         style={{ fontWeight: 600, fontSize: "32px" }}
@@ -63,9 +104,18 @@ export default function RegisterForm() {
         style={{ fontSize: "14px" }}
       >
         Уже маєш акаунт?{" "}
-        <Link href="/login" className="nav-link text-[var(--color-text)]">
-          Увійти
-        </Link>
+        {inModal ? (
+          <AuthModalTrigger
+            mode="login"
+            className="nav-link text-[var(--color-text)]"
+          >
+            Увійти
+          </AuthModalTrigger>
+        ) : (
+          <Link href="/login" className="nav-link text-[var(--color-text)]">
+            Увійти
+          </Link>
+        )}
       </p>
 
       <form onSubmit={handleSubmit(onSubmit)} noValidate>
@@ -106,6 +156,9 @@ export default function RegisterForm() {
           Зареєструватись
         </AuthButton>
       </form>
-    </AuthCard>
+    </>
   );
+
+  if (hideCard) return content;
+  return <AuthCard>{content}</AuthCard>;
 }

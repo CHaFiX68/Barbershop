@@ -15,9 +15,14 @@ export const auth = betterAuth({
   }),
   emailAndPassword: {
     enabled: true,
-    requireEmailVerification: false,
+    requireEmailVerification: true,
     minPasswordLength: 8,
     maxPasswordLength: 128,
+  },
+  emailVerification: {
+    sendVerificationEmail: async () => {
+      // No-op: verification handled by our /api/auth/send-otp endpoint
+    },
   },
   session: {
     expiresIn: 60 * 60 * 24 * 30,
