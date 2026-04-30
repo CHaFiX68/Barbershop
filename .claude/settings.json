@@ -13,7 +13,8 @@
       "Bash(npx eslint *)",
       "Bash(npm install *)",
       "Bash(node -e \"const z = require\\('zod'\\); try { const s = z.string\\(\\).trim\\(\\).toLowerCase\\(\\).email\\('test'\\); console.log\\('OK email\\(\\) works'\\); } catch \\(e\\) { console.log\\('FAIL', e.message\\); }\")",
-      "Bash(git diff *)"
+      "Bash(git diff *)",
+      "Bash(pnpm build *)"
     ],
     "additionalDirectories": [
       "C:\\Projects\\Barbershop"

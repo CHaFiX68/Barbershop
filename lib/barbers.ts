@@ -1,6 +1,6 @@
 import "server-only";
 
-import { and, asc, eq, inArray } from "drizzle-orm";
+import { and, asc, eq } from "drizzle-orm";
 import { db } from "./db";
 import { barberProfile, service, user } from "./db/schema";
 
@@ -33,10 +33,7 @@ export async function getBarbers(): Promise<BarberPublic[]> {
       .from(user)
       .innerJoin(barberProfile, eq(barberProfile.userId, user.id))
       .where(
-        and(
-          inArray(user.role, ["barber", "admin"]),
-          eq(barberProfile.isActive, true)
-        )
+        and(eq(user.role, "barber"), eq(barberProfile.isActive, true))
       );
 
     const result: BarberPublic[] = [];

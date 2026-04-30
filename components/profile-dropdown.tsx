@@ -7,6 +7,7 @@ import { signOut, useSession } from "@/lib/auth-client";
 import Avatar from "./avatar";
 import AvatarEditorModal from "./avatar-editor-modal";
 import AnketaModal from "./barber/anketa-modal";
+import ManagementModal from "./admin/management-modal";
 
 export default function ProfileDropdown() {
   const { data: session } = useSession();
@@ -20,6 +21,7 @@ export default function ProfileDropdown() {
   const [isAvatarEditorOpen, setIsAvatarEditorOpen] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [isAnketaOpen, setIsAnketaOpen] = useState(false);
+  const [isManagementOpen, setIsManagementOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const nameInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
@@ -64,16 +66,23 @@ export default function ProfileDropdown() {
   }, [isOpen]);
 
   useEffect(() => {
-    if (!isOpen && !isAnketaOpen) return;
+    if (!isOpen && !isAnketaOpen && !isManagementOpen) return;
     const handleClickOutside = (e: MouseEvent) => {
       const target = e.target as Node;
       const insideDropdown = dropdownRef.current?.contains(target);
-      const insideModal = (e.target as HTMLElement)?.closest?.(
+      const insideAnketaModal = (e.target as HTMLElement)?.closest?.(
         "[data-anketa-modal]"
       );
-      if (insideDropdown || insideModal) return;
+      const insideManagementModal = (e.target as HTMLElement)?.closest?.(
+        "[data-management-modal]"
+      );
+      if (insideDropdown || insideAnketaModal || insideManagementModal) return;
       if (isAnketaOpen) {
         setIsAnketaOpen(false);
+        return;
+      }
+      if (isManagementOpen) {
+        setIsManagementOpen(false);
         return;
       }
       if (isOpen) {
@@ -82,7 +91,7 @@ export default function ProfileDropdown() {
     };
     window.addEventListener("mousedown", handleClickOutside);
     return () => window.removeEventListener("mousedown", handleClickOutside);
-  }, [isOpen, isAnketaOpen]);
+  }, [isOpen, isAnketaOpen, isManagementOpen]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -97,11 +106,13 @@ export default function ProfileDropdown() {
 
   const effectiveName = displayName || session.user.name;
   const role = session.user.role ?? "user";
-  const isBarber = role === "barber" || role === "admin";
+  const isBarberRole = role === "barber";
+  const isAdminRole = role === "admin";
 
   const handleLogout = async () => {
     setIsOpen(false);
     setIsAnketaOpen(false);
+    setIsManagementOpen(false);
     await signOut();
     router.push("/");
     router.refresh();
@@ -168,6 +179,7 @@ export default function ProfileDropdown() {
   const closeAll = () => {
     setIsOpen(false);
     setIsAnketaOpen(false);
+    setIsManagementOpen(false);
   };
 
   return (
@@ -178,6 +190,7 @@ export default function ProfileDropdown() {
           if (isOpen) {
             setIsOpen(false);
             setIsAnketaOpen(false);
+            setIsManagementOpen(false);
           } else {
             setIsOpen(true);
           }
@@ -315,7 +328,7 @@ export default function ProfileDropdown() {
           <div className="h-px bg-[var(--color-line)] mx-1.5" />
 
           <div className="py-1.5">
-            {isBarber && (
+            {isBarberRole && (
               <button
                 type="button"
                 onClick={() => {
@@ -343,6 +356,30 @@ export default function ProfileDropdown() {
                   <rect x="5" y="3" width="14" height="18" rx="2" />
                 </svg>
                 <span>Анкета</span>
+              </button>
+            )}
+            {isAdminRole && (
+              <button
+                type="button"
+                onClick={() => {
+                  setIsManagementOpen((v) => !v);
+                }}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-[8px] transition-colors text-[13px] ${
+                  isManagementOpen ? "bg-[#F5F0E6]" : "hover:bg-[#F5F0E6]"
+                }`}
+              >
+                <svg
+                  className="w-[18px] h-[18px] flex-shrink-0 text-[var(--color-text-muted)]"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  aria-hidden="true"
+                >
+                  <circle cx="12" cy="12" r="3" />
+                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                </svg>
+                <span>Менеджмент</span>
               </button>
             )}
           </div>
@@ -374,6 +411,11 @@ export default function ProfileDropdown() {
       <AnketaModal
         isOpen={isAnketaOpen}
         onClose={() => setIsAnketaOpen(false)}
+      />
+
+      <ManagementModal
+        isOpen={isManagementOpen}
+        onClose={() => setIsManagementOpen(false)}
       />
 
       <AvatarEditorModal
