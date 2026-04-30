@@ -23,9 +23,14 @@ function mapSignInError(message: string | undefined): string {
 type Props = {
   hideCard?: boolean;
   inModal?: boolean;
+  onForgotPassword?: () => void;
 };
 
-export default function LoginForm({ hideCard, inModal }: Props) {
+export default function LoginForm({
+  hideCard,
+  inModal,
+  onForgotPassword,
+}: Props) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -112,6 +117,18 @@ export default function LoginForm({ hideCard, inModal }: Props) {
           error={errors.password?.message}
           {...register("password")}
         />
+
+        {onForgotPassword && (
+          <div className="flex justify-end -mt-3 mb-5">
+            <button
+              type="button"
+              onClick={onForgotPassword}
+              className="text-[12px] text-[var(--color-text-muted)] hover:text-[var(--color-text)] underline opacity-60 hover:opacity-100 transition-opacity"
+            >
+              Забули пароль?
+            </button>
+          </div>
+        )}
 
         {errors.root && (
           <p className="mb-4 text-sm text-red-600">{errors.root.message}</p>

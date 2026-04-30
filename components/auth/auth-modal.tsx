@@ -7,6 +7,7 @@ import { signIn } from "@/lib/auth-client";
 import LoginForm from "./login-form";
 import RegisterForm from "./register-form";
 import OtpForm from "./otp-form";
+import ForgotPasswordForm from "./forgot-password-form";
 
 type AuthMode = "login" | "register";
 
@@ -24,6 +25,7 @@ export default function AuthModal() {
     email: string;
     password: string;
   } | null>(null);
+  const [showForgot, setShowForgot] = useState(false);
   const mouseDownOnBackdropRef = useRef(false);
 
   useEffect(() => {
@@ -38,6 +40,7 @@ export default function AuthModal() {
       scroll: false,
     });
     setPendingVerify(null);
+    setShowForgot(false);
   };
 
   useEffect(() => {
@@ -65,6 +68,13 @@ export default function AuthModal() {
     const params = new URLSearchParams(searchParams.toString());
     params.set("auth", next);
     router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    setShowForgot(false);
+  };
+
+  const handleForgotSuccess = () => {
+    setShowForgot(false);
+    close();
+    router.refresh();
   };
 
   const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -124,6 +134,11 @@ export default function AuthModal() {
             email={pendingVerify.email}
             onVerified={handleVerified}
           />
+        ) : showForgot ? (
+          <ForgotPasswordForm
+            onBack={() => setShowForgot(false)}
+            onSuccess={handleForgotSuccess}
+          />
         ) : (
           <>
             <div className="flex items-center gap-1 mb-6">
@@ -152,7 +167,11 @@ export default function AuthModal() {
             </div>
 
             {mode === "login" ? (
-              <LoginForm hideCard inModal />
+              <LoginForm
+                hideCard
+                inModal
+                onForgotPassword={() => setShowForgot(true)}
+              />
             ) : (
               <RegisterForm
                 hideCard

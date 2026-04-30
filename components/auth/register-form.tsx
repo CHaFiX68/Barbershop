@@ -4,7 +4,6 @@ import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { signUp } from "@/lib/auth-client";
 import { signUpSchema, type SignUpInput } from "@/lib/validation";
 import AuthCard from "./auth-card";
 import AuthInput from "./auth-input";
@@ -56,27 +55,25 @@ export default function RegisterForm({
 
   const onSubmit = async (data: SignUpInput) => {
     try {
-      const result = await signUp.email({
-        name: data.name,
-        email: data.email,
-        password: data.password,
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: data.name,
+          email: data.email,
+          password: data.password,
+        }),
       });
-      if (result.error) {
-        setError("root", { message: mapSignUpError(result.error.message) });
+      const json = (await res.json().catch(() => ({}))) as {
+        error?: { message?: string };
+      };
+      if (!res.ok) {
+        setError("root", {
+          message: mapSignUpError(json?.error?.message),
+        });
         return;
       }
       if (onRegistered) {
-        const otpRes = await fetch("/api/auth/send-otp", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: data.email }),
-        });
-        if (!otpRes.ok) {
-          setError("root", {
-            message: "Акаунт створено, але не вдалось надіслати код. Спробуй ще раз",
-          });
-          return;
-        }
         onRegistered(data.email, data.password);
         return;
       }
