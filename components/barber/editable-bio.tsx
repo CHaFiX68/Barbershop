@@ -4,12 +4,12 @@ import { useEffect, useRef, useState } from "react";
 
 type Props = {
   bio: string;
-  onSave: (next: string) => Promise<void> | void;
+  onChange: (next: string) => void;
 };
 
 const MAX = 60;
 
-export default function EditableBio({ bio, onSave }: Props) {
+export default function EditableBio({ bio, onChange }: Props) {
   const [isEditing, setIsEditing] = useState(false);
   const [value, setValue] = useState(bio);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -25,10 +25,10 @@ export default function EditableBio({ bio, onSave }: Props) {
     }
   }, [isEditing]);
 
-  const handleBlur = async () => {
+  const handleBlur = () => {
     const next = value.slice(0, MAX);
     if (next !== bio) {
-      await onSave(next);
+      onChange(next);
     }
     setIsEditing(false);
   };

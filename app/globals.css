@@ -148,3 +148,32 @@ body {
     transparent 10px
   );
 }
+
+/* Custom scrollbar — Concrete Minimalism palette */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: #c9b89a #edeae5;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #edeae5;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c9b89a;
+  border-radius: 5px;
+  border: 2px solid #edeae5;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #b8a587;
+}
+
+::-webkit-scrollbar-corner {
+  background: #edeae5;
+}

@@ -11,6 +11,8 @@ import AnketaModal from "./barber/anketa-modal";
 export default function ProfileDropdown() {
   const { data: session } = useSession();
   const [isOpen, setIsOpen] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
   const [isEditingName, setIsEditingName] = useState(false);
   const [nameValue, setNameValue] = useState("");
   const [displayName, setDisplayName] = useState("");
@@ -41,6 +43,25 @@ export default function ProfileDropdown() {
       nameInputRef.current.select();
     }
   }, [isEditingName]);
+
+  useEffect(() => {
+    if (isOpen) {
+      setIsMounted(true);
+      setIsAnimating(true);
+      const timeout = setTimeout(() => {
+        setIsAnimating(false);
+      }, 16);
+      return () => clearTimeout(timeout);
+    } else if (isMounted) {
+      setIsAnimating(true);
+      const timeout = setTimeout(() => {
+        setIsMounted(false);
+        setIsAnimating(false);
+      }, 160);
+      return () => clearTimeout(timeout);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]);
 
   useEffect(() => {
     if (!isOpen && !isAnketaOpen) return;
@@ -187,8 +208,17 @@ export default function ProfileDropdown() {
         </svg>
       </button>
 
-      {isOpen && (
-        <div className="absolute top-full right-0 mt-2 w-[280px] bg-white border border-[var(--color-line)] rounded-[12px] shadow-[0_12px_32px_rgba(0,0,0,0.08)] overflow-hidden z-50">
+      {isMounted && (
+        <div
+          className="absolute top-full right-0 mt-2 w-[280px] bg-white border border-[var(--color-line)] rounded-[12px] shadow-[0_12px_32px_rgba(0,0,0,0.08)] overflow-hidden z-50 origin-top-right transition-[opacity,transform] duration-150"
+          style={{
+            opacity: isOpen && !isAnimating ? 1 : 0,
+            transform:
+              isOpen && !isAnimating ? "scale(1)" : "scale(0.95)",
+            transitionTimingFunction: "cubic-bezier(0.22, 1, 0.36, 1)",
+            transformOrigin: "top right",
+          }}
+        >
           <div className="p-[18px] border-b border-[var(--color-line)] flex items-center gap-3">
             <Avatar
               src={avatarUrl}

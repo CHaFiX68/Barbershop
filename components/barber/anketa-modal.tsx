@@ -13,6 +13,7 @@ type AnketaData = {
     isActive: boolean;
   };
   services: { id: string; name: string; price: string }[];
+  hasPendingChanges: boolean;
 };
 
 type Props = {
@@ -33,18 +34,27 @@ export default function AnketaModal({ isOpen, onClose }: Props) {
   }, []);
 
   useEffect(() => {
-    if (!isOpen) return;
-    if (data) return;
+    if (!isOpen) {
+      setData(null);
+      return;
+    }
     let cancelled = false;
     setLoading(true);
     setError(null);
-    fetch("/api/barber/me")
+    console.log(
+      "[ANKETA-MODAL] fetching /api/barber/me, isOpen:",
+      isOpen,
+      "data exists:",
+      !!data
+    );
+    fetch("/api/barber/me", { cache: "no-store" })
       .then(async (res) => {
         if (!res.ok) throw new Error("Failed to load");
         return res.json();
       })
       .then((json: AnketaData) => {
         if (cancelled) return;
+        console.log("[ANKETA-MODAL] received data:", json);
         setData(json);
       })
       .catch(() => {
@@ -57,7 +67,8 @@ export default function AnketaModal({ isOpen, onClose }: Props) {
     return () => {
       cancelled = true;
     };
-  }, [isOpen, data]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -124,12 +135,26 @@ export default function AnketaModal({ isOpen, onClose }: Props) {
       >
         <div className="p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2
-              className="font-display"
-              style={{ fontWeight: 600, fontSize: "20px" }}
-            >
-              Анкета
-            </h2>
+            <div className="flex items-center">
+              <h2
+                className="font-display"
+                style={{ fontWeight: 600, fontSize: "20px" }}
+              >
+                Анкета
+              </h2>
+              {data?.hasPendingChanges && (
+                <span
+                  className="ml-3 inline-flex items-center px-2 py-0.5 text-[10px] uppercase rounded-[4px]"
+                  style={{
+                    background: "#F5E6C8",
+                    color: "#8A6D2A",
+                    letterSpacing: "0.15em",
+                  }}
+                >
+                  На розгляді
+                </span>
+              )}
+            </div>
             <button
               type="button"
               aria-label="Закрити"
@@ -172,6 +197,12 @@ export default function AnketaModal({ isOpen, onClose }: Props) {
               initialLandingImage={data.profile.landingImage}
               initialIsActive={data.profile.isActive}
               initialServices={data.services}
+              initialHasPending={data.hasPendingChanges}
+              onPendingChange={(v) =>
+                setData((prev) =>
+                  prev ? { ...prev, hasPendingChanges: v } : prev
+                )
+              }
             />
           )}
         </div>

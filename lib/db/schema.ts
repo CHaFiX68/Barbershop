@@ -83,3 +83,26 @@ export const service = pgTable("service", {
   orderIndex: integer("order_index").notNull().default(0),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
+
+export const barberProfilePending = pgTable("barber_profile_pending", {
+  id: text("id").primaryKey(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" })
+    .unique(),
+  bio: text("bio"),
+  landingImage: text("landing_image"),
+  isActive: boolean("is_active").notNull().default(false),
+  submittedAt: timestamp("submitted_at").notNull().defaultNow(),
+});
+
+export const servicePending = pgTable("service_pending", {
+  id: text("id").primaryKey(),
+  barberUserId: text("barber_user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  price: text("price").notNull(),
+  orderIndex: integer("order_index").notNull().default(0),
+  submittedAt: timestamp("submitted_at").notNull().defaultNow(),
+});
