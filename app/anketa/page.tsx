@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { asc, eq } from "drizzle-orm";
@@ -7,7 +8,7 @@ import { barberProfile, service, user } from "@/lib/db/schema";
 import EditableBarberCard from "@/components/barber/editable-barber-card";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Панель барбера — BARBER&CO" };
+export const metadata = { title: "Моя анкета — BARBER&CO" };
 
 function computeInitials(name: string): string {
   const parts = name.trim().split(/\s+/);
@@ -16,7 +17,7 @@ function computeInitials(name: string): string {
   return (parts[0][0] + parts[1][0]).toUpperCase();
 }
 
-export default async function BarberDashboardPage() {
+export default async function AnketaPage() {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session?.user) redirect("/?auth=login");
 
@@ -48,8 +49,16 @@ export default async function BarberDashboardPage() {
     .orderBy(asc(service.orderIndex));
 
   return (
-    <div className="max-w-[1536px] mx-auto px-6 py-16">
-      <div className="max-w-6xl mx-auto">
+    <div className="max-w-[1536px] mx-auto px-4 sm:px-6 py-8 sm:py-16">
+      <div className="max-w-2xl mx-auto">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-1.5 text-[13px] text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors mb-6"
+        >
+          <span aria-hidden="true">←</span>
+          <span>Назад</span>
+        </Link>
+
         <h1
           className="font-display mb-2"
           style={{ fontWeight: 600, fontSize: "28px" }}
@@ -63,20 +72,18 @@ export default async function BarberDashboardPage() {
           Клікни на будь-яке поле щоб редагувати. Збереження автоматичне.
         </p>
 
-        <div className="max-w-2xl">
-          <EditableBarberCard
-            userName={currentUser.name}
-            initials={computeInitials(currentUser.name)}
-            initialBio={profile.bio ?? ""}
-            initialLandingImage={profile.landingImage}
-            initialIsActive={profile.isActive}
-            initialServices={services.map((s) => ({
-              id: s.id,
-              name: s.name,
-              price: s.price,
-            }))}
-          />
-        </div>
+        <EditableBarberCard
+          userName={currentUser.name}
+          initials={computeInitials(currentUser.name)}
+          initialBio={profile.bio ?? ""}
+          initialLandingImage={profile.landingImage}
+          initialIsActive={profile.isActive}
+          initialServices={services.map((s) => ({
+            id: s.id,
+            name: s.name,
+            price: s.price,
+          }))}
+        />
       </div>
     </div>
   );

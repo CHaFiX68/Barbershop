@@ -63,13 +63,25 @@ export default function BarberCard({ barber }: Props) {
           {services.map((s, i) => (
             <li
               key={`svc-${i}`}
-              className="flex justify-between items-center py-2.5 border-b border-[var(--color-line)]"
+              className="border-b border-[var(--color-line)] py-2.5"
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1px 96px",
+                gap: "12px",
+                alignItems: "center",
+              }}
             >
               <span style={{ fontSize: "13px" }}>{s.name}</span>
-              <span
-                className="shrink-0 border-l border-[var(--color-line)] pl-4 ml-4"
-                style={{ fontSize: "13px", fontWeight: 500 }}
-              >
+              <div
+                style={{
+                  width: "1px",
+                  height: "20px",
+                  background: "var(--color-line)",
+                  justifySelf: "center",
+                }}
+                aria-hidden="true"
+              />
+              <span style={{ fontSize: "13px", fontWeight: 500 }}>
                 {s.price}
               </span>
             </li>
@@ -77,9 +89,24 @@ export default function BarberCard({ barber }: Props) {
           {Array.from({ length: placeholderCount }).map((_, i) => (
             <li
               key={`placeholder-${i}`}
-              className="flex justify-between items-center py-2.5 border-b border-[var(--color-line)]"
+              className="border-b border-[var(--color-line)] py-2.5"
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1px 96px",
+                gap: "12px",
+                alignItems: "center",
+              }}
               aria-hidden="true"
             >
+              <span style={{ fontSize: "13px" }}>&nbsp;</span>
+              <div
+                style={{
+                  width: "1px",
+                  height: "20px",
+                  background: "var(--color-line)",
+                  justifySelf: "center",
+                }}
+              />
               <span style={{ fontSize: "13px" }}>&nbsp;</span>
             </li>
           ))}

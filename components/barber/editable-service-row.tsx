@@ -54,40 +54,49 @@ export default function EditableServiceRow({
   };
 
   return (
-    <div className="grid grid-cols-12 items-center border-b border-[var(--color-line)] py-2.5 group">
-      <div className="col-span-7">
-        <input
-          ref={nameRef}
-          type="text"
-          defaultValue={service.name}
-          onBlur={handleNameBlur}
-          placeholder="Назва послуги"
-          className="w-full bg-transparent outline-none focus:bg-[#F5F0E6] rounded px-1 text-[13px]"
-        />
-      </div>
-      <div className="col-span-1 text-center text-[var(--color-text-muted)]">
-        |
-      </div>
-      <div className="col-span-3">
-        <input
-          ref={priceRef}
-          type="text"
-          defaultValue={service.price}
-          onBlur={handlePriceBlur}
-          placeholder="350 SEK"
-          className="w-full bg-transparent outline-none focus:bg-[#F5F0E6] rounded px-1 text-[13px] font-medium"
-        />
-      </div>
-      <div className="col-span-1 text-right">
-        <button
-          type="button"
-          onClick={() => void onDelete()}
-          className="opacity-0 group-hover:opacity-100 text-[var(--color-text-muted)] hover:text-[#A03030] transition-all"
-          title="Видалити"
-        >
-          ✕
-        </button>
-      </div>
+    <div
+      className="border-b border-[var(--color-line)] py-2.5 group"
+      style={{
+        display: "grid",
+        gridTemplateColumns: "1fr 1px 96px auto",
+        gap: "12px",
+        alignItems: "center",
+      }}
+    >
+      <input
+        ref={nameRef}
+        type="text"
+        defaultValue={service.name}
+        onBlur={handleNameBlur}
+        placeholder="Назва послуги"
+        className="w-full bg-transparent outline-none focus:bg-[#F5F0E6] rounded px-1 text-[13px]"
+      />
+      <div
+        style={{
+          width: "1px",
+          height: "20px",
+          background: "var(--color-line)",
+          justifySelf: "center",
+        }}
+        aria-hidden="true"
+      />
+      <input
+        ref={priceRef}
+        type="text"
+        defaultValue={service.price}
+        onBlur={handlePriceBlur}
+        placeholder="350 SEK"
+        className="w-full bg-transparent outline-none focus:bg-[#F5F0E6] rounded px-1 text-[13px] font-medium"
+      />
+      <button
+        type="button"
+        onClick={() => void onDelete()}
+        className="opacity-0 group-hover:opacity-100 text-[var(--color-text-muted)] hover:text-[#A03030] transition-all"
+        title="Видалити"
+        aria-label="Видалити послугу"
+      >
+        ✕
+      </button>
     </div>
   );
 }

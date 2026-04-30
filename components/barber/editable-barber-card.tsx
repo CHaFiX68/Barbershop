@@ -211,24 +211,62 @@ export default function EditableBarberCard({
             <div
               key={`placeholder-${i}`}
               className="border-b border-[var(--color-line)] py-2.5"
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1px 96px auto",
+                gap: "12px",
+                alignItems: "center",
+              }}
               aria-hidden="true"
             >
               <span className="block px-1 text-[13px]">&nbsp;</span>
+              <div
+                style={{
+                  width: "1px",
+                  height: "20px",
+                  background: "var(--color-line)",
+                  justifySelf: "center",
+                }}
+              />
+              <span className="block px-1 text-[13px]">&nbsp;</span>
+              <span>&nbsp;</span>
             </div>
           ))}
         </div>
 
         <div className="flex-1 min-h-8" aria-hidden="true" />
 
-        <button
-          type="button"
-          onClick={addService}
-          disabled={services.length >= TOTAL_ROWS || busy}
-          className="self-center inline-flex items-center justify-center bg-black text-white border border-transparent px-6 py-2.5 transition-colors hover:bg-transparent hover:text-black hover:border-black rounded-[8px] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-black disabled:hover:text-white disabled:hover:border-transparent"
-          style={{ fontSize: "14px" }}
-        >
-          + Додати послугу
-        </button>
+        <div className="self-center flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => router.refresh()}
+            disabled={busy}
+            className="inline-flex items-center justify-center bg-black text-white border border-transparent px-6 py-2.5 transition-colors hover:bg-transparent hover:text-black hover:border-black rounded-[8px] disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{ fontSize: "14px" }}
+          >
+            Оновити анкету
+          </button>
+          <button
+            type="button"
+            onClick={addService}
+            disabled={services.length >= TOTAL_ROWS || busy}
+            aria-label="Додати послугу"
+            title="Додати послугу"
+            className="inline-flex items-center justify-center w-10 h-10 bg-black text-white rounded-[8px] transition-colors hover:bg-transparent hover:text-black border border-transparent hover:border-black disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-black disabled:hover:text-white disabled:hover:border-transparent"
+          >
+            <svg
+              className="w-4 h-4"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              aria-hidden="true"
+            >
+              <path d="M8 3v10M3 8h10" />
+            </svg>
+          </button>
+        </div>
       </div>
 
       <LandingImageEditorModal

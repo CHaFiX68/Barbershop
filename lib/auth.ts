@@ -1,5 +1,7 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { customSession } from "better-auth/plugins";
+import { eq } from "drizzle-orm";
 import { db } from "./db";
 import * as schema from "./db/schema";
 
@@ -20,12 +22,22 @@ export const auth = betterAuth({
     maxPasswordLength: 128,
   },
   emailVerification: {
-    sendVerificationEmail: async () => {
-      // No-op: verification handled by our /api/auth/send-otp endpoint
-    },
+    sendVerificationEmail: async () => {},
   },
   session: {
     expiresIn: 60 * 60 * 24 * 30,
     updateAge: 60 * 60 * 24,
   },
+  plugins: [
+    customSession(async ({ user, session }) => {
+      const [u] = await db
+        .select({ role: schema.user.role })
+        .from(schema.user)
+        .where(eq(schema.user.id, user.id));
+      return {
+        session,
+        user: { ...user, role: u?.role ?? "user" },
+      };
+    }),
+  ],
 });
