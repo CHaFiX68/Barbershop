@@ -1,14 +1,18 @@
-import type { Barber } from "@/lib/data";
+import Image from "next/image";
+import type { BarberPublic } from "@/lib/barbers";
 
 const TOTAL_ROWS = 6;
 
 type Props = {
-  barber: Barber;
+  barber: BarberPublic;
 };
 
 export default function BarberCard({ barber }: Props) {
+  const services = barber.services.slice(0, TOTAL_ROWS);
+  const placeholderCount = Math.max(0, TOTAL_ROWS - services.length);
+
   return (
-    <article className="bg-white border border-[var(--color-line)] p-6 sm:p-8 grid grid-cols-1 md:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] gap-6 sm:gap-8 rounded-[16px]">
+    <article className="bg-white border border-[var(--color-line)] p-5 sm:p-7 grid grid-cols-1 md:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] gap-5 sm:gap-7 rounded-[16px]">
       <div className="flex h-full flex-col">
         <div className="text-center">
           <h3 className="font-display text-sm sm:text-base font-medium leading-snug">
@@ -17,15 +21,25 @@ export default function BarberCard({ barber }: Props) {
         </div>
 
         <div
-          className="mt-3 flex-1 min-h-0 w-full bg-[#F5F0E8] border border-[#EAE3D5] rounded-[12px] overflow-hidden flex items-center justify-center"
+          className="mt-3 flex-1 min-h-0 w-full bg-[#F5F0E8] border border-[#EAE3D5] rounded-[12px] overflow-hidden flex items-center justify-center relative"
           aria-hidden="true"
         >
-          <span
-            className="font-display italic text-[#C9B89A] leading-none max-w-full inline-block"
-            style={{ fontSize: "clamp(48px, 5vw, 88px)" }}
-          >
-            {barber.initials}
-          </span>
+          {barber.landingImage ? (
+            <Image
+              src={barber.landingImage}
+              alt={barber.name}
+              fill
+              sizes="(max-width: 1024px) 100vw, 480px"
+              className="object-cover"
+            />
+          ) : (
+            <span
+              className="font-display italic text-[#C9B89A] leading-none max-w-full inline-block"
+              style={{ fontSize: "clamp(48px, 5vw, 88px)" }}
+            >
+              {barber.initials}
+            </span>
+          )}
         </div>
 
         <p className="mt-3 text-center italic text-[13px] leading-relaxed text-[var(--color-text-muted)]">
@@ -46,26 +60,24 @@ export default function BarberCard({ barber }: Props) {
         </p>
 
         <ul className="mt-3">
-          {barber.services.map((service) => (
+          {services.map((s, i) => (
             <li
-              key={service.id}
-              className="flex justify-between items-center py-3 border-b border-[var(--color-line)]"
+              key={`svc-${i}`}
+              className="flex justify-between items-center py-2.5 border-b border-[var(--color-line)]"
             >
-              <span style={{ fontSize: "13px" }}>{service.name}</span>
+              <span style={{ fontSize: "13px" }}>{s.name}</span>
               <span
                 className="shrink-0 border-l border-[var(--color-line)] pl-4 ml-4"
                 style={{ fontSize: "13px", fontWeight: 500 }}
               >
-                {service.priceUah} грн
+                {s.price}
               </span>
             </li>
           ))}
-          {Array.from({
-            length: Math.max(0, TOTAL_ROWS - barber.services.length),
-          }).map((_, i) => (
+          {Array.from({ length: placeholderCount }).map((_, i) => (
             <li
               key={`placeholder-${i}`}
-              className="flex justify-between items-center py-3 border-b border-[var(--color-line)]"
+              className="flex justify-between items-center py-2.5 border-b border-[var(--color-line)]"
               aria-hidden="true"
             >
               <span style={{ fontSize: "13px" }}>&nbsp;</span>

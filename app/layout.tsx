@@ -35,7 +35,10 @@ export default function RootLayout({
       lang="uk"
       className={`${fraunces.variable} ${dmSans.variable} antialiased`}
     >
-      <body className="min-h-screen flex flex-col bg-[var(--color-bg)] text-[var(--color-text)]">
+      <body
+        className="min-h-screen flex flex-col bg-[var(--color-bg)] text-[var(--color-text)]"
+        suppressHydrationWarning
+      >
         {children}
         <Suspense fallback={null}>
           <AuthModal />

@@ -12,21 +12,6 @@ export const HERO_CONTENT = {
   ctaHref: "#booking",
 } as const;
 
-export type Service = {
-  id: string;
-  name: string;
-  priceUah: number;
-};
-
-export type Barber = {
-  id: string;
-  name: string;
-  initials: string;
-  role: string;
-  bio: string;
-  services: Service[];
-};
-
 export type NavItem = {
   label: string;
   href: string;
@@ -55,35 +40,6 @@ export const SLIDES: Slide[] = [
   { id: "s1", pattern: "diagonal" },
   { id: "s2", pattern: "dots" },
   { id: "s3", pattern: "grid" },
-];
-
-export const BARBERS: Barber[] = [
-  {
-    id: "oleksandr",
-    name: "Олександр Петренко",
-    initials: "ОП",
-    role: "Senior Barber",
-    bio: "8 років у ремеслі. Класичні стрижки, фейди, доглянута борода — як належить.",
-    services: [
-      { id: "classic-cut", name: "Класична стрижка", priceUah: 600 },
-      { id: "razor-shave", name: "Гоління небезпечною бритвою", priceUah: 400 },
-      { id: "beard-trim", name: "Стрижка бороди", priceUah: 350 },
-      { id: "combo", name: "Комбо (стрижка + борода)", priceUah: 850 },
-    ],
-  },
-  {
-    id: "mykyta",
-    name: "Микита Захарчук",
-    initials: "МЗ",
-    role: "Master Barber",
-    bio: "Сучасні фейди, текстурні укладки і дитячі стрижки — кожна деталь продумана.",
-    services: [
-      { id: "fade", name: "Стрижка машинкою (фейд)", priceUah: 550 },
-      { id: "styling", name: "Текстурна укладка", priceUah: 250 },
-      { id: "kids", name: "Дитяча стрижка", priceUah: 400 },
-      { id: "combo", name: "Комбо (стрижка + борода)", priceUah: 750 },
-    ],
-  },
 ];
 
 export const CONTACTS: ContactRow[] = [

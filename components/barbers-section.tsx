@@ -1,8 +1,12 @@
-import { BARBERS } from "@/lib/data";
+import { getBarbers } from "@/lib/barbers";
 import SectionHeading from "./section-heading";
 import BarberCard from "./barber-card";
 
-export default function BarbersSection() {
+export default async function BarbersSection() {
+  const barbers = await getBarbers();
+
+  if (barbers.length === 0) return null;
+
   return (
     <section
       id="barbers"
@@ -16,7 +20,7 @@ export default function BarbersSection() {
         />
 
         <div className="mt-16 md:mt-20 max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {BARBERS.map((barber) => (
+          {barbers.map((barber) => (
             <BarberCard key={barber.id} barber={barber} />
           ))}
         </div>
