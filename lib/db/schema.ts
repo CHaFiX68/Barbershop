@@ -106,3 +106,10 @@ export const servicePending = pgTable("service_pending", {
   orderIndex: integer("order_index").notNull().default(0),
   submittedAt: timestamp("submitted_at").notNull().defaultNow(),
 });
+
+export const contentBlock = pgTable("content_block", {
+  id: text("id").primaryKey(),
+  key: text("key").notNull().unique(),
+  value: text("value").notNull(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});

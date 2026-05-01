@@ -1,10 +1,20 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { NAV_ITEMS } from "@/lib/data";
 import HeaderAuth from "./header-auth";
+import EditableText from "./editable-text";
 
-export default function Header() {
+type NavItem = {
+  href: string;
+  label: string;
+  contentKey: string;
+};
+
+type Props = {
+  navItems: NavItem[];
+};
+
+export default function Header({ navItems }: Props) {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -35,13 +45,18 @@ export default function Header() {
         </a>
 
         <nav className="hidden md:flex items-center gap-8">
-          {NAV_ITEMS.map((item) => (
+          {navItems.map((item) => (
             <a
               key={item.href}
               href={item.href}
               className="nav-link text-sm tracking-wide"
             >
-              {item.label}
+              <EditableText
+                contentKey={item.contentKey}
+                initialValue={item.label}
+                as="span"
+                maxLength={30}
+              />
             </a>
           ))}
         </nav>
@@ -86,7 +101,7 @@ export default function Header() {
            </div>
           </div>
           <nav className="flex-1 flex flex-col items-center justify-center gap-8">
-            {NAV_ITEMS.map((item) => (
+            {navItems.map((item) => (
               <a
                 key={item.href}
                 href={item.href}
@@ -94,7 +109,12 @@ export default function Header() {
                 className="font-display text-3xl"
                 style={{ fontWeight: 600 }}
               >
-                {item.label}
+                <EditableText
+                  contentKey={item.contentKey}
+                  initialValue={item.label}
+                  as="span"
+                  maxLength={30}
+                />
               </a>
             ))}
             <div className="mt-4" onClick={close}>

@@ -1,5 +1,22 @@
-import { CONTACTS, SCHEDULE, SOCIALS } from "@/lib/data";
+import { getContentMap } from "@/lib/content";
+import { SOCIALS } from "@/lib/data";
+import EditableText from "./editable-text";
 import SectionHeading from "./section-heading";
+
+const CONTACTS_DEFAULTS = {
+  "contacts.title": "Контакти",
+  "contacts.subhead.contact": "Зв'язатись",
+  "contacts.subhead.hours": "Графік роботи",
+  "contacts.address": "вул. Хрещатик, 22, Київ",
+  "contacts.phone": "+38 (000) 000 00 00",
+  "contacts.email": "hello@barberco.ua",
+  "contacts.hours.weekdays.day": "Пн — Пт",
+  "contacts.hours.weekdays.time": "10:00 — 21:00",
+  "contacts.hours.sat.day": "Сб",
+  "contacts.hours.sat.time": "10:00 — 20:00",
+  "contacts.hours.sun.day": "Нд",
+  "contacts.hours.sun.time": "Вихідний",
+};
 
 function ContactRow({
   label,
@@ -26,7 +43,30 @@ function ContactRow({
   );
 }
 
-export default function ContactsSection() {
+export default async function ContactsSection() {
+  const c = await getContentMap(CONTACTS_DEFAULTS);
+
+  const phoneHref = `tel:+${c["contacts.phone"].replace(/\D/g, "")}`;
+  const emailHref = `mailto:${c["contacts.email"]}`;
+
+  const scheduleRows = [
+    {
+      dayKey: "contacts.hours.weekdays.day",
+      timeKey: "contacts.hours.weekdays.time",
+      closed: false,
+    },
+    {
+      dayKey: "contacts.hours.sat.day",
+      timeKey: "contacts.hours.sat.time",
+      closed: false,
+    },
+    {
+      dayKey: "contacts.hours.sun.day",
+      timeKey: "contacts.hours.sun.time",
+      closed: true,
+    },
+  ];
+
   return (
     <section
       id="contacts"
@@ -36,9 +76,11 @@ export default function ContactsSection() {
        <div className="max-w-6xl mx-auto">
         <SectionHeading
           eyebrow="Знайти нас"
-          title="Контакти"
+          title={c["contacts.title"]}
           align="left"
           number="03"
+          titleContentKey="contacts.title"
+          titleMaxLength={60}
         />
 
         <div className="mt-12 grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16">
@@ -47,20 +89,42 @@ export default function ContactsSection() {
               className="font-display"
               style={{ fontWeight: 600, fontSize: "20px" }}
             >
-              Зв&apos;язатись
+              <EditableText
+                contentKey="contacts.subhead.contact"
+                initialValue={c["contacts.subhead.contact"]}
+                as="span"
+                maxLength={40}
+              />
             </h3>
             <div className="mt-6">
-              {CONTACTS.map((c) => (
-                <ContactRow key={c.label} label={c.label}>
-                  {c.href ? (
-                    <a href={c.href} className="nav-link">
-                      {c.value}
-                    </a>
-                  ) : (
-                    c.value
-                  )}
-                </ContactRow>
-              ))}
+              <ContactRow label="Адреса">
+                <EditableText
+                  contentKey="contacts.address"
+                  initialValue={c["contacts.address"]}
+                  as="span"
+                  maxLength={120}
+                />
+              </ContactRow>
+              <ContactRow label="Телефон">
+                <a href={phoneHref} className="nav-link">
+                  <EditableText
+                    contentKey="contacts.phone"
+                    initialValue={c["contacts.phone"]}
+                    as="span"
+                    maxLength={50}
+                  />
+                </a>
+              </ContactRow>
+              <ContactRow label="Email">
+                <a href={emailHref} className="nav-link">
+                  <EditableText
+                    contentKey="contacts.email"
+                    initialValue={c["contacts.email"]}
+                    as="span"
+                    maxLength={80}
+                  />
+                </a>
+              </ContactRow>
               <ContactRow label="Соцмережі">
                 <span className="inline-flex items-center gap-3">
                   {SOCIALS.map((s, i) => (
@@ -84,26 +148,43 @@ export default function ContactsSection() {
               className="font-display mt-10"
               style={{ fontWeight: 600, fontSize: "20px" }}
             >
-              Графік роботи
+              <EditableText
+                contentKey="contacts.subhead.hours"
+                initialValue={c["contacts.subhead.hours"]}
+                as="span"
+                maxLength={40}
+              />
             </h3>
             <ul className="mt-6">
-              {SCHEDULE.map((row, i) => {
-                const isLast = i === SCHEDULE.length - 1;
+              {scheduleRows.map((row, i) => {
+                const isLast = i === scheduleRows.length - 1;
                 return (
                   <li
-                    key={row.day}
+                    key={row.dayKey}
                     className={`flex items-baseline justify-between gap-4 py-2 ${
                       isLast ? "" : "border-b border-[var(--color-line)]"
                     }`}
                   >
-                    <span style={{ fontSize: "13px" }}>{row.day}</span>
+                    <span style={{ fontSize: "13px" }}>
+                      <EditableText
+                        contentKey={row.dayKey}
+                        initialValue={c[row.dayKey]}
+                        as="span"
+                        maxLength={20}
+                      />
+                    </span>
                     <span
                       className={
                         row.closed ? "text-[var(--color-text-muted)]" : ""
                       }
                       style={{ fontSize: "13px" }}
                     >
-                      {row.day === "Нд" ? row.time.toLowerCase() : row.time}
+                      <EditableText
+                        contentKey={row.timeKey}
+                        initialValue={c[row.timeKey]}
+                        as="span"
+                        maxLength={40}
+                      />
                     </span>
                   </li>
                 );

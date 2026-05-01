@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { HERO_CONTENT, SLIDES, type Slide } from "@/lib/data";
+import EditableText from "./editable-text";
 
 const PATTERN_CLASS: Record<Slide["pattern"], string> = {
   diagonal: "pattern-diagonal",
@@ -11,7 +12,17 @@ const PATTERN_CLASS: Record<Slide["pattern"], string> = {
   stripes: "pattern-stripes",
 };
 
-export default function HeroSlider() {
+type Props = {
+  titleLine1: string;
+  titleLine2: string;
+  tagline: string;
+};
+
+export default function HeroSlider({
+  titleLine1,
+  titleLine2,
+  tagline,
+}: Props) {
   const [current, setCurrent] = useState(0);
   const total = SLIDES.length;
 
@@ -80,21 +91,39 @@ export default function HeroSlider() {
 
           <div className="absolute inset-0 z-20 flex flex-col items-start justify-center text-left text-white px-8 sm:px-12 md:px-16 lg:px-20 pointer-events-none">
             <h1
-              className="font-display max-w-2xl"
+              className="font-display max-w-2xl pointer-events-auto"
               style={{
                 fontWeight: 600,
                 fontSize: "clamp(34px, 6vw, 80px)",
                 lineHeight: 1.05,
               }}
             >
-              <span className="block">{HERO_CONTENT.titleLine1}</span>
-              <span className="block">{HERO_CONTENT.titleLine2}</span>
+              <EditableText
+                contentKey="hero.title.line1"
+                initialValue={titleLine1}
+                as="span"
+                className="block"
+                maxLength={60}
+              />
+              <EditableText
+                contentKey="hero.title.line2"
+                initialValue={titleLine2}
+                as="span"
+                className="block"
+                maxLength={60}
+              />
             </h1>
             <p
-              className="mt-6 max-w-md text-white/85"
+              className="mt-6 max-w-md text-white/85 pointer-events-auto"
               style={{ fontSize: "14px", lineHeight: 1.6 }}
             >
-              {HERO_CONTENT.tagline}
+              <EditableText
+                contentKey="hero.tagline"
+                initialValue={tagline}
+                as="span"
+                multiline
+                maxLength={200}
+              />
             </p>
             <a
               href={HERO_CONTENT.ctaHref}

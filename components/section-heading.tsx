@@ -1,8 +1,12 @@
+import EditableText from "./editable-text";
+
 type Props = {
   eyebrow: string;
   title: string;
   align?: "center" | "left";
   number?: string;
+  titleContentKey?: string;
+  titleMaxLength?: number;
 };
 
 export default function SectionHeading({
@@ -10,6 +14,8 @@ export default function SectionHeading({
   title,
   align = "center",
   number,
+  titleContentKey,
+  titleMaxLength,
 }: Props) {
   const alignClass =
     align === "center" ? "text-center items-center" : "text-left items-start";
@@ -37,7 +43,16 @@ export default function SectionHeading({
         className="font-display mt-4 leading-[1.1]"
         style={{ fontWeight: 600, fontSize: "clamp(34px, 5vw, 54px)" }}
       >
-        {title}
+        {titleContentKey ? (
+          <EditableText
+            contentKey={titleContentKey}
+            initialValue={title}
+            as="span"
+            maxLength={titleMaxLength ?? 120}
+          />
+        ) : (
+          title
+        )}
       </h2>
       <span
         className="block mt-6 h-px bg-[var(--color-text)]"
