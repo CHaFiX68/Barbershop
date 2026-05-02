@@ -1,3 +1,4 @@
+import crypto from "crypto";
 import { NextResponse } from "next/server";
 import { headers } from "next/headers";
 import { asc, eq } from "drizzle-orm";
@@ -10,6 +11,7 @@ import {
   servicePending,
   user,
 } from "@/lib/db/schema";
+import { normalizeWeekSchedule } from "@/lib/schedule";
 
 export const dynamic = "force-dynamic";
 
@@ -61,6 +63,7 @@ export async function GET() {
             bio: pendingProfile.bio ?? "",
             landingImage: pendingProfile.landingImage,
             isActive: pendingProfile.isActive,
+            schedule: normalizeWeekSchedule(pendingProfile.schedule),
           },
           services: pendingServices.map((s) => ({
             id: s.id,
@@ -77,8 +80,97 @@ export async function GET() {
       .select()
       .from(barberProfile)
       .where(eq(barberProfile.userId, session.user.id));
+
     if (!profile) {
-      return NextResponse.json({ error: "Profile not found" }, { status: 404 });
+      if (role === "barber") {
+        console.log(
+          "[ME-GET] no profile found for barber, auto-creating empty pending"
+        );
+        const newId = crypto.randomUUID();
+        try {
+          await db.insert(barberProfilePending).values({
+            id: newId,
+            userId: session.user.id,
+            bio: null,
+            landingImage: null,
+            isActive: false,
+            schedule: null,
+          });
+          console.log("[ME-GET] auto-created profile id=", newId);
+        } catch (err) {
+          console.log(
+            "[ME-GET] auto-create insert failed (likely race), will re-select:",
+            err
+          );
+        }
+        const [refetched] = await db
+          .select()
+          .from(barberProfilePending)
+          .where(eq(barberProfilePending.userId, session.user.id));
+        if (!refetched) {
+          return NextResponse.json(
+            { error: "Profile not found" },
+            { status: 404 }
+          );
+        }
+        console.log("[ME-GET] returning AUTO-CREATED data");
+        return NextResponse.json({
+          userName: currentUser.name,
+          initials: computeInitials(currentUser.name),
+          profile: {
+            bio: refetched.bio ?? "",
+            landingImage: refetched.landingImage,
+            isActive: refetched.isActive,
+            schedule: normalizeWeekSchedule(refetched.schedule),
+          },
+          services: [],
+          hasPendingChanges: false,
+        });
+      }
+
+      console.log(
+        "[ME-GET] no profile found for admin, auto-creating empty approved"
+      );
+      const newId = crypto.randomUUID();
+      try {
+        await db.insert(barberProfile).values({
+          id: newId,
+          userId: session.user.id,
+          bio: null,
+          landingImage: null,
+          isActive: false,
+          schedule: null,
+        });
+        console.log("[ME-GET] auto-created profile id=", newId);
+      } catch (err) {
+        console.log(
+          "[ME-GET] auto-create insert failed (likely race), will re-select:",
+          err
+        );
+      }
+      const [refetched] = await db
+        .select()
+        .from(barberProfile)
+        .where(eq(barberProfile.userId, session.user.id));
+      if (!refetched) {
+        return NextResponse.json(
+          { error: "Profile not found" },
+          { status: 404 }
+        );
+      }
+      console.log("[ME-GET] returning AUTO-CREATED data");
+      return NextResponse.json({
+        userName: currentUser.name,
+        initials: computeInitials(currentUser.name),
+        profile: {
+          bio: refetched.bio ?? "",
+          landingImage: refetched.landingImage,
+          isActive: refetched.isActive,
+          schedule: normalizeWeekSchedule(refetched.schedule),
+        },
+        services: [],
+        hasPendingChanges: false,
+      });
     }
 
     const services = await db
@@ -94,6 +186,7 @@ export async function GET() {
         bio: profile.bio ?? "",
         landingImage: profile.landingImage,
         isActive: profile.isActive,
+        schedule: normalizeWeekSchedule(profile.schedule),
       },
       services: services.map((s) => ({
         id: s.id,

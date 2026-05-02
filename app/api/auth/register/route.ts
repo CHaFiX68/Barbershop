@@ -5,8 +5,9 @@ import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { user, verification } from "@/lib/db/schema";
-import { generateOtp, saveOtp } from "@/lib/otp";
-import { sendVerificationEmail } from "@/lib/email";
+// TODO: повернути коли налаштовано власний Resend домен
+// import { generateOtp, saveOtp } from "@/lib/otp";
+// import { sendVerificationEmail } from "@/lib/email";
 
 export const dynamic = "force-dynamic";
 
@@ -62,24 +63,26 @@ export async function POST(request: Request) {
       );
     }
 
-    try {
-      const code = generateOtp();
-      await saveOtp(email, code);
-      await sendVerificationEmail(email, code);
-    } catch (err) {
-      console.error("send-otp during register error:", err);
-      return NextResponse.json(
-        {
-          error: {
-            message:
-              "Акаунт створено, але не вдалось надіслати код. Спробуй ще раз",
-          },
-          partialSuccess: true,
-        },
-        { status: 500 }
-      );
-    }
+    // TODO: повернути коли налаштовано власний Resend домен
+    // try {
+    //   const code = generateOtp();
+    //   await saveOtp(email, code);
+    //   await sendVerificationEmail(email, code);
+    // } catch (err) {
+    //   console.error("send-otp during register error:", err);
+    //   return NextResponse.json(
+    //     {
+    //       error: {
+    //         message:
+    //           "Акаунт створено, але не вдалось надіслати код. Спробуй ще раз",
+    //       },
+    //       partialSuccess: true,
+    //     },
+    //     { status: 500 }
+    //   );
+    // }
 
+    // Без OTP — юзер vже verified завдяки requireEmailVerification:false на auth-layer
     return NextResponse.json({ ok: true });
   } catch (err) {
     console.error("POST /api/auth/register error:", err);

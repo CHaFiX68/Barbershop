@@ -1,11 +1,30 @@
 import {
   boolean,
   integer,
+  jsonb,
   pgEnum,
   pgTable,
   text,
   timestamp,
 } from "drizzle-orm/pg-core";
+
+export type DaySchedule = {
+  enabled: boolean;
+  startMinutes: number;
+  endMinutes: number;
+  breakStartMinutes: number | null;
+  breakEndMinutes: number | null;
+};
+
+export type WeekSchedule = {
+  mon: DaySchedule;
+  tue: DaySchedule;
+  wed: DaySchedule;
+  thu: DaySchedule;
+  fri: DaySchedule;
+  sat: DaySchedule;
+  sun: DaySchedule;
+};
 
 export const userRole = pgEnum("user_role", ["user", "barber", "admin"]);
 
@@ -69,6 +88,7 @@ export const barberProfile = pgTable("barber_profile", {
   bio: text("bio"),
   landingImage: text("landing_image"),
   isActive: boolean("is_active").notNull().default(false),
+  schedule: jsonb("schedule").$type<WeekSchedule>(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
@@ -93,6 +113,7 @@ export const barberProfilePending = pgTable("barber_profile_pending", {
   bio: text("bio"),
   landingImage: text("landing_image"),
   isActive: boolean("is_active").notNull().default(false),
+  schedule: jsonb("schedule").$type<WeekSchedule>(),
   submittedAt: timestamp("submitted_at").notNull().defaultNow(),
 });
 
@@ -112,4 +133,11 @@ export const contentBlock = pgTable("content_block", {
   key: text("key").notNull().unique(),
   value: text("value").notNull(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const heroSlide = pgTable("hero_slide", {
+  id: text("id").primaryKey(),
+  imageUrl: text("image_url").notNull(),
+  orderIndex: integer("order_index").notNull().default(0),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
 });

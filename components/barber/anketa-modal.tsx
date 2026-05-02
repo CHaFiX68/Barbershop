@@ -2,7 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import EditableBarberCard from "./editable-barber-card";
+import type { WeekSchedule } from "@/lib/db/schema";
+import { normalizeWeekSchedule } from "@/lib/schedule";
+import AnketaEditor from "./anketa-editor";
 
 type AnketaData = {
   userName: string;
@@ -11,6 +13,7 @@ type AnketaData = {
     bio: string | null;
     landingImage: string | null;
     isActive: boolean;
+    schedule: WeekSchedule;
   };
   services: { id: string; name: string; price: string }[];
   hasPendingChanges: boolean;
@@ -55,7 +58,13 @@ export default function AnketaModal({ isOpen, onClose }: Props) {
       .then((json: AnketaData) => {
         if (cancelled) return;
         console.log("[ANKETA-MODAL] received data:", json);
-        setData(json);
+        setData({
+          ...json,
+          profile: {
+            ...json.profile,
+            schedule: normalizeWeekSchedule(json.profile.schedule),
+          },
+        });
       })
       .catch(() => {
         if (cancelled) return;
@@ -117,15 +126,8 @@ export default function AnketaModal({ isOpen, onClose }: Props) {
         aria-modal="true"
         aria-label="Анкета"
         data-anketa-modal
+        className="w-full max-w-[calc(100vw-32px)] md:w-[640px] md:max-w-[calc(100vw-32px)] max-h-[90vh] bg-white border border-[var(--color-line)] rounded-[16px] shadow-[0_24px_48px_rgba(0,0,0,0.18)] flex flex-col overflow-hidden pr-2"
         style={{
-          width: "640px",
-          maxWidth: "calc(100vw - 32px)",
-          maxHeight: "90vh",
-          overflowY: "auto",
-          background: "#ffffff",
-          border: "1px solid var(--color-line)",
-          borderRadius: "16px",
-          boxShadow: "0 24px 48px rgba(0,0,0,0.18)",
           pointerEvents: "auto",
           opacity: animateIn ? 1 : 0,
           transform: animateIn ? "translateY(0)" : "translateY(8px)",
@@ -133,6 +135,14 @@ export default function AnketaModal({ isOpen, onClose }: Props) {
             "opacity 200ms cubic-bezier(0.22, 1, 0.36, 1), transform 200ms cubic-bezier(0.22, 1, 0.36, 1)",
         }}
       >
+        <div
+          className="custom-scrollbar"
+          style={{
+            flex: "1 1 auto",
+            overflowY: "auto",
+            minHeight: 0,
+          }}
+        >
         <div className="p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center">
@@ -190,13 +200,14 @@ export default function AnketaModal({ isOpen, onClose }: Props) {
           )}
 
           {data && !error && (
-            <EditableBarberCard
+            <AnketaEditor
               userName={data.userName}
               initials={data.initials}
               initialBio={data.profile.bio ?? ""}
               initialLandingImage={data.profile.landingImage}
               initialIsActive={data.profile.isActive}
               initialServices={data.services}
+              initialSchedule={data.profile.schedule}
               initialHasPending={data.hasPendingChanges}
               onPendingChange={(v) =>
                 setData((prev) =>
@@ -205,6 +216,7 @@ export default function AnketaModal({ isOpen, onClose }: Props) {
               }
             />
           )}
+        </div>
         </div>
       </div>
     </div>,

@@ -1,10 +1,14 @@
+import crypto from "crypto";
 import { NextResponse } from "next/server";
 import { headers } from "next/headers";
+import { revalidatePath } from "next/cache";
 import { eq } from "drizzle-orm";
 import { put } from "@vercel/blob";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { barberProfile, user } from "@/lib/db/schema";
+import { barberProfile, barberProfilePending, user } from "@/lib/db/schema";
+
+export const dynamic = "force-dynamic";
 
 const MAX_SIZE = 5 * 1024 * 1024;
 
@@ -19,10 +23,8 @@ export async function POST(request: Request) {
       .select()
       .from(user)
       .where(eq(user.id, session.user.id));
-    if (
-      !currentUser ||
-      (currentUser.role !== "barber" && currentUser.role !== "admin")
-    ) {
+    const role = currentUser?.role;
+    if (!currentUser || (role !== "barber" && role !== "admin")) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
@@ -50,10 +52,38 @@ export async function POST(request: Request) {
       contentType: file.type,
     });
 
-    await db
-      .update(barberProfile)
-      .set({ landingImage: blob.url, updatedAt: new Date() })
-      .where(eq(barberProfile.userId, session.user.id));
+    if (role === "admin") {
+      await db
+        .insert(barberProfile)
+        .values({
+          id: crypto.randomUUID(),
+          userId: session.user.id,
+          bio: null,
+          landingImage: blob.url,
+          isActive: false,
+          schedule: null,
+        })
+        .onConflictDoUpdate({
+          target: barberProfile.userId,
+          set: { landingImage: blob.url, updatedAt: new Date() },
+        });
+      revalidatePath("/");
+    } else {
+      await db
+        .insert(barberProfilePending)
+        .values({
+          id: crypto.randomUUID(),
+          userId: session.user.id,
+          bio: null,
+          landingImage: blob.url,
+          isActive: false,
+          schedule: null,
+        })
+        .onConflictDoUpdate({
+          target: barberProfilePending.userId,
+          set: { landingImage: blob.url, submittedAt: new Date() },
+        });
+    }
 
     return NextResponse.json({ ok: true, url: blob.url });
   } catch (err) {

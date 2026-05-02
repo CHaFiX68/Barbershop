@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { headers } from "next/headers";
+import { revalidatePath } from "next/cache";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
@@ -66,6 +67,8 @@ export async function POST(request: Request) {
       .update(barberProfile)
       .set({ isActive: false, updatedAt: new Date() })
       .where(eq(barberProfile.userId, target.id));
+
+    revalidatePath("/");
 
     return NextResponse.json({ ok: true });
   } catch (err) {

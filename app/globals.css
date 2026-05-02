@@ -149,31 +149,64 @@ body {
   );
 }
 
-/* Custom scrollbar — Concrete Minimalism palette */
-html {
+/* Custom scrollbar — Concrete Minimalism palette (desktop only) */
+@media (min-width: 1024px) {
+  html {
+    scrollbar-width: thin;
+    scrollbar-color: #c9b89a #edeae5;
+  }
+
+  html::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  html::-webkit-scrollbar-track {
+    background: #edeae5;
+  }
+
+  html::-webkit-scrollbar-thumb {
+    background: #c9b89a;
+    border-radius: 5px;
+    border: 2px solid #edeae5;
+  }
+
+  html::-webkit-scrollbar-thumb:hover {
+    background: #b8a587;
+  }
+
+  html::-webkit-scrollbar-corner {
+    background: #edeae5;
+  }
+}
+
+/* Scoped scrollbar for modal/panel containers — thinner, transparent track */
+.custom-scrollbar {
   scrollbar-width: thin;
-  scrollbar-color: #c9b89a #edeae5;
+  scrollbar-color: #c9b89a transparent;
 }
 
-::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
 }
 
-::-webkit-scrollbar-track {
-  background: #edeae5;
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
 }
 
-::-webkit-scrollbar-thumb {
+.custom-scrollbar::-webkit-scrollbar-thumb {
   background: #c9b89a;
-  border-radius: 5px;
-  border: 2px solid #edeae5;
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: #b8a587;
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #b5a487;
+  background-clip: padding-box;
+  border: 2px solid transparent;
 }
 
-::-webkit-scrollbar-corner {
-  background: #edeae5;
+.custom-scrollbar::-webkit-scrollbar-button {
+  display: none;
 }

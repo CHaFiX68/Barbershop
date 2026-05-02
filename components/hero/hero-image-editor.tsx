@@ -2,17 +2,16 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { useRouter } from "next/navigation";
 import Cropper, { type Area } from "react-easy-crop";
 import { getCroppedImg, type CropArea } from "@/lib/crop-utils";
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
-  onSuccess: (url: string) => void;
+  onSuccess: () => void;
 }
 
-export default function LandingImageEditorModal({
+export default function HeroImageEditor({
   isOpen,
   onClose,
   onSuccess,
@@ -26,9 +25,9 @@ export default function LandingImageEditorModal({
   );
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [warning, setWarning] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const router = useRouter();
 
   useEffect(() => {
     setMounted(true);
@@ -43,12 +42,19 @@ export default function LandingImageEditorModal({
     };
   }, [isOpen]);
 
-  const onCropComplete = useCallback(
-    (_: Area, areaPixels: Area) => {
-      setCroppedAreaPixels(areaPixels);
-    },
-    []
-  );
+  useEffect(() => {
+    if (!isOpen) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") handleClose();
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]);
+
+  const onCropComplete = useCallback((_: Area, areaPixels: Area) => {
+    setCroppedAreaPixels(areaPixels);
+  }, []);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -62,8 +68,22 @@ export default function LandingImageEditorModal({
       return;
     }
     setError(null);
+    setWarning(null);
     const reader = new FileReader();
-    reader.onload = () => setImageSrc(reader.result as string);
+    reader.onload = () => {
+      const src = reader.result as string;
+      const probe = new window.Image();
+      probe.onload = () => {
+        if (probe.naturalWidth < 2000) {
+          setWarning(
+            `Низька роздільна здатність (${probe.naturalWidth}×${probe.naturalHeight}). Рекомендовано мін. 2400×1200 для чіткого відображення на retina-екранах.`
+          );
+        }
+        setImageSrc(src);
+      };
+      probe.onerror = () => setImageSrc(src);
+      probe.src = src;
+    };
     reader.readAsDataURL(file);
   };
 
@@ -73,6 +93,7 @@ export default function LandingImageEditorModal({
     setZoom(1);
     setRotation(0);
     setCroppedAreaPixels(null);
+    setWarning(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
@@ -82,31 +103,50 @@ export default function LandingImageEditorModal({
     onClose();
   };
 
-  const handleApply = async () => {
+  const handleSave = async () => {
     if (!imageSrc || !croppedAreaPixels) return;
     setIsUploading(true);
     setError(null);
     try {
-      const blob = await getCroppedImg(imageSrc, croppedAreaPixels, rotation);
+      const blob = await getCroppedImg(
+        imageSrc,
+        croppedAreaPixels,
+        rotation,
+        0.95,
+        "image/webp"
+      );
       const formData = new FormData();
-      formData.append("file", blob, "landing.jpg");
-      const res = await fetch("/api/barber/landing-image", {
+      formData.append("file", blob, "hero.webp");
+      const uploadRes = await fetch("/api/admin/hero/upload", {
         method: "POST",
         body: formData,
       });
-      if (!res.ok) {
-        const data = (await res.json().catch(() => ({}))) as {
+      if (!uploadRes.ok) {
+        const data = (await uploadRes.json().catch(() => ({}))) as {
           error?: string;
         };
         throw new Error(data.error ?? "Upload failed");
       }
-      const data = (await res.json()) as { url: string };
-      onSuccess(data.url);
-      router.refresh();
-      handleClose();
+      const uploadData = (await uploadRes.json()) as { url: string };
+
+      const slidesRes = await fetch("/api/admin/hero/slides", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ imageUrl: uploadData.url }),
+      });
+      if (!slidesRes.ok) {
+        const data = (await slidesRes.json().catch(() => ({}))) as {
+          error?: string;
+        };
+        throw new Error(data.error ?? "Save failed");
+      }
+
+      handleReset();
+      setError(null);
+      onSuccess();
     } catch (err) {
       console.error(err);
-      setError("Не вдалось завантажити. Спробуй ще раз.");
+      setError("Не вдалось зберегти. Спробуй ще раз.");
     } finally {
       setIsUploading(false);
     }
@@ -118,17 +158,16 @@ export default function LandingImageEditorModal({
     <div
       role="dialog"
       aria-modal="true"
-      aria-label="Редагувати фото на лендингу"
-      data-anketa-modal
+      aria-label="Додати фото у hero"
       className="fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) handleClose();
       }}
     >
-      <div className="bg-white rounded-[16px] p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
+      <div className="bg-white rounded-[16px] p-6 w-full max-w-[880px] max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-4">
           <h2 className="font-display text-[18px] font-medium">
-            Фото на лендингу
+            Фото у hero-слайдері
           </h2>
           <button
             type="button"
@@ -143,7 +182,7 @@ export default function LandingImageEditorModal({
         {!imageSrc ? (
           <div className="border-2 border-dashed border-[var(--color-line)] rounded-[12px] p-8 text-center">
             <p className="text-[13px] text-[var(--color-text-muted)] mb-4">
-              Обери фото зі свого пристрою
+              Обери широкоформатне фото (рекомендовано 16:9, мін. 1600×900)
             </p>
             <button
               type="button"
@@ -155,7 +194,7 @@ export default function LandingImageEditorModal({
             <input
               ref={fileInputRef}
               type="file"
-              accept="image/*"
+              accept="image/jpeg,image/png,image/webp"
               onChange={handleFileChange}
               className="hidden"
             />
@@ -165,13 +204,16 @@ export default function LandingImageEditorModal({
           </div>
         ) : (
           <>
-            <div className="relative w-full h-[360px] bg-[#1C1B19] rounded-[12px] overflow-hidden mb-4">
+            <div
+              className="relative w-full bg-[#1C1B19] rounded-[12px] overflow-hidden mb-4"
+              style={{ height: "420px" }}
+            >
               <Cropper
                 image={imageSrc}
                 crop={crop}
                 zoom={zoom}
                 rotation={rotation}
-                aspect={3 / 4}
+                aspect={16 / 8}
                 cropShape="rect"
                 showGrid={false}
                 onCropChange={setCrop}
@@ -209,6 +251,12 @@ export default function LandingImageEditorModal({
               </button>
             </div>
 
+            {warning && (
+              <p className="text-[12px] mb-2 text-[#8A6D2A] bg-[#F5E6C8] px-3 py-2 rounded-[6px]">
+                ⚠ {warning}
+              </p>
+            )}
+
             {error && (
               <p className="text-red-600 text-[12px] mb-2">{error}</p>
             )}
@@ -233,11 +281,11 @@ export default function LandingImageEditorModal({
                 </button>
                 <button
                   type="button"
-                  onClick={handleApply}
+                  onClick={handleSave}
                   disabled={isUploading || !imageSrc || !croppedAreaPixels}
                   className="px-5 py-2 bg-[var(--color-text)] text-[var(--color-bg)] rounded-[6px] text-[13px] hover:opacity-90 disabled:opacity-50"
                 >
-                  {isUploading ? "Завантаження..." : "Застосувати"}
+                  {isUploading ? "Завантажую..." : "Зберегти"}
                 </button>
               </div>
             </div>

@@ -3,6 +3,9 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import Image from "next/image";
+import type { WeekSchedule } from "@/lib/db/schema";
+import { normalizeWeekSchedule } from "@/lib/schedule";
+import BarberPreview from "./barber-preview";
 
 type Barber = {
   userId: string;
@@ -13,6 +16,8 @@ type Barber = {
   landingImage: string | null;
   isActive: boolean;
   hasPending: boolean;
+  schedule: WeekSchedule;
+  services: { name: string; price: string }[];
   createdAt: string;
 };
 
@@ -24,6 +29,8 @@ type Props = {
 type BarberRowProps = {
   barber: Barber;
   busy: boolean;
+  isExpanded: boolean;
+  onToggle: () => void;
   onApprove: () => void;
   onReject: () => void;
   onDemote: () => void;
@@ -32,100 +39,142 @@ type BarberRowProps = {
 function BarberRow({
   barber,
   busy,
+  isExpanded,
+  onToggle,
   onApprove,
   onReject,
   onDemote,
 }: BarberRowProps) {
   return (
     <div
-      className="border border-[var(--color-line)] rounded-[12px] p-4 flex items-center gap-4"
+      className="border border-[var(--color-line)] rounded-[12px] overflow-hidden"
       style={{ background: "white" }}
     >
-      <div className="flex-shrink-0">
-        {barber.avatar ? (
-          <Image
-            src={barber.avatar}
-            alt={barber.name}
-            width={48}
-            height={48}
-            className="rounded-[8px] object-cover"
-            style={{ width: 48, height: 48 }}
-          />
-        ) : (
-          <div
-            className="w-12 h-12 rounded-[8px] bg-[#F5F0E6] flex items-center justify-center font-display italic"
-            style={{ color: "#C9B89A", fontSize: "20px" }}
-          >
-            {barber.name.charAt(0).toUpperCase()}
+      <div className="flex items-center gap-4 p-3">
+        <div className="flex-shrink-0">
+          {barber.avatar ? (
+            <Image
+              src={barber.avatar}
+              alt={barber.name}
+              width={48}
+              height={48}
+              className="rounded-[8px] object-cover"
+              style={{ width: 48, height: 48 }}
+            />
+          ) : (
+            <div
+              className="w-12 h-12 rounded-[8px] bg-[#F5F0E6] flex items-center justify-center font-display italic"
+              style={{ color: "#C9B89A", fontSize: "20px" }}
+            >
+              {barber.name.charAt(0).toUpperCase()}
+            </div>
+          )}
+        </div>
+
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="font-display text-[15px] font-medium truncate">
+              {barber.name}
+            </span>
+            {barber.hasPending && (
+              <span
+                className="inline-flex items-center px-2 py-0.5 text-[10px] uppercase rounded-[4px]"
+                style={{
+                  background: "#F5E6C8",
+                  color: "#8A6D2A",
+                  letterSpacing: "0.15em",
+                }}
+              >
+                На розгляді
+              </span>
+            )}
+            {!barber.isActive && (
+              <span
+                className="inline-flex items-center px-2 py-0.5 text-[10px] uppercase rounded-[4px]"
+                style={{
+                  background: "#EAEAEA",
+                  color: "#7A736A",
+                  letterSpacing: "0.15em",
+                }}
+              >
+                Неактивний
+              </span>
+            )}
           </div>
-        )}
+          <div className="text-[12px] text-[var(--color-text-muted)] truncate">
+            {barber.email}
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <button
+            type="button"
+            onClick={onToggle}
+            aria-label={isExpanded ? "Згорнути анкету" : "Розгорнути анкету"}
+            aria-expanded={isExpanded}
+            className="w-8 h-8 flex items-center justify-center rounded-[8px] hover:bg-[#F5F0E6] transition-colors"
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 14 14"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              className={`transition-transform duration-150 ${
+                isExpanded ? "rotate-180" : ""
+              }`}
+            >
+              <path
+                d="M3 5.5l4 4 4-4"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
+          <button
+            type="button"
+            onClick={onDemote}
+            disabled={busy}
+            className="px-3 py-1.5 rounded-[8px] text-[12px] text-[#A03030] hover:bg-[rgba(160,48,48,0.06)] transition-colors disabled:opacity-50"
+          >
+            Видалити
+          </button>
+        </div>
       </div>
 
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 mb-1">
-          <span className="font-display text-[15px] font-medium truncate">
-            {barber.name}
-          </span>
+      {isExpanded && (
+        <div className="border-t border-[var(--color-line)] bg-[#F9F6F1] p-4">
+          <BarberPreview
+            name={barber.name}
+            bio={barber.bio}
+            landingImage={barber.landingImage}
+            schedule={barber.schedule}
+            services={barber.services}
+          />
+
           {barber.hasPending && (
-            <span
-              className="inline-flex items-center px-2 py-0.5 text-[10px] uppercase rounded-[4px]"
-              style={{
-                background: "#F5E6C8",
-                color: "#8A6D2A",
-                letterSpacing: "0.15em",
-              }}
-            >
-              На розгляді
-            </span>
-          )}
-          {!barber.isActive && (
-            <span
-              className="inline-flex items-center px-2 py-0.5 text-[10px] uppercase rounded-[4px]"
-              style={{
-                background: "#EAEAEA",
-                color: "#7A736A",
-                letterSpacing: "0.15em",
-              }}
-            >
-              Неактивний
-            </span>
+            <div className="flex gap-2 mt-4 justify-end">
+              <button
+                type="button"
+                onClick={onReject}
+                disabled={busy}
+                className="px-4 py-2 rounded-[8px] text-[12px] border border-[var(--color-line)] bg-white hover:bg-[#F5F0E6] transition-colors disabled:opacity-50"
+              >
+                Відхилити
+              </button>
+              <button
+                type="button"
+                onClick={onApprove}
+                disabled={busy}
+                className="px-4 py-2 rounded-[8px] text-[12px] bg-green-700 text-white hover:bg-green-800 transition-colors disabled:opacity-50"
+              >
+                Затвердити
+              </button>
+            </div>
           )}
         </div>
-        <div className="text-[12px] text-[var(--color-text-muted)] truncate">
-          {barber.email}
-        </div>
-      </div>
-
-      <div className="flex items-center gap-2 flex-shrink-0">
-        {barber.hasPending && (
-          <>
-            <button
-              type="button"
-              onClick={onApprove}
-              disabled={busy}
-              className="px-3 py-1.5 rounded-[8px] text-[12px] bg-green-700 text-white hover:bg-green-800 transition-colors disabled:opacity-50"
-            >
-              Затвердити
-            </button>
-            <button
-              type="button"
-              onClick={onReject}
-              disabled={busy}
-              className="px-3 py-1.5 rounded-[8px] text-[12px] border border-[var(--color-line)] hover:bg-[#F5F0E6] transition-colors disabled:opacity-50"
-            >
-              Відхилити
-            </button>
-          </>
-        )}
-        <button
-          type="button"
-          onClick={onDemote}
-          disabled={busy}
-          className="px-3 py-1.5 rounded-[8px] text-[12px] text-[#A03030] hover:bg-[rgba(160,48,48,0.06)] transition-colors disabled:opacity-50"
-        >
-          Видалити
-        </button>
-      </div>
+      )}
     </div>
   );
 }
@@ -141,6 +190,7 @@ export default function ManagementModal({ isOpen, onClose }: Props) {
   const [promoteError, setPromoteError] = useState<string | null>(null);
   const [promoteSuccess, setPromoteSuccess] = useState<string | null>(null);
   const [actionBusyUserId, setActionBusyUserId] = useState<string | null>(null);
+  const [expandedUserId, setExpandedUserId] = useState<string | null>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -152,8 +202,13 @@ export default function ManagementModal({ isOpen, onClose }: Props) {
     try {
       const res = await fetch("/api/admin/barbers", { cache: "no-store" });
       if (!res.ok) throw new Error("Failed");
-      const json = await res.json();
-      setBarbers(json.barbers);
+      const json = (await res.json()) as { barbers: Barber[] };
+      setBarbers(
+        json.barbers.map((b) => ({
+          ...b,
+          schedule: normalizeWeekSchedule(b.schedule),
+        }))
+      );
     } catch {
       setError("Не вдалося завантажити список барберів");
     } finally {
@@ -167,6 +222,7 @@ export default function ManagementModal({ isOpen, onClose }: Props) {
       setPromoteEmail("");
       setPromoteError(null);
       setPromoteSuccess(null);
+      setExpandedUserId(null);
       return;
     }
     fetchBarbers();
@@ -269,21 +325,13 @@ export default function ManagementModal({ isOpen, onClose }: Props) {
         aria-modal="true"
         aria-label="Менеджмент"
         data-management-modal
+        className="w-full max-w-[calc(100vw-32px)] md:w-[960px] md:max-w-[calc(100vw-32px)] max-h-[90vh] overflow-y-auto bg-white border border-[var(--color-line)] rounded-[16px] shadow-[0_24px_48px_rgba(0,0,0,0.18)] p-4 md:p-6"
         style={{
-          width: "960px",
-          maxWidth: "calc(100vw - 32px)",
-          maxHeight: "90vh",
-          overflowY: "auto",
-          background: "white",
-          border: "1px solid var(--color-line)",
-          borderRadius: "16px",
-          boxShadow: "0 24px 48px rgba(0,0,0,0.18)",
           pointerEvents: "auto",
           opacity: animateIn ? 1 : 0,
           transform: animateIn ? "translateY(0)" : "translateY(8px)",
           transition:
             "opacity 200ms cubic-bezier(0.22, 1, 0.36, 1), transform 200ms cubic-bezier(0.22, 1, 0.36, 1)",
-          padding: "24px",
         }}
       >
         <div className="flex items-center justify-between mb-6">
@@ -384,6 +432,12 @@ export default function ManagementModal({ isOpen, onClose }: Props) {
                   key={b.userId}
                   barber={b}
                   busy={actionBusyUserId === b.userId}
+                  isExpanded={expandedUserId === b.userId}
+                  onToggle={() =>
+                    setExpandedUserId((prev) =>
+                      prev === b.userId ? null : b.userId
+                    )
+                  }
                   onApprove={() => handleAction("approve", b.userId)}
                   onReject={() => handleAction("reject", b.userId)}
                   onDemote={() => {

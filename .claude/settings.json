@@ -17,7 +17,11 @@
       "Bash(pnpm build *)",
       "Bash(grep -n '$context\\\\|\\\\$context' node_modules/better-auth/dist/auth.d.mts)",
       "Bash(grep -rn '$context' 'node_modules/better-auth/dist/*.mjs' 'node_modules/better-auth/dist/*.d.mts')",
-      "Bash(pnpm tsx *)"
+      "Bash(pnpm tsx *)",
+      "Bash(pnpm db:push)",
+      "Bash(git --no-pager diff components/barber-public-card.tsx)",
+      "Bash(git --no-pager diff components/barber-public-card.tsx components/barber-card.tsx)",
+      "Bash(git --no-pager diff components/barber/editable-barber-card.tsx)"
     ],
     "additionalDirectories": [
       "C:\\Projects\\Barbershop"

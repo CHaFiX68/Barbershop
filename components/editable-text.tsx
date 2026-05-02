@@ -21,12 +21,17 @@ export default function EditableText({
   maxLength,
 }: Props) {
   const { data: session } = useSession();
+  const [mounted, setMounted] = useState(false);
   const [value, setValue] = useState(initialValue);
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [draft, setDraft] = useState(initialValue);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const inputRef = useRef<HTMLInputElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
@@ -50,7 +55,7 @@ export default function EditableText({
     }
   }, [editing, multiline]);
 
-  const isAdmin = session?.user?.role === "admin";
+  const isAdmin = mounted && session?.user?.role === "admin";
 
   if (!isAdmin) {
     const Tag = as ?? "span";
@@ -59,10 +64,8 @@ export default function EditableText({
 
   const handleSave = async () => {
     if (saving) return;
-    const trimmed = draft.trim();
-    if (trimmed === "" || trimmed === value) {
+    if (draft === value) {
       setEditing(false);
-      setDraft(value);
       return;
     }
     setSaving(true);
@@ -177,7 +180,11 @@ export default function EditableText({
       }}
       title="Клікни щоб редагувати"
     >
-      {value}
+      {value === "" ? (
+        <span style={{ opacity: 0.4, fontStyle: "italic" }}>порожньо</span>
+      ) : (
+        value
+      )}
       {saving && <span className="ml-1 text-[10px] opacity-50">⟳</span>}
       {showSuccess && (
         <span className="ml-1 text-[10px] text-green-700">✓</span>

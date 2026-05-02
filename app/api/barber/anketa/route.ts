@@ -1,6 +1,7 @@
 import crypto from "crypto";
 import { NextResponse } from "next/server";
 import { headers } from "next/headers";
+import { revalidatePath } from "next/cache";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
@@ -15,19 +16,98 @@ import {
 
 export const dynamic = "force-dynamic";
 
-const submitSchema = z.object({
-  bio: z.string().max(60).nullable(),
-  landingImage: z.string().url().nullable(),
-  isActive: z.boolean(),
-  services: z
-    .array(
-      z.object({
-        name: z.string().min(1).max(80),
-        price: z.string().min(1).max(20),
-      })
-    )
-    .max(6),
+const daySchema = z.object({
+  enabled: z.boolean(),
+  startMinutes: z.number().int().min(0).max(1440).multipleOf(15),
+  endMinutes: z.number().int().min(0).max(1440).multipleOf(15),
+  breakStartMinutes: z
+    .number()
+    .int()
+    .min(0)
+    .max(1440)
+    .multipleOf(15)
+    .nullable(),
+  breakEndMinutes: z
+    .number()
+    .int()
+    .min(0)
+    .max(1440)
+    .multipleOf(15)
+    .nullable(),
 });
+
+const scheduleSchema = z.object({
+  mon: daySchema,
+  tue: daySchema,
+  wed: daySchema,
+  thu: daySchema,
+  fri: daySchema,
+  sat: daySchema,
+  sun: daySchema,
+});
+
+const submitSchema = z
+  .object({
+    bio: z.string().max(60).nullable(),
+    landingImage: z.string().url().nullable(),
+    isActive: z.boolean(),
+    schedule: scheduleSchema,
+    services: z
+      .array(
+        z.object({
+          name: z.string().min(1).max(80),
+          price: z.string().min(1).max(20),
+        })
+      )
+      .max(7),
+  })
+  .superRefine((data, ctx) => {
+    const days = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"] as const;
+    for (const dk of days) {
+      const d = data.schedule[dk];
+      if (!d.enabled) continue;
+      if (d.endMinutes <= d.startMinutes) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["schedule", dk, "endMinutes"],
+          message: "Час кінця має бути пізнішим за початок",
+        });
+        continue;
+      }
+      const breakProvided =
+        d.breakStartMinutes !== null || d.breakEndMinutes !== null;
+      if (!breakProvided) continue;
+      if (d.breakStartMinutes === null || d.breakEndMinutes === null) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["schedule", dk, "breakStartMinutes"],
+          message: "Заповніть обидва поля перерви",
+        });
+        continue;
+      }
+      if (d.breakEndMinutes <= d.breakStartMinutes) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["schedule", dk, "breakEndMinutes"],
+          message: "Кінець перерви має бути пізнішим за початок",
+        });
+      }
+      if (d.breakStartMinutes < d.startMinutes) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["schedule", dk, "breakStartMinutes"],
+          message: "Перерва не може починатись до початку роботи",
+        });
+      }
+      if (d.breakEndMinutes > d.endMinutes) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["schedule", dk, "breakEndMinutes"],
+          message: "Перерва не може закінчуватись після завершення",
+        });
+      }
+    }
+  });
 
 export async function PUT(request: Request) {
   try {
@@ -53,7 +133,13 @@ export async function PUT(request: Request) {
       return NextResponse.json({ error: "Invalid input" }, { status: 400 });
     }
 
-    const { bio, landingImage, isActive, services: incoming } = parsed.data;
+    const {
+      bio,
+      landingImage,
+      isActive,
+      schedule,
+      services: incoming,
+    } = parsed.data;
     const userId = session.user.id;
 
     if (role === "admin") {
@@ -68,6 +154,7 @@ export async function PUT(request: Request) {
           bio,
           landingImage,
           isActive,
+          schedule,
         })
         .onConflictDoUpdate({
           target: barberProfile.userId,
@@ -75,6 +162,7 @@ export async function PUT(request: Request) {
             bio,
             landingImage,
             isActive,
+            schedule,
             updatedAt: new Date(),
           },
         });
@@ -93,6 +181,8 @@ export async function PUT(request: Request) {
         );
       }
 
+      revalidatePath("/");
+
       console.log("[ANKETA-PUT] returning status:", "approved");
       return NextResponse.json({ ok: true, status: "approved" });
     }
@@ -108,6 +198,7 @@ export async function PUT(request: Request) {
         bio,
         landingImage,
         isActive,
+        schedule,
       })
       .onConflictDoUpdate({
         target: barberProfilePending.userId,
@@ -115,6 +206,7 @@ export async function PUT(request: Request) {
           bio,
           landingImage,
           isActive,
+          schedule,
           submittedAt: new Date(),
         },
       });

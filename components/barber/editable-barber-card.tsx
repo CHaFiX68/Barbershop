@@ -2,6 +2,8 @@
 
 import Image from "next/image";
 import { useMemo, useState } from "react";
+import type { WeekSchedule } from "@/lib/db/schema";
+import { DEFAULT_SCHEDULE } from "@/lib/schedule";
 import ActiveToggle from "./active-toggle";
 import EditableBio from "./editable-bio";
 import EditableServiceRow, {
@@ -9,7 +11,7 @@ import EditableServiceRow, {
 } from "./editable-service-row";
 import LandingImageEditorModal from "./landing-image-editor";
 
-const TOTAL_ROWS = 6;
+const TOTAL_ROWS = 7;
 
 type Props = {
   userName: string;
@@ -20,6 +22,9 @@ type Props = {
   initialServices: EditableService[];
   initialHasPending?: boolean;
   onPendingChange?: (v: boolean) => void;
+  schedule?: WeekSchedule;
+  initialSchedule?: WeekSchedule;
+  onScheduleSnapshotReset?: () => void;
 };
 
 type InitialSnapshot = {
@@ -38,6 +43,9 @@ export default function EditableBarberCard({
   initialServices,
   initialHasPending,
   onPendingChange,
+  schedule,
+  initialSchedule,
+  onScheduleSnapshotReset,
 }: Props) {
   const [bio, setBio] = useState(initialBio);
   const [isActive, setIsActive] = useState(initialIsActive);
@@ -71,8 +79,15 @@ export default function EditableBarberCard({
       if (services[i].name !== initial.services[i].name) return true;
       if (services[i].price !== initial.services[i].price) return true;
     }
+    if (
+      schedule &&
+      initialSchedule &&
+      JSON.stringify(schedule) !== JSON.stringify(initialSchedule)
+    ) {
+      return true;
+    }
     return false;
-  }, [bio, isActive, landingImage, services, initial]);
+  }, [bio, isActive, landingImage, services, schedule, initialSchedule, initial]);
 
   const placeholderCount = Math.max(0, TOTAL_ROWS - services.length);
 
@@ -122,10 +137,12 @@ export default function EditableBarberCard({
         name: s.name.trim(),
         price: s.price.trim(),
       }));
+      const submitSchedule = schedule ?? DEFAULT_SCHEDULE;
       console.log("[EDITABLE-CARD] submitting:", {
         bio: trimmedBio || null,
         isActive,
         landingImage,
+        schedule: submitSchedule,
         services: trimmedServices,
       });
       const res = await fetch("/api/barber/anketa", {
@@ -135,6 +152,7 @@ export default function EditableBarberCard({
           bio: trimmedBio || null,
           landingImage,
           isActive,
+          schedule: submitSchedule,
           services: trimmedServices,
         }),
       });
@@ -151,6 +169,7 @@ export default function EditableBarberCard({
         landingImage,
         services: services.map((s) => ({ name: s.name, price: s.price })),
       });
+      onScheduleSnapshotReset?.();
       if (data.status === "pending") {
         setHasPending(true);
         onPendingChange?.(true);
@@ -213,9 +232,10 @@ export default function EditableBarberCard({
 
       <div className="col-span-12 md:col-span-7 flex flex-col">
         <p
-          className="text-center text-[var(--color-text-muted)]"
+          className="text-center text-[var(--color-text)]"
           style={{
             fontSize: "10px",
+            fontWeight: 500,
             letterSpacing: "0.2em",
             textTransform: "uppercase",
           }}
@@ -266,7 +286,7 @@ export default function EditableBarberCard({
             type="button"
             onClick={addService}
             disabled={services.length >= TOTAL_ROWS || isSubmitting}
-            className="text-[13px] text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+            className="border border-[var(--color-line)] bg-transparent text-[14px] text-[var(--color-text)] px-6 py-2.5 rounded-[8px] hover:bg-[#F5F0E6] transition-colors disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent"
           >
             + Додати послугу
           </button>

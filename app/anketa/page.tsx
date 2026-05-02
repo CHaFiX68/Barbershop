@@ -5,7 +5,8 @@ import { asc, eq } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { barberProfile, service, user } from "@/lib/db/schema";
-import EditableBarberCard from "@/components/barber/editable-barber-card";
+import { normalizeWeekSchedule } from "@/lib/schedule";
+import AnketaEditor from "@/components/barber/anketa-editor";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Моя анкета — BARBER&CO" };
@@ -72,7 +73,7 @@ export default async function AnketaPage() {
           Клікни на будь-яке поле щоб редагувати. Збереження автоматичне.
         </p>
 
-        <EditableBarberCard
+        <AnketaEditor
           userName={currentUser.name}
           initials={computeInitials(currentUser.name)}
           initialBio={profile.bio ?? ""}
@@ -83,6 +84,7 @@ export default async function AnketaPage() {
             name: s.name,
             price: s.price,
           }))}
+          initialSchedule={normalizeWeekSchedule(profile.schedule)}
         />
       </div>
     </div>

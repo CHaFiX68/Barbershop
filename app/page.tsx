@@ -1,5 +1,13 @@
+import { headers } from "next/headers";
+import { auth } from "@/lib/auth";
 import { getContentMap } from "@/lib/content";
+import { getHeroSlides } from "@/lib/hero-slides";
 import { HERO_CONTENT, NAV_ITEMS } from "@/lib/data";
+import {
+  buildSchedule,
+  computeOpenStatus,
+  type ScheduleInput,
+} from "@/lib/schedule";
 import Header from "@/components/header";
 import HeroSlider from "@/components/hero-slider";
 import BarbersSection from "@/components/barbers-section";
@@ -10,6 +18,15 @@ import Footer from "@/components/footer";
 function navKey(href: string) {
   return `header.nav.${href.replace(/^#/, "")}`;
 }
+
+const SCHEDULE_DEFAULTS: Record<string, string> = {
+  "contacts.hours.weekdays.day": "Пн — Пт",
+  "contacts.hours.weekdays.time": "10:00 — 21:00",
+  "contacts.hours.sat.day": "Сб",
+  "contacts.hours.sat.time": "10:00 — 20:00",
+  "contacts.hours.sun.day": "Нд",
+  "contacts.hours.sun.time": "Вихідний",
+};
 
 export default async function Home() {
   const heroDefaults: Record<string, string> = {
@@ -22,10 +39,16 @@ export default async function Home() {
     navDefaults[navKey(item.href)] = item.label;
   }
 
-  const [heroContent, navContent] = await Promise.all([
-    getContentMap(heroDefaults),
-    getContentMap(navDefaults),
-  ]);
+  const [heroContent, navContent, scheduleContent, slides, session] =
+    await Promise.all([
+      getContentMap(heroDefaults),
+      getContentMap(navDefaults),
+      getContentMap(SCHEDULE_DEFAULTS),
+      getHeroSlides(),
+      auth.api.getSession({ headers: await headers() }),
+    ]);
+
+  const isAdmin = session?.user?.role === "admin";
 
   const navItems = NAV_ITEMS.map((item) => {
     const key = navKey(item.href);
@@ -36,6 +59,22 @@ export default async function Home() {
     };
   });
 
+  const scheduleEntries: ScheduleInput[] = [
+    {
+      dayInput: scheduleContent["contacts.hours.weekdays.day"],
+      timeInput: scheduleContent["contacts.hours.weekdays.time"],
+    },
+    {
+      dayInput: scheduleContent["contacts.hours.sat.day"],
+      timeInput: scheduleContent["contacts.hours.sat.time"],
+    },
+    {
+      dayInput: scheduleContent["contacts.hours.sun.day"],
+      timeInput: scheduleContent["contacts.hours.sun.time"],
+    },
+  ];
+  const initialOpenStatus = computeOpenStatus(buildSchedule(scheduleEntries));
+
   return (
     <>
       <Header navItems={navItems} />
@@ -44,6 +83,10 @@ export default async function Home() {
           titleLine1={heroContent["hero.title.line1"]}
           titleLine2={heroContent["hero.title.line2"]}
           tagline={heroContent["hero.tagline"]}
+          slides={slides}
+          isAdmin={isAdmin}
+          scheduleEntries={scheduleEntries}
+          initialOpenStatus={initialOpenStatus}
         />
         <BarbersSection />
         <AboutSection />

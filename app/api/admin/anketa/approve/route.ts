@@ -1,6 +1,7 @@
 import crypto from "crypto";
 import { NextResponse } from "next/server";
 import { headers } from "next/headers";
+import { revalidatePath } from "next/cache";
 import { asc, eq } from "drizzle-orm";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
@@ -65,6 +66,7 @@ export async function POST(request: Request) {
         bio: pendingProfile.bio,
         landingImage: pendingProfile.landingImage,
         isActive: pendingProfile.isActive,
+        schedule: pendingProfile.schedule,
       })
       .onConflictDoUpdate({
         target: barberProfile.userId,
@@ -72,6 +74,7 @@ export async function POST(request: Request) {
           bio: pendingProfile.bio,
           landingImage: pendingProfile.landingImage,
           isActive: pendingProfile.isActive,
+          schedule: pendingProfile.schedule,
           updatedAt: new Date(),
         },
       });
@@ -96,6 +99,8 @@ export async function POST(request: Request) {
     await db
       .delete(servicePending)
       .where(eq(servicePending.barberUserId, targetUserId));
+
+    revalidatePath("/");
 
     return NextResponse.json({ ok: true });
   } catch (err) {

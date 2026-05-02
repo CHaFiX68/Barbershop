@@ -2,15 +2,17 @@ import "server-only";
 
 import { and, asc, eq } from "drizzle-orm";
 import { db } from "./db";
-import { barberProfile, service, user } from "./db/schema";
+import { barberProfile, service, user, type WeekSchedule } from "./db/schema";
+import { normalizeWeekSchedule } from "./schedule";
 
 export interface BarberPublic {
   id: string;
   name: string;
-  bio: string;
+  bio: string | null;
   landingImage: string | null;
   initials: string;
   services: { name: string; price: string }[];
+  schedule: WeekSchedule;
 }
 
 function getInitials(name: string): string {
@@ -29,6 +31,7 @@ export async function getBarbers(): Promise<BarberPublic[]> {
         name: user.name,
         bio: barberProfile.bio,
         landingImage: barberProfile.landingImage,
+        schedule: barberProfile.schedule,
       })
       .from(user)
       .innerJoin(barberProfile, eq(barberProfile.userId, user.id))
@@ -38,7 +41,6 @@ export async function getBarbers(): Promise<BarberPublic[]> {
 
     const result: BarberPublic[] = [];
     for (const row of rows) {
-      if (!row.bio) continue;
       const services = await db
         .select({ name: service.name, price: service.price })
         .from(service)
@@ -53,6 +55,7 @@ export async function getBarbers(): Promise<BarberPublic[]> {
         landingImage: row.landingImage,
         initials: getInitials(row.name),
         services,
+        schedule: normalizeWeekSchedule(row.schedule),
       });
     }
     return result;

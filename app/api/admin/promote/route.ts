@@ -1,6 +1,7 @@
 import crypto from "crypto";
 import { NextResponse } from "next/server";
 import { headers } from "next/headers";
+import { revalidatePath } from "next/cache";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
@@ -68,6 +69,8 @@ export async function POST(request: Request) {
         isActive: false,
       });
     }
+
+    revalidatePath("/");
 
     return NextResponse.json({
       ok: true,

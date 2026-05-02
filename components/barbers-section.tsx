@@ -9,14 +9,12 @@ export default async function BarbersSection() {
     getContent("barbers.title", "Наші барбери"),
   ]);
 
-  if (barbers.length === 0) return null;
-
   return (
     <section
       id="barbers"
       className="py-12 md:py-16 lg:py-20 border-t border-[var(--color-line)]"
     >
-      <div className="max-w-[1536px] mx-auto px-6">
+      <div className="max-w-[1536px] mx-auto px-4 sm:px-6">
         <SectionHeading
           eyebrow="Команда"
           title={title}
@@ -25,11 +23,25 @@ export default async function BarbersSection() {
           titleMaxLength={60}
         />
 
-        <div className="mt-16 md:mt-20 max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {barbers.map((barber) => (
-            <BarberCard key={barber.id} barber={barber} />
-          ))}
-        </div>
+        {barbers.length > 0 ? (
+          barbers.length === 1 ? (
+            <div className="mt-16 md:mt-20 max-w-[640px] mx-auto">
+              <BarberCard barber={barbers[0]} />
+            </div>
+          ) : (
+            <div className="mt-16 md:mt-20 max-w-[1280px] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {barbers.map((barber) => (
+                <BarberCard key={barber.id} barber={barber} />
+              ))}
+            </div>
+          )
+        ) : (
+          <div className="mt-16 md:mt-20 text-center py-16 px-6">
+            <p className="text-[var(--color-text-muted)] italic text-[15px] max-w-md mx-auto">
+              Скоро тут будуть наші майстри. Слідкуйте за оновленнями.
+            </p>
+          </div>
+        )}
       </div>
     </section>
   );

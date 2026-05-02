@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { signIn } from "@/lib/auth-client";
 import { signUpSchema, type SignUpInput } from "@/lib/validation";
 import AuthCard from "./auth-card";
 import AuthInput from "./auth-input";
@@ -73,8 +74,16 @@ export default function RegisterForm({
         });
         return;
       }
-      if (onRegistered) {
-        onRegistered(data.email, data.password);
+      // TODO: повернути на OTP-form коли налаштовано власний Resend домен
+      const signInResult = await signIn.email({
+        email: data.email,
+        password: data.password,
+      });
+      if (signInResult.error) {
+        setError("root", {
+          message:
+            "Акаунт створено, але не вдалось увійти автоматично. Спробуй увійти вручну.",
+        });
         return;
       }
       if (inModal) {

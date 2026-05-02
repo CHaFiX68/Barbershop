@@ -17,7 +17,8 @@ export const auth = betterAuth({
   }),
   emailAndPassword: {
     enabled: true,
-    requireEmailVerification: true,
+    // TODO: повернути на true коли налаштовано власний Resend домен
+    requireEmailVerification: false,
     minPasswordLength: 8,
     maxPasswordLength: 128,
   },

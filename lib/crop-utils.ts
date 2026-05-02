@@ -8,7 +8,9 @@ export interface CropArea {
 export async function getCroppedImg(
   imageSrc: string,
   pixelCrop: CropArea,
-  rotation: number = 0
+  rotation: number = 0,
+  quality: number = 0.92,
+  mimeType: string = "image/jpeg"
 ): Promise<Blob> {
   const image = new Image();
   image.crossOrigin = "anonymous";
@@ -21,6 +23,9 @@ export async function getCroppedImg(
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
   if (!ctx) throw new Error("Canvas context unavailable");
+
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = "high";
 
   canvas.width = pixelCrop.width;
   canvas.height = pixelCrop.height;
@@ -63,8 +68,8 @@ export async function getCroppedImg(
         if (blob) resolve(blob);
         else reject(new Error("Canvas toBlob failed"));
       },
-      "image/jpeg",
-      0.92
+      mimeType,
+      quality
     );
   });
 }

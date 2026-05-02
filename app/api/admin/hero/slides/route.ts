@@ -1,15 +1,15 @@
+import crypto from "crypto";
 import { NextResponse } from "next/server";
 import { headers } from "next/headers";
-import { revalidatePath } from "next/cache";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { barberProfilePending, servicePending, user } from "@/lib/db/schema";
+import { heroSlide, user } from "@/lib/db/schema";
 
 export const dynamic = "force-dynamic";
 
-const schema = z.object({ userId: z.string().min(1) });
+const schema = z.object({ imageUrl: z.string().url() });
 
 export async function POST(request: Request) {
   try {
@@ -32,20 +32,24 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Invalid input" }, { status: 400 });
     }
 
-    const targetUserId = parsed.data.userId;
+    const [{ max }] = await db
+      .select({ max: sql<number | null>`max(${heroSlide.orderIndex})` })
+      .from(heroSlide);
+    const nextOrder = (max ?? -1) + 1;
 
-    await db
-      .delete(barberProfilePending)
-      .where(eq(barberProfilePending.userId, targetUserId));
-    await db
-      .delete(servicePending)
-      .where(eq(servicePending.barberUserId, targetUserId));
+    const id = crypto.randomUUID();
+    await db.insert(heroSlide).values({
+      id,
+      imageUrl: parsed.data.imageUrl,
+      orderIndex: nextOrder,
+    });
 
-    revalidatePath("/");
-
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({
+      ok: true,
+      slide: { id, imageUrl: parsed.data.imageUrl, orderIndex: nextOrder },
+    });
   } catch (err) {
-    console.error("POST /api/admin/anketa/reject error:", err);
+    console.error("POST /api/admin/hero/slides error:", err);
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }
