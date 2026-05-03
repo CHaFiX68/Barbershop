@@ -9,6 +9,7 @@ export default function BarberCard({ barber }: Props) {
   return (
     <BarberPublicCard
       name={barber.name}
+      phone={barber.phone}
       bio={barber.bio}
       landingImage={barber.landingImage}
       initials={barber.initials}

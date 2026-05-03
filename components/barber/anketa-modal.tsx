@@ -10,12 +10,18 @@ type AnketaData = {
   userName: string;
   initials: string;
   profile: {
+    phone: string | null;
     bio: string | null;
     landingImage: string | null;
     isActive: boolean;
     schedule: WeekSchedule;
   };
-  services: { id: string; name: string; price: string }[];
+  services: {
+    id: string;
+    name: string;
+    price: string;
+    estimatedMinutes: number | null;
+  }[];
   hasPendingChanges: boolean;
 };
 
@@ -203,6 +209,7 @@ export default function AnketaModal({ isOpen, onClose }: Props) {
             <AnketaEditor
               userName={data.userName}
               initials={data.initials}
+              initialPhone={data.profile.phone ?? ""}
               initialBio={data.profile.bio ?? ""}
               initialLandingImage={data.profile.landingImage}
               initialIsActive={data.profile.isActive}

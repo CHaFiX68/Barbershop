@@ -52,6 +52,13 @@ export async function POST(request: Request) {
       );
     }
 
+    if (!(pendingProfile.phone ?? "").trim()) {
+      return NextResponse.json(
+        { error: "Не можна затвердити анкету без телефону" },
+        { status: 400 }
+      );
+    }
+
     const pendingServices = await db
       .select()
       .from(servicePending)
@@ -63,6 +70,7 @@ export async function POST(request: Request) {
       .values({
         id: crypto.randomUUID(),
         userId: targetUserId,
+        phone: pendingProfile.phone,
         bio: pendingProfile.bio,
         landingImage: pendingProfile.landingImage,
         isActive: pendingProfile.isActive,
@@ -71,6 +79,7 @@ export async function POST(request: Request) {
       .onConflictDoUpdate({
         target: barberProfile.userId,
         set: {
+          phone: pendingProfile.phone,
           bio: pendingProfile.bio,
           landingImage: pendingProfile.landingImage,
           isActive: pendingProfile.isActive,
@@ -88,6 +97,7 @@ export async function POST(request: Request) {
           barberUserId: targetUserId,
           name: s.name,
           price: s.price,
+          estimatedMinutes: s.estimatedMinutes ?? null,
           orderIndex: idx,
         }))
       );

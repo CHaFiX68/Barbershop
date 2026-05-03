@@ -60,6 +60,7 @@ export async function GET() {
           userName: currentUser.name,
           initials: computeInitials(currentUser.name),
           profile: {
+            phone: pendingProfile.phone ?? "",
             bio: pendingProfile.bio ?? "",
             landingImage: pendingProfile.landingImage,
             isActive: pendingProfile.isActive,
@@ -69,6 +70,7 @@ export async function GET() {
             id: s.id,
             name: s.name,
             price: s.price,
+            estimatedMinutes: s.estimatedMinutes,
           })),
           hasPendingChanges: true,
         });
@@ -91,6 +93,7 @@ export async function GET() {
           await db.insert(barberProfilePending).values({
             id: newId,
             userId: session.user.id,
+            phone: null,
             bio: null,
             landingImage: null,
             isActive: false,
@@ -118,6 +121,7 @@ export async function GET() {
           userName: currentUser.name,
           initials: computeInitials(currentUser.name),
           profile: {
+            phone: refetched.phone ?? "",
             bio: refetched.bio ?? "",
             landingImage: refetched.landingImage,
             isActive: refetched.isActive,
@@ -136,6 +140,7 @@ export async function GET() {
         await db.insert(barberProfile).values({
           id: newId,
           userId: session.user.id,
+          phone: null,
           bio: null,
           landingImage: null,
           isActive: false,
@@ -163,6 +168,7 @@ export async function GET() {
         userName: currentUser.name,
         initials: computeInitials(currentUser.name),
         profile: {
+          phone: refetched.phone ?? "",
           bio: refetched.bio ?? "",
           landingImage: refetched.landingImage,
           isActive: refetched.isActive,
@@ -183,6 +189,7 @@ export async function GET() {
       userName: currentUser.name,
       initials: computeInitials(currentUser.name),
       profile: {
+        phone: profile.phone ?? "",
         bio: profile.bio ?? "",
         landingImage: profile.landingImage,
         isActive: profile.isActive,
@@ -192,6 +199,7 @@ export async function GET() {
         id: s.id,
         name: s.name,
         price: s.price,
+        estimatedMinutes: s.estimatedMinutes,
       })),
       hasPendingChanges: false,
     });

@@ -4,13 +4,34 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { signOut, useSession } from "@/lib/auth-client";
+import { useChatActions } from "@/lib/chat-context";
 import Avatar from "./avatar";
 import AvatarEditorModal from "./avatar-editor-modal";
 import AnketaModal from "./barber/anketa-modal";
 import ManagementModal from "./admin/management-modal";
 
-export default function ProfileDropdown() {
-  const { data: session } = useSession();
+export type InitialSession = {
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    image: string | null;
+    role: string | null;
+  };
+} | null;
+
+type Props = {
+  initialSession?: InitialSession;
+};
+
+export default function ProfileDropdown({ initialSession = null }: Props) {
+  const { data: clientSession } = useSession();
+  const { openChat, requestOpenSupport } = useChatActions();
+  // Defensive: prefer client data when available, fall back to server initial.
+  // Survives transient null states during back/forward navigation.
+  // Logout flow: signOut → router.push + router.refresh → server re-renders
+  // with initialSession=null → component returns null → user menu hides.
+  const session = clientSession ?? initialSession;
   const [isOpen, setIsOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
@@ -269,28 +290,33 @@ export default function ProfileDropdown() {
           </div>
 
           <div className="p-1.5">
-            <Link
-              href="#"
-              onClick={closeAll}
-              className="flex items-center gap-3 px-3 py-2.5 rounded-[8px] hover:bg-[#F5F0E6] transition-colors text-[13px]"
-            >
-              <svg
-                className="w-[18px] h-[18px] flex-shrink-0 text-[var(--color-text-muted)]"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                aria-hidden="true"
+            {!isBarberRole && !isAdminRole && (
+              <Link
+                href="/my-bookings"
+                onClick={closeAll}
+                className="flex items-center gap-3 px-3 py-2.5 rounded-[8px] hover:bg-[#F5F0E6] transition-colors text-[13px]"
               >
-                <rect x="3" y="5" width="18" height="16" rx="2" />
-                <path d="M16 3v4M8 3v4M3 10h18" />
-              </svg>
-              <span>Мої записи</span>
-            </Link>
-            <Link
-              href="#"
-              onClick={closeAll}
-              className="flex items-center gap-3 px-3 py-2.5 rounded-[8px] hover:bg-[#F5F0E6] transition-colors text-[13px]"
+                <svg
+                  className="w-[18px] h-[18px] flex-shrink-0 text-[var(--color-text-muted)]"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  aria-hidden="true"
+                >
+                  <rect x="3" y="5" width="18" height="16" rx="2" />
+                  <path d="M16 3v4M8 3v4M3 10h18" />
+                </svg>
+                <span>Мої записи</span>
+              </Link>
+            )}
+            <button
+              type="button"
+              onClick={() => {
+                closeAll();
+                openChat();
+              }}
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-[8px] hover:bg-[#F5F0E6] transition-colors text-[13px] text-left"
             >
               <svg
                 className="w-[18px] h-[18px] flex-shrink-0 text-[var(--color-text-muted)]"
@@ -303,10 +329,33 @@ export default function ProfileDropdown() {
                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
               </svg>
               <span>Чат</span>
-            </Link>
-            {!isAdminRole && (
+            </button>
+            {!isAdminRole ? (
+              <button
+                type="button"
+                onClick={() => {
+                  closeAll();
+                  requestOpenSupport();
+                }}
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-[8px] hover:bg-[#F5F0E6] transition-colors text-[13px] text-left"
+              >
+                <svg
+                  className="w-[18px] h-[18px] flex-shrink-0 text-[var(--color-text-muted)]"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  aria-hidden="true"
+                >
+                  <path d="M12 22c5.5 0 10-4.5 10-10S17.5 2 12 2 2 6.5 2 12c0 1.7.4 3.3 1.2 4.7L2 22l5.3-1.2c1.4.8 3 1.2 4.7 1.2z" />
+                  <path d="M9.5 9.5c.5-1 1.5-1.5 2.5-1.5 1.7 0 3 1.3 3 3 0 1.5-1 2-2 2.5-.5.3-1 .5-1 1.5" />
+                  <circle cx="12" cy="17" r=".5" fill="currentColor" />
+                </svg>
+                <span>Підтримка</span>
+              </button>
+            ) : (
               <Link
-                href="#"
+                href="/admin/support"
                 onClick={closeAll}
                 className="flex items-center gap-3 px-3 py-2.5 rounded-[8px] hover:bg-[#F5F0E6] transition-colors text-[13px]"
               >
@@ -327,10 +376,11 @@ export default function ProfileDropdown() {
             )}
           </div>
 
-          <div className="h-px bg-[var(--color-line)] mx-1.5" />
-
-          <div className="py-1.5">
-            {isBarberRole && (
+          {(isBarberRole || isAdminRole) && (
+            <>
+              <div className="h-px bg-[var(--color-line)] mx-1.5" />
+              <div className="py-1.5">
+                {isBarberRole && (
               <button
                 type="button"
                 onClick={() => {
@@ -384,7 +434,9 @@ export default function ProfileDropdown() {
                 <span>Менеджмент</span>
               </button>
             )}
-          </div>
+              </div>
+            </>
+          )}
 
           <div className="h-px bg-[var(--color-line)] mx-1.5" />
 

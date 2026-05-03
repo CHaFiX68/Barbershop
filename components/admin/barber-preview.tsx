@@ -7,6 +7,7 @@ type Service = { name: string; price: string };
 
 type Props = {
   name: string;
+  phone: string | null;
   bio: string | null;
   landingImage: string | null;
   schedule: WeekSchedule;
@@ -15,6 +16,7 @@ type Props = {
 
 export default function BarberPreview({
   name,
+  phone,
   bio,
   landingImage,
   schedule,
@@ -23,6 +25,7 @@ export default function BarberPreview({
   return (
     <BarberPublicCard
       name={name}
+      phone={phone}
       bio={bio}
       landingImage={landingImage}
       services={services}

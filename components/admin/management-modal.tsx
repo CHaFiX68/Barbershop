@@ -12,6 +12,9 @@ type Barber = {
   name: string;
   email: string;
   avatar: string | null;
+  approvedPhone: string | null;
+  pendingPhone: string | null;
+  phone: string | null;
   bio: string | null;
   landingImage: string | null;
   isActive: boolean;
@@ -147,32 +150,46 @@ function BarberRow({
         <div className="border-t border-[var(--color-line)] bg-[#F9F6F1] p-4">
           <BarberPreview
             name={barber.name}
+            phone={barber.phone}
             bio={barber.bio}
             landingImage={barber.landingImage}
             schedule={barber.schedule}
             services={barber.services}
           />
 
-          {barber.hasPending && (
-            <div className="flex gap-2 mt-4 justify-end">
-              <button
-                type="button"
-                onClick={onReject}
-                disabled={busy}
-                className="px-4 py-2 rounded-[8px] text-[12px] border border-[var(--color-line)] bg-white hover:bg-[#F5F0E6] transition-colors disabled:opacity-50"
-              >
-                Відхилити
-              </button>
-              <button
-                type="button"
-                onClick={onApprove}
-                disabled={busy}
-                className="px-4 py-2 rounded-[8px] text-[12px] bg-green-700 text-white hover:bg-green-800 transition-colors disabled:opacity-50"
-              >
-                Затвердити
-              </button>
-            </div>
-          )}
+          {barber.hasPending && (() => {
+            const pendingPhoneMissing = !(barber.pendingPhone ?? "").trim();
+            return (
+              <div className="flex items-center gap-3 mt-4 justify-end">
+                {pendingPhoneMissing && (
+                  <span className="italic text-[11px] text-[#A03030]">
+                    Барбер не вказав телефон
+                  </span>
+                )}
+                <button
+                  type="button"
+                  onClick={onReject}
+                  disabled={busy}
+                  className="px-4 py-2 rounded-[8px] text-[12px] border border-[var(--color-line)] bg-white hover:bg-[#F5F0E6] transition-colors disabled:opacity-50"
+                >
+                  Відхилити
+                </button>
+                <button
+                  type="button"
+                  onClick={onApprove}
+                  disabled={busy || pendingPhoneMissing}
+                  title={
+                    pendingPhoneMissing
+                      ? "Барбер не вказав телефон"
+                      : undefined
+                  }
+                  className="px-4 py-2 rounded-[8px] text-[12px] bg-green-700 text-white hover:bg-green-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Затвердити
+                </button>
+              </div>
+            );
+          })()}
         </div>
       )}
     </div>

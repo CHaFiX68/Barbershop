@@ -8,6 +8,7 @@ import { normalizeWeekSchedule } from "./schedule";
 export interface BarberPublic {
   id: string;
   name: string;
+  phone: string | null;
   bio: string | null;
   landingImage: string | null;
   initials: string;
@@ -29,6 +30,7 @@ export async function getBarbers(): Promise<BarberPublic[]> {
       .select({
         userId: user.id,
         name: user.name,
+        phone: barberProfile.phone,
         bio: barberProfile.bio,
         landingImage: barberProfile.landingImage,
         schedule: barberProfile.schedule,
@@ -51,6 +53,7 @@ export async function getBarbers(): Promise<BarberPublic[]> {
       result.push({
         id: row.userId,
         name: row.name,
+        phone: row.phone,
         bio: row.bio,
         landingImage: row.landingImage,
         initials: getInitials(row.name),

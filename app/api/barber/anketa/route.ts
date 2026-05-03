@@ -48,6 +48,7 @@ const scheduleSchema = z.object({
 
 const submitSchema = z
   .object({
+    phone: z.string().max(20).nullable(),
     bio: z.string().max(60).nullable(),
     landingImage: z.string().url().nullable(),
     isActive: z.boolean(),
@@ -57,6 +58,13 @@ const submitSchema = z
         z.object({
           name: z.string().min(1).max(80),
           price: z.string().min(1).max(20),
+          estimatedMinutes: z
+            .number()
+            .int()
+            .positive()
+            .max(600)
+            .nullable()
+            .optional(),
         })
       )
       .max(7),
@@ -134,6 +142,7 @@ export async function PUT(request: Request) {
     }
 
     const {
+      phone,
       bio,
       landingImage,
       isActive,
@@ -141,6 +150,32 @@ export async function PUT(request: Request) {
       services: incoming,
     } = parsed.data;
     const userId = session.user.id;
+
+    if (isActive) {
+      const incomingPhone = (phone ?? "").trim();
+      let effectivePhone = incomingPhone;
+      if (!effectivePhone) {
+        if (role === "admin") {
+          const [existing] = await db
+            .select({ phone: barberProfile.phone })
+            .from(barberProfile)
+            .where(eq(barberProfile.userId, userId));
+          effectivePhone = (existing?.phone ?? "").trim();
+        } else {
+          const [existing] = await db
+            .select({ phone: barberProfilePending.phone })
+            .from(barberProfilePending)
+            .where(eq(barberProfilePending.userId, userId));
+          effectivePhone = (existing?.phone ?? "").trim();
+        }
+      }
+      if (!effectivePhone) {
+        return NextResponse.json(
+          { error: "Спочатку додайте номер телефону" },
+          { status: 400 }
+        );
+      }
+    }
 
     if (role === "admin") {
       console.log(
@@ -151,6 +186,7 @@ export async function PUT(request: Request) {
         .values({
           id: crypto.randomUUID(),
           userId,
+          phone,
           bio,
           landingImage,
           isActive,
@@ -159,6 +195,7 @@ export async function PUT(request: Request) {
         .onConflictDoUpdate({
           target: barberProfile.userId,
           set: {
+            phone,
             bio,
             landingImage,
             isActive,
@@ -176,6 +213,7 @@ export async function PUT(request: Request) {
             barberUserId: userId,
             name: s.name,
             price: s.price,
+            estimatedMinutes: s.estimatedMinutes ?? null,
             orderIndex: idx,
           }))
         );
@@ -195,6 +233,7 @@ export async function PUT(request: Request) {
       .values({
         id: crypto.randomUUID(),
         userId,
+        phone,
         bio,
         landingImage,
         isActive,
@@ -203,6 +242,7 @@ export async function PUT(request: Request) {
       .onConflictDoUpdate({
         target: barberProfilePending.userId,
         set: {
+          phone,
           bio,
           landingImage,
           isActive,
@@ -222,6 +262,7 @@ export async function PUT(request: Request) {
           barberUserId: userId,
           name: s.name,
           price: s.price,
+          estimatedMinutes: s.estimatedMinutes ?? null,
           orderIndex: idx,
         }))
       );

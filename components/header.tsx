@@ -1,9 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { createPortal } from "react-dom";
 import HeaderAuth from "./header-auth";
 import EditableText from "./editable-text";
+import type { InitialSession } from "./profile-dropdown";
+
+const HIDE_HEADER_PATHS = new Set(["/login", "/register"]);
 
 type NavItem = {
   href: string;
@@ -13,11 +18,15 @@ type NavItem = {
 
 type Props = {
   navItems: NavItem[];
+  initialSession?: InitialSession;
 };
 
-export default function Header({ navItems }: Props) {
+export default function Header({ navItems, initialSession = null }: Props) {
+  const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+
+  const hidden = HIDE_HEADER_PATHS.has(pathname ?? "");
 
   useEffect(() => {
     setMounted(true);
@@ -44,20 +53,22 @@ export default function Header({ navItems }: Props) {
 
   const close = () => setOpen(false);
 
+  if (hidden) return null;
+
   return (
     <>
       <header className="sticky top-0 z-40 bg-[#EDEAE5]/85 backdrop-blur-[8px] border-b border-[var(--color-line)]">
         <div className="max-w-[1536px] mx-auto px-4 sm:px-6">
          <div className="max-w-6xl mx-auto h-16 md:h-20 flex items-center justify-between">
-          <a
-            href="#"
-            aria-label="BARBER&CO"
+          <Link
+            href="/"
+            aria-label="BARBER&CO — на головну"
             className="font-display text-xl md:text-2xl tracking-tight"
             style={{ fontWeight: 600 }}
           >
             BARBER<span className="font-display font-normal mx-[1px]">&amp;</span>
             CO
-          </a>
+          </Link>
 
           <nav className="hidden md:flex items-center gap-8">
             {navItems.map((item) => (
@@ -77,7 +88,7 @@ export default function Header({ navItems }: Props) {
           </nav>
 
           <div className="flex items-center gap-2">
-            <HeaderAuth />
+            <HeaderAuth initialSession={initialSession} />
             <button
               type="button"
               aria-label="Відкрити меню"

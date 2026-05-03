@@ -27,6 +27,7 @@ function getInitials(name: string): string {
 
 type Props = {
   name: string;
+  phone: string | null;
   bio: string | null;
   landingImage: string | null;
   initials?: string;
@@ -39,6 +40,7 @@ const SERVICE_SLOTS = 6;
 
 export default function BarberPublicCard({
   name,
+  phone,
   bio,
   landingImage,
   initials,
@@ -59,11 +61,11 @@ export default function BarberPublicCard({
     if (slot) {
       return (
         <div key={`svc-${i}`} style={{ display: "contents" }}>
-          <div className="border-b border-[var(--color-line)] text-[var(--color-text)] flex items-end py-2 pr-4">
-            {slot.name}
+          <div className="border-b border-[var(--color-line)] text-[var(--color-text)] flex items-end md:items-center min-w-0 py-1 md:py-0 pr-4">
+            <span className="truncate leading-[1.3]">{slot.name}</span>
           </div>
           <div className="bg-[var(--color-line)]" />
-          <div className="border-b border-[var(--color-line)] text-[var(--color-text-muted)] text-right flex items-end justify-end py-2 pl-1">
+          <div className="border-b border-[var(--color-line)] text-[var(--color-text-muted)] text-right flex items-end md:items-center justify-end py-1 md:py-0 pl-1">
             {slot.price}
           </div>
         </div>
@@ -71,9 +73,9 @@ export default function BarberPublicCard({
     }
     return (
       <div key={`empty-${i}`} style={{ display: "contents" }}>
-        <div className="border-b border-[var(--color-line)] flex items-end py-2 pr-4" />
+        <div className="border-b border-[var(--color-line)] flex items-end md:items-center min-w-0 py-1 md:py-0 pr-4" />
         <div className="bg-[var(--color-line)]" />
-        <div className="border-b border-[var(--color-line)] flex items-end justify-end py-2 pl-1" />
+        <div className="border-b border-[var(--color-line)] flex items-end md:items-center justify-end py-1 md:py-0 pl-1" />
       </div>
     );
   };
@@ -99,7 +101,7 @@ export default function BarberPublicCard({
           {DAY_LABELS[dayKey]}
         </div>
         <div
-          className={`text-[8px] ${enabled ? "opacity-70" : ""}`}
+          className={`text-[8px] md:text-[12px] ${enabled ? "opacity-70" : ""}`}
           style={{ fontVariantNumeric: "tabular-nums" }}
         >
           {enabled
@@ -141,8 +143,13 @@ export default function BarberPublicCard({
               {name}
             </h3>
             {photoBlock("120px")}
+            {phone && (
+              <p className="mt-2 text-[12px] font-medium text-[var(--color-text)] text-center leading-[1.4]">
+                {phone}
+              </p>
+            )}
             {bio && (
-              <p className="mt-2 text-[11px] italic text-[var(--color-text-muted)] text-center leading-[1.5]">
+              <p className="mt-1 text-[11px] italic text-[var(--color-text-muted)] text-center leading-[1.5]">
                 {bio}
               </p>
             )}
@@ -155,7 +162,7 @@ export default function BarberPublicCard({
             <div
               className="grid text-[12px]"
               style={{
-                gridTemplateColumns: "1fr 1px 60px",
+                gridTemplateColumns: "minmax(0, 1fr) 1px 60px",
                 columnGap: "0",
               }}
             >
@@ -184,14 +191,19 @@ export default function BarberPublicCard({
       </div>
 
       {/* Desktop layout (md+) */}
-      <div className="hidden md:grid md:grid-cols-[240px_1fr_44px] md:gap-8 md:items-start">
+      <div className="hidden md:grid md:grid-cols-[240px_1fr_56px] md:gap-8 md:items-start">
         <div className="flex flex-col">
           <h3 className="font-display text-[26px] font-medium text-center mb-3 text-[var(--color-text)]">
             {name}
           </h3>
           <div className="mb-3">{photoBlock("240px")}</div>
+          {phone && (
+            <p className="text-[13px] font-medium text-[var(--color-text)] text-center leading-[1.4]">
+              {phone}
+            </p>
+          )}
           {bio && (
-            <p className="text-[12px] italic text-[var(--color-text-muted)] text-center leading-[1.5]">
+            <p className="mt-1 text-[12px] italic text-[var(--color-text-muted)] text-center leading-[1.5]">
               {bio}
             </p>
           )}
@@ -204,8 +216,9 @@ export default function BarberPublicCard({
           <div
             className="grid text-[13px]"
             style={{
-              gridTemplateColumns: "1fr 1px 75px",
+              gridTemplateColumns: "minmax(0, 1fr) 1px 75px",
               columnGap: "14px",
+              gridAutoRows: "56px",
             }}
           >
             {slots.map((slot, i) => renderServiceRow(slot, i))}

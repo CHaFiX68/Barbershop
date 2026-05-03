@@ -2,22 +2,17 @@ import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { getContentMap } from "@/lib/content";
 import { getHeroSlides } from "@/lib/hero-slides";
-import { HERO_CONTENT, NAV_ITEMS } from "@/lib/data";
+import { HERO_CONTENT } from "@/lib/data";
 import {
   buildSchedule,
   computeOpenStatus,
   type ScheduleInput,
 } from "@/lib/schedule";
-import Header from "@/components/header";
 import HeroSlider from "@/components/hero-slider";
 import BarbersSection from "@/components/barbers-section";
 import AboutSection from "@/components/about-section";
 import ContactsSection from "@/components/contacts-section";
 import Footer from "@/components/footer";
-
-function navKey(href: string) {
-  return `header.nav.${href.replace(/^#/, "")}`;
-}
 
 const SCHEDULE_DEFAULTS: Record<string, string> = {
   "contacts.hours.weekdays.day": "Пн — Пт",
@@ -34,30 +29,15 @@ export default async function Home() {
     "hero.title.line2": HERO_CONTENT.titleLine2,
     "hero.tagline": HERO_CONTENT.tagline,
   };
-  const navDefaults: Record<string, string> = {};
-  for (const item of NAV_ITEMS) {
-    navDefaults[navKey(item.href)] = item.label;
-  }
 
-  const [heroContent, navContent, scheduleContent, slides, session] =
-    await Promise.all([
-      getContentMap(heroDefaults),
-      getContentMap(navDefaults),
-      getContentMap(SCHEDULE_DEFAULTS),
-      getHeroSlides(),
-      auth.api.getSession({ headers: await headers() }),
-    ]);
+  const [heroContent, scheduleContent, slides, session] = await Promise.all([
+    getContentMap(heroDefaults),
+    getContentMap(SCHEDULE_DEFAULTS),
+    getHeroSlides(),
+    auth.api.getSession({ headers: await headers() }),
+  ]);
 
   const isAdmin = session?.user?.role === "admin";
-
-  const navItems = NAV_ITEMS.map((item) => {
-    const key = navKey(item.href);
-    return {
-      href: item.href,
-      label: navContent[key],
-      contentKey: key,
-    };
-  });
 
   const scheduleEntries: ScheduleInput[] = [
     {
@@ -77,7 +57,6 @@ export default async function Home() {
 
   return (
     <>
-      <Header navItems={navItems} />
       <main className="flex-1 flex flex-col">
         <HeroSlider
           titleLine1={heroContent["hero.title.line1"]}

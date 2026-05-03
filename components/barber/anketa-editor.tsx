@@ -7,11 +7,17 @@ import AnketaCardEditable, {
   type EditableServiceFull,
 } from "./anketa-card-editable";
 
-type InitialService = { id: string; name: string; price: string };
+type InitialService = {
+  id: string;
+  name: string;
+  price: string;
+  estimatedMinutes?: number | null;
+};
 
 type Props = {
   userName: string;
   initials: string;
+  initialPhone: string;
   initialBio: string;
   initialLandingImage: string | null;
   initialIsActive: boolean;
@@ -22,16 +28,22 @@ type Props = {
 };
 
 type InitialSnapshot = {
+  phone: string;
   bio: string;
   isActive: boolean;
   landingImage: string | null;
-  services: { name: string; price: string }[];
+  services: {
+    name: string;
+    price: string;
+    estimatedMinutes: number | null;
+  }[];
   schedule: WeekSchedule;
 };
 
 export default function AnketaEditor({
   userName,
   initials,
+  initialPhone,
   initialBio,
   initialLandingImage,
   initialIsActive,
@@ -39,6 +51,7 @@ export default function AnketaEditor({
   initialSchedule,
   onPendingChange,
 }: Props) {
+  const [phone, setPhone] = useState(initialPhone);
   const [bio, setBio] = useState(initialBio);
   const [isActive, setIsActive] = useState(initialIsActive);
   const [landingImage, setLandingImage] = useState<string | null>(
@@ -49,16 +62,21 @@ export default function AnketaEditor({
       id: s.id,
       name: s.name,
       price: s.price,
-      estimatedMinutes: null,
+      estimatedMinutes: s.estimatedMinutes ?? null,
     }))
   );
   const [schedule, setSchedule] = useState<WeekSchedule>(initialSchedule);
 
   const [snapshot, setSnapshot] = useState<InitialSnapshot>({
+    phone: initialPhone,
     bio: initialBio,
     isActive: initialIsActive,
     landingImage: initialLandingImage,
-    services: initialServices.map((s) => ({ name: s.name, price: s.price })),
+    services: initialServices.map((s) => ({
+      name: s.name,
+      price: s.price,
+      estimatedMinutes: s.estimatedMinutes ?? null,
+    })),
     schedule: initialSchedule,
   });
 
@@ -67,6 +85,7 @@ export default function AnketaEditor({
   const [submitSuccess, setSubmitSuccess] = useState(false);
 
   const isDirty = useMemo(() => {
+    if (phone !== snapshot.phone) return true;
     if (bio !== snapshot.bio) return true;
     if (isActive !== snapshot.isActive) return true;
     if (landingImage !== snapshot.landingImage) return true;
@@ -74,12 +93,16 @@ export default function AnketaEditor({
     for (let i = 0; i < services.length; i++) {
       if (services[i].name !== snapshot.services[i].name) return true;
       if (services[i].price !== snapshot.services[i].price) return true;
+      if (
+        services[i].estimatedMinutes !== snapshot.services[i].estimatedMinutes
+      )
+        return true;
     }
     if (JSON.stringify(schedule) !== JSON.stringify(snapshot.schedule)) {
       return true;
     }
     return false;
-  }, [bio, isActive, landingImage, services, schedule, snapshot]);
+  }, [phone, bio, isActive, landingImage, services, schedule, snapshot]);
 
   const handleSubmit = async () => {
     if (!isDirty || isSubmitting) return;
@@ -87,16 +110,19 @@ export default function AnketaEditor({
     setSubmitError(null);
     setSubmitSuccess(false);
     try {
+      const trimmedPhone = phone.trim();
       const trimmedBio = bio.trim();
       const trimmedServices = services.map((s) => ({
         name: s.name.trim(),
         price: s.price.trim(),
+        estimatedMinutes: s.estimatedMinutes,
       }));
       const submitSchedule = schedule ?? DEFAULT_SCHEDULE;
       const res = await fetch("/api/barber/anketa", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          phone: trimmedPhone || null,
           bio: trimmedBio || null,
           landingImage,
           isActive,
@@ -104,17 +130,29 @@ export default function AnketaEditor({
           services: trimmedServices,
         }),
       });
-      if (!res.ok) throw new Error("Submit failed");
+      if (!res.ok) {
+        let message = "Submit failed";
+        try {
+          const errBody = (await res.json()) as { error?: string };
+          if (errBody?.error) message = errBody.error;
+        } catch {}
+        throw new Error(message);
+      }
       const data = (await res.json()) as {
         ok?: boolean;
         status?: "approved" | "pending";
       };
       setSubmitSuccess(true);
       setSnapshot({
+        phone,
         bio,
         isActive,
         landingImage,
-        services: services.map((s) => ({ name: s.name, price: s.price })),
+        services: services.map((s) => ({
+          name: s.name,
+          price: s.price,
+          estimatedMinutes: s.estimatedMinutes,
+        })),
         schedule,
       });
       if (data.status === "pending") {
@@ -123,7 +161,8 @@ export default function AnketaEditor({
       setTimeout(() => setSubmitSuccess(false), 2000);
     } catch (err) {
       console.log("[ANKETA-EDITOR] PUT failed:", err);
-      setSubmitError("Не вдалося зберегти. Спробуйте ще раз.");
+      const fallback = "Не вдалося зберегти. Спробуйте ще раз.";
+      setSubmitError(err instanceof Error && err.message ? err.message : fallback);
     } finally {
       setIsSubmitting(false);
     }
@@ -133,6 +172,8 @@ export default function AnketaEditor({
     <AnketaCardEditable
       userName={userName}
       initials={initials}
+      phone={phone}
+      onPhoneChange={setPhone}
       bio={bio}
       onBioChange={setBio}
       landingImage={landingImage}

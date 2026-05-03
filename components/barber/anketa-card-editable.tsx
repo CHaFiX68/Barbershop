@@ -6,6 +6,7 @@ import { createPortal } from "react-dom";
 import type { DaySchedule, WeekSchedule } from "@/lib/db/schema";
 import { DAY_KEYS } from "@/lib/schedule";
 import EditableBio from "./editable-bio";
+import EditablePhone from "./editable-phone";
 import LandingImageEditorModal from "./landing-image-editor";
 
 const DAY_LABELS: Record<keyof WeekSchedule, string> = {
@@ -60,6 +61,8 @@ export type EditableServiceFull = {
 type Props = {
   userName: string;
   initials: string;
+  phone: string;
+  onPhoneChange: (v: string) => void;
   bio: string;
   onBioChange: (v: string) => void;
   landingImage: string | null;
@@ -145,6 +148,8 @@ export default function AnketaCardEditable(props: Props) {
   const {
     userName,
     initials,
+    phone,
+    onPhoneChange,
     bio,
     onBioChange,
     landingImage,
@@ -210,17 +215,32 @@ export default function AnketaCardEditable(props: Props) {
   const activeService = activeServiceId
     ? services.find((s) => s.id === activeServiceId) ?? null
     : null;
+  const hasPhone = !!phone.trim();
+  const toggleDisabled = isSubmitting || !hasPhone;
+  const toggleTitle = !hasPhone
+    ? "Спочатку додайте номер телефону"
+    : isActive
+      ? "Приймаю клієнтів"
+      : "Не приймаю клієнтів";
 
   return (
     <div className="space-y-4">
-      <article className="relative grid grid-cols-1 md:grid-cols-[200px_1fr_50px] gap-5 md:gap-6 bg-[#FAF7F1] border border-[var(--color-line)] rounded-[16px] p-5">
-        <div className="col-span-full flex justify-end mb-2">
+      <article className="relative grid grid-cols-1 md:grid-cols-[200px_1fr_56px] md:items-start gap-5 md:gap-6 bg-[#FAF7F1] border border-[var(--color-line)] rounded-[16px] p-5">
+        <div className="col-span-full flex items-center justify-end gap-3 mb-2">
+          {!hasPhone && (
+            <span className="italic text-[11px] text-[#A03030]">
+              Спочатку додайте номер телефону
+            </span>
+          )}
           <button
             type="button"
-            onClick={() => onIsActiveChange(!isActive)}
-            disabled={isSubmitting}
-            className="flex items-center gap-2 disabled:opacity-50"
-            title={isActive ? "Приймаю клієнтів" : "Не приймаю клієнтів"}
+            onClick={() => {
+              if (!hasPhone) return;
+              onIsActiveChange(!isActive);
+            }}
+            disabled={toggleDisabled}
+            className="flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            title={toggleTitle}
           >
             <span className="text-[10px] uppercase tracking-wider text-[var(--color-text-muted)]">
               {isActive ? "Активний" : "Неактивний"}
@@ -271,20 +291,23 @@ export default function AnketaCardEditable(props: Props) {
               </span>
             </div>
           </button>
-          <EditableBio bio={bio} onChange={onBioChange} />
+          <EditablePhone phone={phone} onChange={onPhoneChange} />
+          <div className="mt-2">
+            <EditableBio bio={bio} onChange={onBioChange} />
+          </div>
         </div>
 
-        <div className="flex flex-col min-h-full md:border-r md:border-[var(--color-line)] md:pr-8">
+        <div className="flex flex-col md:border-r md:border-[var(--color-line)] md:pr-8">
           <div className="text-[10px] font-medium uppercase tracking-[0.18em] text-[var(--color-text)] mb-3 text-center">
             Послуги
           </div>
 
           <div
-            className="flex-1 grid text-[13px]"
+            className="grid text-[13px]"
             style={{
-              gridTemplateColumns: "1fr 1px 80px 24px",
+              gridTemplateColumns: "minmax(0, 1fr) 1px 80px 24px",
               columnGap: "0",
-              gridAutoRows: "1fr",
+              gridAutoRows: "56px",
             }}
           >
             {slots.map((slot, i) => {
@@ -294,15 +317,17 @@ export default function AnketaCardEditable(props: Props) {
                     <button
                       type="button"
                       onClick={handleAddPlaceholderClick}
-                      className="border-b border-[var(--color-line)] flex items-end py-2 pr-4 text-left text-[var(--color-text-muted)] italic hover:text-[var(--color-text)] hover:bg-black/5 transition-colors"
+                      className="border-b border-[var(--color-line)] flex items-center min-w-0 py-0 pr-4 text-left text-[var(--color-text-muted)] italic hover:text-[var(--color-text)] hover:bg-black/5 transition-colors"
                     >
-                      додати послугу
+                      <span className="truncate leading-[1.3]">
+                        додати послугу
+                      </span>
                     </button>
                     <div className="bg-[var(--color-line)]" />
                     <button
                       type="button"
                       onClick={handleAddPlaceholderClick}
-                      className="border-b border-[var(--color-line)] flex items-end justify-end py-2 pl-1 text-[var(--color-text-muted)] italic hover:text-[var(--color-text)] hover:bg-black/5 transition-colors"
+                      className="border-b border-[var(--color-line)] flex items-center justify-end py-0 pl-1 text-[var(--color-text-muted)] italic hover:text-[var(--color-text)] hover:bg-black/5 transition-colors"
                     >
                       ціна
                     </button>
@@ -315,15 +340,17 @@ export default function AnketaCardEditable(props: Props) {
                   <button
                     type="button"
                     onClick={() => setActiveServiceId(slot.id)}
-                    className={`border-b border-[var(--color-line)] flex items-end py-2 pr-4 text-left hover:bg-black/5 transition-colors ${
+                    className={`border-b border-[var(--color-line)] flex items-center min-w-0 py-0 pr-4 text-left hover:bg-black/5 transition-colors ${
                       activeServiceId === slot.id ? "bg-black/5" : ""
                     } ${slot.name === "" ? "text-[var(--color-text-muted)] italic" : ""}`}
                     title="Редагувати назву і час"
                   >
-                    {slot.name || "додати послугу"}
+                    <span className="truncate leading-[1.3]">
+                      {slot.name || "додати послугу"}
+                    </span>
                   </button>
                   <div className="bg-[var(--color-line)]" />
-                  <div className="border-b border-[var(--color-line)] flex items-end justify-end py-1 pl-1">
+                  <div className="border-b border-[var(--color-line)] flex items-center justify-end py-0 pl-1">
                     <input
                       type="text"
                       value={slot.price}
@@ -397,7 +424,7 @@ export default function AnketaCardEditable(props: Props) {
                     {DAY_LABELS[dayKey]}
                   </div>
                   <div
-                    className={`text-[8px] ${enabled ? "opacity-70" : ""}`}
+                    className={`text-[8px] md:text-[12px] ${enabled ? "opacity-70" : ""}`}
                     style={{ fontVariantNumeric: "tabular-nums" }}
                   >
                     {enabled
@@ -444,38 +471,49 @@ export default function AnketaCardEditable(props: Props) {
               className="bg-white border border-[var(--color-line)] rounded-[6px] px-3 py-2 text-[13px] outline-none focus:border-[var(--color-text)]"
             />
           </label>
-          <label className="flex flex-col gap-1 text-[12px]">
-            <span className="text-[var(--color-text-muted)] uppercase tracking-[0.1em] text-[10px]">
-              Приблизний час (хвилин)
+          <div className="flex flex-col gap-1">
+            <span
+              className="text-[var(--color-text)] uppercase text-[10px]"
+              style={{ letterSpacing: "0.2em", fontWeight: 500 }}
+            >
+              Тривалість послуги
             </span>
-            <input
-              type="text"
-              inputMode="numeric"
-              pattern="[0-9]*"
-              value={
-                activeService.estimatedMinutes !== null
-                  ? String(activeService.estimatedMinutes)
-                  : ""
-              }
-              placeholder="наприклад 30"
-              onChange={(e) => {
-                const raw = e.target.value.replace(/[^0-9]/g, "");
-                if (raw === "") {
-                  updateService(activeService.id, { estimatedMinutes: null });
-                  return;
-                }
-                const next = parseInt(raw, 10);
-                if (Number.isNaN(next)) return;
-                updateService(activeService.id, {
-                  estimatedMinutes: Math.min(next, 600),
-                });
-              }}
-              className="bg-white border border-[var(--color-line)] rounded-[6px] px-3 py-2 text-[13px] outline-none focus:border-[var(--color-text)]"
-            />
-            <span className="text-[10px] text-[var(--color-text-muted)] italic">
-              Не показується клієнтам — використовується для бронювання.
+            <span className="text-[11px] text-[var(--color-text-muted)] italic">
+              Скільки часу займає сеанс. Використовується для розрахунку слотів
+              бронювання.
             </span>
-          </label>
+            <div className="flex items-center gap-2 mt-1">
+              {([30, 60, 90] as const).map((m) => {
+                const active = activeService.estimatedMinutes === m;
+                return (
+                  <button
+                    key={m}
+                    type="button"
+                    onClick={() =>
+                      updateService(activeService.id, { estimatedMinutes: m })
+                    }
+                    className={`px-4 py-2 rounded-[8px] text-[13px] transition-colors ${
+                      active
+                        ? "bg-[#1C1B19] text-white border border-[#1C1B19]"
+                        : "bg-white text-[#1C1B19] border border-[#D5D0C8] hover:border-[#1C1B19]"
+                    }`}
+                    style={!active ? { borderWidth: "0.5px" } : undefined}
+                  >
+                    {m} хв
+                  </button>
+                );
+              })}
+            </div>
+            {activeService.estimatedMinutes !== null &&
+              activeService.estimatedMinutes !== 30 &&
+              activeService.estimatedMinutes !== 60 &&
+              activeService.estimatedMinutes !== 90 && (
+                <span className="text-[11px] text-[var(--color-text-muted)] italic mt-1">
+                  Поточне значення: {activeService.estimatedMinutes} хв.
+                  Оберіть нове щоб оновити.
+                </span>
+              )}
+          </div>
           <button
             type="button"
             onClick={() => setActiveServiceId(null)}

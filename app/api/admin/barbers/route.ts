@@ -35,10 +35,12 @@ export async function GET() {
         name: user.name,
         email: user.email,
         avatar: user.image,
+        approvedPhone: barberProfile.phone,
         approvedBio: barberProfile.bio,
         approvedLandingImage: barberProfile.landingImage,
         approvedIsActive: barberProfile.isActive,
         approvedSchedule: barberProfile.schedule,
+        pendingPhone: barberProfilePending.phone,
         pendingBio: barberProfilePending.bio,
         pendingLandingImage: barberProfilePending.landingImage,
         pendingSchedule: barberProfilePending.schedule,
@@ -109,6 +111,11 @@ export async function GET() {
           name: r.name,
           email: r.email,
           avatar: r.avatar,
+          approvedPhone: r.approvedPhone ?? null,
+          pendingPhone: r.pendingPhone ?? null,
+          phone: hasPending
+            ? r.pendingPhone ?? r.approvedPhone ?? null
+            : r.approvedPhone ?? null,
           bio: hasPending
             ? r.pendingBio ?? r.approvedBio ?? null
             : r.approvedBio ?? null,

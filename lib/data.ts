@@ -9,7 +9,7 @@ export const HERO_CONTENT = {
   tagline:
     "Догляд за бородою і чоловічі стрижки. Записуйся онлайн або заходь.",
   ctaLabel: "Записатись",
-  ctaHref: "#booking",
+  ctaHref: "/booking",
 } as const;
 
 export type NavItem = {

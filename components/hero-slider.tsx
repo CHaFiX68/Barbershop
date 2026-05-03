@@ -80,7 +80,7 @@ export default function HeroSlider({
 
   return (
     <section>
-      <div className="max-w-[1536px] mx-auto px-4 sm:px-6 pt-6">
+      <div className="max-w-[1536px] mx-auto px-4 sm:px-6 py-6">
        <div className="max-w-6xl mx-auto">
         <div className="relative">
         <div className="relative aspect-[16/8] min-h-[180px] bg-[#1C1B19] overflow-hidden rounded-[24px]">

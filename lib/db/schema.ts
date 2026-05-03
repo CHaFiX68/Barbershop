@@ -1,5 +1,6 @@
 import {
   boolean,
+  index,
   integer,
   jsonb,
   pgEnum,
@@ -85,6 +86,7 @@ export const barberProfile = pgTable("barber_profile", {
     .notNull()
     .references(() => user.id, { onDelete: "cascade" })
     .unique(),
+  phone: text("phone"),
   bio: text("bio"),
   landingImage: text("landing_image"),
   isActive: boolean("is_active").notNull().default(false),
@@ -100,6 +102,7 @@ export const service = pgTable("service", {
     .references(() => user.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
   price: text("price").notNull(),
+  estimatedMinutes: integer("estimated_minutes"),
   orderIndex: integer("order_index").notNull().default(0),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
@@ -110,6 +113,7 @@ export const barberProfilePending = pgTable("barber_profile_pending", {
     .notNull()
     .references(() => user.id, { onDelete: "cascade" })
     .unique(),
+  phone: text("phone"),
   bio: text("bio"),
   landingImage: text("landing_image"),
   isActive: boolean("is_active").notNull().default(false),
@@ -124,6 +128,7 @@ export const servicePending = pgTable("service_pending", {
     .references(() => user.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
   price: text("price").notNull(),
+  estimatedMinutes: integer("estimated_minutes"),
   orderIndex: integer("order_index").notNull().default(0),
   submittedAt: timestamp("submitted_at").notNull().defaultNow(),
 });
@@ -141,3 +146,77 @@ export const heroSlide = pgTable("hero_slide", {
   orderIndex: integer("order_index").notNull().default(0),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
+
+export const booking = pgTable("booking", {
+  id: text("id").primaryKey(),
+  customerUserId: text("customer_user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  barberUserId: text("barber_user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  serviceId: text("service_id").references(() => service.id, {
+    onDelete: "set null",
+  }),
+  serviceName: text("service_name").notNull(),
+  servicePrice: text("service_price").notNull(),
+  estimatedMinutes: integer("estimated_minutes").notNull(),
+  bufferMinutes: integer("buffer_minutes").notNull(),
+  startsAt: timestamp("starts_at", { withTimezone: true }).notNull(),
+  endsAt: timestamp("ends_at", { withTimezone: true }).notNull(),
+  status: text("status").notNull().default("active"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  cancelledAt: timestamp("cancelled_at"),
+});
+
+export const chat = pgTable(
+  "chat",
+  {
+    id: text("id").primaryKey(),
+    type: text("type").notNull(),
+    status: text("status").notNull().default("active"),
+    bookingId: text("booking_id").references(() => booking.id, {
+      onDelete: "set null",
+    }),
+    participantAUserId: text("participant_a_user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    participantBUserId: text("participant_b_user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    lastMessageAt: timestamp("last_message_at", { withTimezone: true }),
+    lastMessagePreview: text("last_message_preview"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    archivedAt: timestamp("archived_at"),
+  },
+  (t) => [
+    index("chat_participant_a_status_idx").on(
+      t.participantAUserId,
+      t.status
+    ),
+    index("chat_participant_b_status_idx").on(
+      t.participantBUserId,
+      t.status
+    ),
+  ]
+);
+
+export const message = pgTable(
+  "message",
+  {
+    id: text("id").primaryKey(),
+    chatId: text("chat_id")
+      .notNull()
+      .references(() => chat.id, { onDelete: "cascade" }),
+    senderUserId: text("sender_user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    body: text("body").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    readByA: boolean("read_by_a").notNull().default(false),
+    readByB: boolean("read_by_b").notNull().default(false),
+  },
+  (t) => [index("message_chat_created_idx").on(t.chatId, t.createdAt)]
+);

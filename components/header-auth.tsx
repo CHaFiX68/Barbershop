@@ -2,16 +2,26 @@
 
 import { useSession } from "@/lib/auth-client";
 import AuthModalTrigger from "./auth/auth-modal-trigger";
-import ProfileDropdown from "./profile-dropdown";
+import ProfileDropdown, {
+  type InitialSession,
+} from "./profile-dropdown";
 
-export default function HeaderAuth() {
-  const { data: session, isPending } = useSession();
+type Props = {
+  initialSession?: InitialSession;
+};
 
-  if (isPending) {
-    return <div className="w-32 h-9" aria-hidden="true" />;
-  }
+export default function HeaderAuth({ initialSession = null }: Props) {
+  const { data: clientSession } = useSession();
 
-  if (!session?.user) {
+  // Defensive: prefer client data when available, fall back to server initial.
+  // This survives transient (isPending=false, data=null) windows during
+  // back/forward navigation when better-auth store is being re-validated.
+  // Logout flow stays correct because signOut → router.push + router.refresh
+  // re-renders server → initialSession becomes null → logged-out UI.
+  const effectiveUser =
+    clientSession?.user ?? initialSession?.user ?? null;
+
+  if (!effectiveUser) {
     return (
       <div className="flex items-center gap-3">
         <AuthModalTrigger
@@ -30,5 +40,5 @@ export default function HeaderAuth() {
     );
   }
 
-  return <ProfileDropdown />;
+  return <ProfileDropdown initialSession={initialSession} />;
 }

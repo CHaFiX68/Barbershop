@@ -65,7 +65,7 @@ export default function EditableBio({ bio, onChange }: Props) {
     <button
       type="button"
       onClick={() => setIsEditing(true)}
-      className="w-full font-display italic text-[14px] text-[var(--color-text-muted)] text-center min-h-[40px] hover:text-[var(--color-text)] transition-colors"
+      className="w-full font-display italic text-[14px] text-[var(--color-text-muted)] text-center min-h-[40px] py-1.5 px-2 rounded-[6px] border border-dashed border-[#C9B89A] hover:border-solid hover:bg-[#F5F0E6] hover:text-[var(--color-text)] transition-colors"
       title="Клікни щоб редагувати"
     >
       {bio || "Клікни щоб додати опис..."}

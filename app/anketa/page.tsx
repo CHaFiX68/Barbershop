@@ -76,6 +76,7 @@ export default async function AnketaPage() {
         <AnketaEditor
           userName={currentUser.name}
           initials={computeInitials(currentUser.name)}
+          initialPhone={profile.phone ?? ""}
           initialBio={profile.bio ?? ""}
           initialLandingImage={profile.landingImage}
           initialIsActive={profile.isActive}
@@ -83,6 +84,7 @@ export default async function AnketaPage() {
             id: s.id,
             name: s.name,
             price: s.price,
+            estimatedMinutes: s.estimatedMinutes,
           }))}
           initialSchedule={normalizeWeekSchedule(profile.schedule)}
         />
