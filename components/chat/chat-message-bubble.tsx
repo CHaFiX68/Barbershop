@@ -22,10 +22,10 @@ export default function ChatMessageBubble({
 }: Props) {
   return (
     <div
-      className={`flex ${isOwn ? "justify-end" : "justify-start"} ${pending ? "opacity-50" : ""}`}
+      className={`flex w-full ${isOwn ? "justify-end" : "justify-start"} ${pending ? "opacity-50" : ""}`}
     >
       <div
-        className={`max-w-[70%] py-2 px-3 ${
+        className={`max-w-[75%] min-w-0 py-2 px-3 wrap-anywhere ${
           isOwn
             ? "bg-[#1C1B19] text-white rounded-[12px] rounded-br-sm"
             : "bg-white text-[var(--color-text)] rounded-[12px] rounded-bl-sm"
@@ -37,7 +37,7 @@ export default function ChatMessageBubble({
         }
       >
         <p
-          className="whitespace-pre-wrap break-words"
+          className="whitespace-pre-wrap"
           style={{ fontSize: "13px", lineHeight: 1.4 }}
         >
           {body}

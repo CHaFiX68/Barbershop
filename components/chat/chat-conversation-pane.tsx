@@ -9,6 +9,7 @@ type Props = {
   isPopupOpen: boolean;
   onChatRefetch: () => void;
   onBackMobile?: () => void;
+  currentUserRole?: string | null;
 };
 
 const MONTH_GENITIVE = [
@@ -39,6 +40,7 @@ export default function ChatConversationPane({
   isPopupOpen,
   onChatRefetch,
   onBackMobile,
+  currentUserRole = null,
 }: Props) {
   const [chat, setChat] = useState<ChatDetail | null>(null);
   const isArchived = chat?.status === "archived";
@@ -79,7 +81,9 @@ export default function ChatConversationPane({
           >
             {chat
               ? chat.type === "support"
-                ? "Підтримка"
+                ? currentUserRole === "barber"
+                  ? "Адміністратор"
+                  : "Підтримка"
                 : chat.otherParticipant.name
               : "Завантаження..."}
           </p>

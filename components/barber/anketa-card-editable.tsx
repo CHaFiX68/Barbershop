@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import type { DaySchedule, WeekSchedule } from "@/lib/db/schema";
 import { DAY_KEYS } from "@/lib/schedule";
+import { useModalStack } from "@/lib/modal-stack-context";
 import EditableBio from "./editable-bio";
 import EditablePhone from "./editable-phone";
 import LandingImageEditorModal from "./landing-image-editor";
@@ -105,9 +106,11 @@ function TimeSelect({
 }
 
 function FloatingPopup({
+  id,
   onClose,
   children,
 }: {
+  id: string;
   onClose: () => void;
   children: React.ReactNode;
 }) {
@@ -115,18 +118,13 @@ function FloatingPopup({
   useEffect(() => {
     setMounted(true);
   }, []);
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, [onClose]);
+  const { zIndex } = useModalStack(id, true, onClose);
   if (!mounted) return null;
   return createPortal(
     <div
       data-anketa-modal
-      className="fixed inset-0 z-[120] pointer-events-none flex items-center justify-center p-4"
+      className="fixed inset-0 pointer-events-none flex items-center justify-center p-4"
+      style={{ zIndex }}
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
@@ -167,11 +165,6 @@ export default function AnketaCardEditable(props: Props) {
     onSubmit,
   } = props;
 
-  const slots: (EditableServiceFull | null)[] = Array.from(
-    { length: MAX_SERVICES },
-    (_, i) => services[i] ?? null
-  );
-
   const updateService = (id: string, patch: Partial<EditableServiceFull>) => {
     onServicesChange(
       services.map((s) => (s.id === id ? { ...s, ...patch } : s))
@@ -181,12 +174,12 @@ export default function AnketaCardEditable(props: Props) {
     onServicesChange(services.filter((s) => s.id !== id));
     if (activeServiceId === id) setActiveServiceId(null);
   };
-  const handleAddPlaceholderClick = () => {
+  const handleAddNewService = () => {
     if (services.length >= MAX_SERVICES) return;
     const id = crypto.randomUUID();
     onServicesChange([
       ...services,
-      { id, name: "", price: "", estimatedMinutes: null },
+      { id, name: "", price: "", estimatedMinutes: 60 },
     ]);
     setActiveServiceId(id);
   };
@@ -215,6 +208,12 @@ export default function AnketaCardEditable(props: Props) {
   const activeService = activeServiceId
     ? services.find((s) => s.id === activeServiceId) ?? null
     : null;
+  const handleCloseServicePopup = () => {
+    if (activeService && activeService.name.trim() === "") {
+      onServicesChange(services.filter((s) => s.id !== activeService.id));
+    }
+    setActiveServiceId(null);
+  };
   const hasPhone = !!phone.trim();
   const toggleDisabled = isSubmitting || !hasPhone;
   const toggleTitle = !hasPhone
@@ -225,7 +224,7 @@ export default function AnketaCardEditable(props: Props) {
 
   return (
     <div className="space-y-4">
-      <article className="relative grid grid-cols-1 md:grid-cols-[200px_1fr_56px] md:items-start gap-5 md:gap-6 bg-[#FAF7F1] border border-[var(--color-line)] rounded-[16px] p-5">
+      <article className="relative grid grid-cols-1 md:grid-cols-[160px_1fr] md:items-start gap-5 md:gap-6 bg-[#FAF7F1] border border-[var(--color-line)] rounded-[16px] p-5">
         <div className="col-span-full flex items-center justify-end gap-3 mb-2">
           {!hasPhone && (
             <span className="italic text-[11px] text-[#A03030]">
@@ -274,7 +273,7 @@ export default function AnketaCardEditable(props: Props) {
                 src={landingImage}
                 alt={userName}
                 fill
-                sizes="240px"
+                sizes="160px"
                 className="object-cover"
               />
             ) : (
@@ -297,83 +296,47 @@ export default function AnketaCardEditable(props: Props) {
           </div>
         </div>
 
-        <div className="flex flex-col md:border-r md:border-[var(--color-line)] md:pr-8">
+        <div className="flex flex-col">
           <div className="text-[10px] font-medium uppercase tracking-[0.18em] text-[var(--color-text)] mb-3 text-center">
             Послуги
           </div>
 
-          <div
-            className="grid text-[13px]"
-            style={{
-              gridTemplateColumns: "minmax(0, 1fr) 1px 80px 24px",
-              columnGap: "0",
-              gridAutoRows: "56px",
-            }}
-          >
-            {slots.map((slot, i) => {
-              if (slot === null) {
-                return (
-                  <div key={`empty-${i}`} style={{ display: "contents" }}>
-                    <button
-                      type="button"
-                      onClick={handleAddPlaceholderClick}
-                      className="border-b border-[var(--color-line)] flex items-center min-w-0 py-0 pr-4 text-left text-[var(--color-text-muted)] italic hover:text-[var(--color-text)] hover:bg-black/5 transition-colors"
-                    >
-                      <span className="truncate leading-[1.3]">
-                        додати послугу
-                      </span>
-                    </button>
-                    <div className="bg-[var(--color-line)]" />
-                    <button
-                      type="button"
-                      onClick={handleAddPlaceholderClick}
-                      className="border-b border-[var(--color-line)] flex items-center justify-end py-0 pl-1 text-[var(--color-text-muted)] italic hover:text-[var(--color-text)] hover:bg-black/5 transition-colors"
-                    >
-                      ціна
-                    </button>
-                    <div className="border-b border-[var(--color-line)]" />
+          <div className="flex flex-col gap-2">
+            {services.map((service) => (
+              <button
+                key={service.id}
+                type="button"
+                onClick={() => setActiveServiceId(service.id)}
+                className="flex items-center justify-between p-3 md:p-4 rounded-[10px] border-[#D5D0C8] bg-white text-left transition-all hover:bg-[#FAF7F1] hover:border-[#1C1B19]"
+                style={{ borderWidth: "0.5px" }}
+              >
+                <div className="flex-1 min-w-0 mr-3">
+                  <div className="text-[14px] md:text-[15px] text-[#1C1B19] mb-0.5 break-words">
+                    {service.name || "Без назви"}
                   </div>
-                );
-              }
-              return (
-                <div key={slot.id} style={{ display: "contents" }}>
-                  <button
-                    type="button"
-                    onClick={() => setActiveServiceId(slot.id)}
-                    className={`border-b border-[var(--color-line)] flex items-center min-w-0 py-0 pr-4 text-left hover:bg-black/5 transition-colors ${
-                      activeServiceId === slot.id ? "bg-black/5" : ""
-                    } ${slot.name === "" ? "text-[var(--color-text-muted)] italic" : ""}`}
-                    title="Редагувати назву і час"
-                  >
-                    <span className="truncate leading-[1.3]">
-                      {slot.name || "додати послугу"}
-                    </span>
-                  </button>
-                  <div className="bg-[var(--color-line)]" />
-                  <div className="border-b border-[var(--color-line)] flex items-center justify-end py-0 pl-1">
-                    <input
-                      type="text"
-                      value={slot.price}
-                      onChange={(e) =>
-                        updateService(slot.id, { price: e.target.value })
-                      }
-                      placeholder="ціна"
-                      className="w-full bg-transparent text-right text-[13px] text-[var(--color-text-muted)] outline-none placeholder:text-[var(--color-text-muted)] placeholder:opacity-50"
-                    />
-                  </div>
-                  <div className="border-b border-[var(--color-line)] flex items-center justify-center">
-                    <button
-                      type="button"
-                      onClick={() => removeService(slot.id)}
-                      aria-label="Видалити послугу"
-                      className="text-[var(--color-text-muted)] hover:text-[#A03030] text-[14px] leading-none w-5 h-5 flex items-center justify-center"
-                    >
-                      ×
-                    </button>
+                  <div className="text-[11px] md:text-[12px] text-[#7A736A]">
+                    {service.estimatedMinutes
+                      ? `~${service.estimatedMinutes} хв`
+                      : "тривалість не вказана"}
                   </div>
                 </div>
-              );
-            })}
+                <div className="text-right shrink-0">
+                  <div className="text-[13px] md:text-[14px] font-medium text-[#1C1B19] whitespace-nowrap">
+                    {service.price ? `${service.price} грн` : "—"}
+                  </div>
+                </div>
+              </button>
+            ))}
+
+            {services.length < MAX_SERVICES && (
+              <button
+                type="button"
+                onClick={handleAddNewService}
+                className="w-full p-3 md:p-4 border border-dashed border-[#C9B89A] rounded-[10px] text-[#7A736A] italic text-[13px] md:text-[14px] hover:bg-[#FAF7F1] hover:text-[#1C1B19] hover:border-[#1C1B19] transition-all"
+              >
+                + Додати послугу
+              </button>
+            )}
           </div>
 
           <div className="mt-3">
@@ -398,50 +361,61 @@ export default function AnketaCardEditable(props: Props) {
           </div>
         </div>
 
-        <div className="flex flex-col">
-          <div className="text-[9px] font-medium uppercase tracking-[0.15em] text-[var(--color-text)] mb-2.5 text-center">
-            Графік
-          </div>
-          <div className="grid grid-cols-7 md:flex md:flex-col gap-1">
-            {DAY_KEYS.map((dayKey) => {
-              const day = schedule[dayKey];
-              const enabled = day.enabled;
-              const isActiveDay = activeDayKey === dayKey;
-              return (
-                <button
-                  type="button"
-                  key={dayKey}
-                  onClick={() => handleDayClick(dayKey)}
-                  className={`aspect-square rounded-[6px] flex flex-col items-center justify-center transition-all cursor-pointer ${
-                    enabled
-                      ? "bg-[var(--color-text)] text-white"
-                      : "bg-[#EDEAE5] text-[var(--color-text-muted)] hover:bg-[#E0DAC9]"
-                  } ${isActiveDay ? "ring-2 ring-[#C9B89A] ring-offset-1" : ""}`}
-                >
-                  <div
-                    className={`text-[10px] ${enabled ? "font-medium" : ""}`}
-                  >
-                    {DAY_LABELS[dayKey]}
-                  </div>
-                  <div
-                    className={`text-[8px] md:text-[12px] ${enabled ? "opacity-70" : ""}`}
-                    style={{ fontVariantNumeric: "tabular-nums" }}
-                  >
-                    {enabled
-                      ? `${formatHourShort(day.startMinutes)}–${formatHourShort(day.endMinutes)}`
-                      : "—"}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        </div>
       </article>
+
+      <div className="mt-6 md:mt-8">
+        <p
+          className="text-center mb-3"
+          style={{
+            fontSize: "10px",
+            letterSpacing: "0.2em",
+            textTransform: "uppercase",
+            fontWeight: 500,
+            color: "var(--color-text)",
+          }}
+        >
+          Графік
+        </p>
+        <div className="grid grid-cols-7 gap-1.5 md:gap-3">
+          {DAY_KEYS.map((dayKey) => {
+            const day = schedule[dayKey];
+            const enabled = day.enabled;
+            const isActiveDay = activeDayKey === dayKey;
+            return (
+              <button
+                type="button"
+                key={dayKey}
+                onClick={() => handleDayClick(dayKey)}
+                className={`aspect-square rounded-[8px] flex flex-col items-center justify-center transition-all cursor-pointer ${
+                  enabled
+                    ? "bg-[var(--color-text)] text-white"
+                    : "bg-[#FAF7F1] text-[var(--color-text-muted)] hover:bg-[#F2EDE3]"
+                } ${isActiveDay ? "ring-2 ring-[#C9B89A] ring-offset-1" : ""}`}
+              >
+                <div
+                  className={`text-[11px] md:text-[13px] ${enabled ? "font-medium" : ""}`}
+                >
+                  {DAY_LABELS[dayKey]}
+                </div>
+                <div
+                  className={`text-[9px] md:text-[12px] ${enabled ? "opacity-70" : ""}`}
+                  style={{ fontVariantNumeric: "tabular-nums" }}
+                >
+                  {enabled
+                    ? `${formatHourShort(day.startMinutes)}–${formatHourShort(day.endMinutes)}`
+                    : "—"}
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
       {activeService && (
         <FloatingPopup
           key={`service-${activeService.id}`}
-          onClose={() => setActiveServiceId(null)}
+          id="anketa-service-popup"
+          onClose={handleCloseServicePopup}
         >
           <div className="flex items-center justify-between">
             <h4 className="font-display text-[15px] font-medium">
@@ -449,7 +423,7 @@ export default function AnketaCardEditable(props: Props) {
             </h4>
             <button
               type="button"
-              onClick={() => setActiveServiceId(null)}
+              onClick={handleCloseServicePopup}
               aria-label="Закрити"
               className="text-[var(--color-text-muted)] hover:text-[var(--color-text)] text-[16px]"
             >
@@ -458,7 +432,7 @@ export default function AnketaCardEditable(props: Props) {
           </div>
           <label className="flex flex-col gap-1 text-[12px]">
             <span className="text-[var(--color-text-muted)] uppercase tracking-[0.1em] text-[10px]">
-              Назва послуги
+              Назва
             </span>
             <input
               type="text"
@@ -471,19 +445,30 @@ export default function AnketaCardEditable(props: Props) {
               className="bg-white border border-[var(--color-line)] rounded-[6px] px-3 py-2 text-[13px] outline-none focus:border-[var(--color-text)]"
             />
           </label>
+          <label className="flex flex-col gap-1 text-[12px]">
+            <span className="text-[var(--color-text-muted)] uppercase tracking-[0.1em] text-[10px]">
+              Ціна (грн)
+            </span>
+            <input
+              type="text"
+              inputMode="numeric"
+              value={activeService.price}
+              onChange={(e) =>
+                updateService(activeService.id, { price: e.target.value })
+              }
+              placeholder="0"
+              className="bg-white border border-[var(--color-line)] rounded-[6px] px-3 py-2 text-[13px] outline-none focus:border-[var(--color-text)]"
+            />
+          </label>
           <div className="flex flex-col gap-1">
             <span
               className="text-[var(--color-text)] uppercase text-[10px]"
               style={{ letterSpacing: "0.2em", fontWeight: 500 }}
             >
-              Тривалість послуги
+              Тривалість
             </span>
-            <span className="text-[11px] text-[var(--color-text-muted)] italic">
-              Скільки часу займає сеанс. Використовується для розрахунку слотів
-              бронювання.
-            </span>
-            <div className="flex items-center gap-2 mt-1">
-              {([30, 60, 90] as const).map((m) => {
+            <div className="grid grid-cols-4 gap-2 mt-1">
+              {([30, 60, 90, 120] as const).map((m) => {
                 const active = activeService.estimatedMinutes === m;
                 return (
                   <button
@@ -492,10 +477,10 @@ export default function AnketaCardEditable(props: Props) {
                     onClick={() =>
                       updateService(activeService.id, { estimatedMinutes: m })
                     }
-                    className={`px-4 py-2 rounded-[8px] text-[13px] transition-colors ${
+                    className={`py-2 px-1 rounded-[8px] text-xs transition-colors ${
                       active
                         ? "bg-[#1C1B19] text-white border border-[#1C1B19]"
-                        : "bg-white text-[#1C1B19] border border-[#D5D0C8] hover:border-[#1C1B19]"
+                        : "bg-white text-[#7A736A] border border-[#D5D0C8] hover:border-[#1C1B19]"
                     }`}
                     style={!active ? { borderWidth: "0.5px" } : undefined}
                   >
@@ -505,28 +490,37 @@ export default function AnketaCardEditable(props: Props) {
               })}
             </div>
             {activeService.estimatedMinutes !== null &&
-              activeService.estimatedMinutes !== 30 &&
-              activeService.estimatedMinutes !== 60 &&
-              activeService.estimatedMinutes !== 90 && (
+              ![30, 60, 90, 120].includes(activeService.estimatedMinutes) && (
                 <span className="text-[11px] text-[var(--color-text-muted)] italic mt-1">
                   Поточне значення: {activeService.estimatedMinutes} хв.
                   Оберіть нове щоб оновити.
                 </span>
               )}
           </div>
-          <button
-            type="button"
-            onClick={() => setActiveServiceId(null)}
-            className="mt-4 w-full bg-[var(--color-text)] text-white px-4 py-2.5 rounded-[8px] text-[13px] font-medium hover:bg-transparent hover:text-[var(--color-text)] hover:border-[var(--color-text)] border border-transparent transition-colors"
-          >
-            Зберегти
-          </button>
+          <div className="grid grid-cols-3 gap-2 mt-4">
+            <button
+              type="button"
+              onClick={() => removeService(activeService.id)}
+              className="col-span-1 px-3 py-2.5 rounded-[8px] text-[13px] border border-[#A03030] text-[#A03030] bg-transparent hover:bg-[#A03030]/5 transition-colors"
+              style={{ borderWidth: "0.5px" }}
+            >
+              Видалити
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveServiceId(null)}
+              className="col-span-2 bg-[var(--color-text)] text-white px-4 py-2.5 rounded-[8px] text-[13px] font-medium hover:bg-transparent hover:text-[var(--color-text)] hover:border-[var(--color-text)] border border-transparent transition-colors"
+            >
+              Зберегти
+            </button>
+          </div>
         </FloatingPopup>
       )}
 
       {activeDay && activeDayKey && (
         <FloatingPopup
           key={`day-${activeDayKey}`}
+          id="anketa-day-popup"
           onClose={() => setActiveDayKey(null)}
         >
           <div className="flex items-center justify-between">

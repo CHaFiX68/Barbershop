@@ -24,6 +24,7 @@ export default function BarberPreview({
 }: Props) {
   return (
     <BarberPublicCard
+      variant="preview"
       name={name}
       phone={phone}
       bio={bio}

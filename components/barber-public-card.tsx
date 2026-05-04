@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import type { WeekSchedule } from "@/lib/db/schema";
+import type { DaySchedule, WeekSchedule } from "@/lib/db/schema";
 import { DAY_KEYS } from "@/lib/schedule";
 
 const DAY_LABELS: Record<keyof WeekSchedule, string> = {
@@ -11,6 +11,24 @@ const DAY_LABELS: Record<keyof WeekSchedule, string> = {
   fri: "Пт",
   sat: "Сб",
   sun: "Нд",
+};
+
+const EMPTY_DAY: DaySchedule = {
+  enabled: false,
+  startMinutes: 0,
+  endMinutes: 0,
+  breakStartMinutes: null,
+  breakEndMinutes: null,
+};
+
+const EMPTY_WEEK: WeekSchedule = {
+  mon: EMPTY_DAY,
+  tue: EMPTY_DAY,
+  wed: EMPTY_DAY,
+  thu: EMPTY_DAY,
+  fri: EMPTY_DAY,
+  sat: EMPTY_DAY,
+  sun: EMPTY_DAY,
 };
 
 function formatHour(minutes: number): string {
@@ -25,15 +43,18 @@ function getInitials(name: string): string {
   return (parts[0][0] + parts[1][0]).toUpperCase();
 }
 
+type ServicePublic = { name: string; price: string };
+
 type Props = {
   name: string;
   phone: string | null;
   bio: string | null;
   landingImage: string | null;
   initials?: string;
-  services: { name: string; price: string }[];
-  schedule: WeekSchedule;
   ctaHref?: string;
+  variant?: "compact" | "preview";
+  services?: ServicePublic[];
+  schedule?: WeekSchedule;
 };
 
 const SERVICE_SLOTS = 6;
@@ -44,20 +65,131 @@ export default function BarberPublicCard({
   bio,
   landingImage,
   initials,
-  services,
-  schedule,
   ctaHref,
+  variant = "compact",
+  services = [],
+  schedule,
 }: Props) {
   const renderedInitials = initials ?? getInitials(name);
-  const slots: ({ name: string; price: string } | null)[] = Array.from(
+
+  if (variant === "preview") {
+    return (
+      <PreviewLayout
+        name={name}
+        phone={phone}
+        bio={bio}
+        landingImage={landingImage}
+        initials={renderedInitials}
+        services={services}
+        schedule={schedule ?? EMPTY_WEEK}
+      />
+    );
+  }
+
+  return (
+    <CompactLayout
+      name={name}
+      phone={phone}
+      bio={bio}
+      landingImage={landingImage}
+      initials={renderedInitials}
+      ctaHref={ctaHref}
+    />
+  );
+}
+
+function CompactLayout({
+  name,
+  phone,
+  bio,
+  landingImage,
+  initials,
+  ctaHref,
+}: {
+  name: string;
+  phone: string | null;
+  bio: string | null;
+  landingImage: string | null;
+  initials: string;
+  ctaHref?: string;
+}) {
+  const photo = (
+    <div className="relative w-40 h-40 mx-auto mb-2 bg-[#F5F0E6] rounded-[8px] overflow-hidden flex items-center justify-center">
+      {landingImage ? (
+        <Image
+          src={landingImage}
+          alt={name}
+          fill
+          sizes="160px"
+          className="object-cover"
+        />
+      ) : (
+        <span
+          className="font-display italic text-[var(--color-text-muted)]"
+          style={{ fontSize: "60px" }}
+        >
+          {initials}
+        </span>
+      )}
+    </div>
+  );
+
+  const body = (
+    <>
+      <h3 className="font-display text-sm text-center mb-1 text-[#1C1B19]">
+        {name}
+      </h3>
+      {photo}
+      {phone && (
+        <p className="text-center text-[10px] text-[#1C1B19] mb-0.5">
+          {phone}
+        </p>
+      )}
+      {bio && (
+        <p className="text-center text-[10px] italic text-[#7A736A]">{bio}</p>
+      )}
+    </>
+  );
+
+  const baseClass =
+    "block bg-[#FAF7F1] rounded-[10px] p-2.5 max-w-45 mx-auto";
+
+  if (ctaHref) {
+    return (
+      <Link
+        href={ctaHref}
+        className={`${baseClass} transition-all duration-300 hover:scale-105 hover:ring-2 hover:ring-[#1C1B19] hover:shadow-[0_8px_30px_rgba(28,27,25,0.25)]`}
+      >
+        {body}
+      </Link>
+    );
+  }
+  return <article className={baseClass}>{body}</article>;
+}
+
+function PreviewLayout({
+  name,
+  phone,
+  bio,
+  landingImage,
+  initials,
+  services,
+  schedule,
+}: {
+  name: string;
+  phone: string | null;
+  bio: string | null;
+  landingImage: string | null;
+  initials: string;
+  services: ServicePublic[];
+  schedule: WeekSchedule;
+}) {
+  const slots: (ServicePublic | null)[] = Array.from(
     { length: SERVICE_SLOTS },
     (_, i) => services[i] ?? null
   );
 
-  const renderServiceRow = (
-    slot: { name: string; price: string } | null,
-    i: number
-  ) => {
+  const renderServiceRow = (slot: ServicePublic | null, i: number) => {
     if (slot) {
       return (
         <div key={`svc-${i}`} style={{ display: "contents" }}>
@@ -80,18 +212,13 @@ export default function BarberPublicCard({
     );
   };
 
-  const renderDayTile = (
-    dayKey: keyof WeekSchedule,
-    variant: "mobile" | "desktop"
-  ) => {
+  const renderDayTile = (dayKey: keyof WeekSchedule) => {
     const day = schedule[dayKey];
     const enabled = day.enabled;
-    const sizing =
-      variant === "mobile" ? "aspect-square" : "aspect-square";
     return (
       <div
         key={dayKey}
-        className={`${sizing} rounded-[6px] flex flex-col items-center justify-center ${
+        className={`aspect-square rounded-[6px] flex flex-col items-center justify-center ${
           enabled
             ? "bg-[var(--color-text)] text-white"
             : "bg-[#EDEAE5] text-[var(--color-text-muted)]"
@@ -127,7 +254,7 @@ export default function BarberPublicCard({
           className="font-display italic text-[var(--color-text-muted)]"
           style={{ fontSize: "80px" }}
         >
-          {renderedInitials}
+          {initials}
         </span>
       )}
     </div>
@@ -176,18 +303,9 @@ export default function BarberPublicCard({
             Графік
           </div>
           <div className="grid grid-cols-7 gap-1.5">
-            {DAY_KEYS.map((dayKey) => renderDayTile(dayKey, "mobile"))}
+            {DAY_KEYS.map((dayKey) => renderDayTile(dayKey))}
           </div>
         </div>
-
-        {ctaHref && (
-          <Link
-            href={ctaHref}
-            className="block w-full text-center bg-[var(--color-text)] text-white px-4 py-3 rounded-[8px] text-[13px] font-medium hover:bg-transparent hover:text-[var(--color-text)] hover:border-[var(--color-text)] border border-transparent transition-colors"
-          >
-            Записатись
-          </Link>
-        )}
       </div>
 
       {/* Desktop layout (md+) */}
@@ -223,14 +341,6 @@ export default function BarberPublicCard({
           >
             {slots.map((slot, i) => renderServiceRow(slot, i))}
           </div>
-          {ctaHref && (
-            <Link
-              href={ctaHref}
-              className="mt-4 block w-full text-center bg-[var(--color-text)] text-white px-4 py-3 rounded-[8px] text-[13px] font-medium hover:bg-transparent hover:text-[var(--color-text)] hover:border-[var(--color-text)] border border-transparent transition-colors"
-            >
-              Записатись
-            </Link>
-          )}
         </div>
 
         <div className="flex flex-col">
@@ -238,7 +348,7 @@ export default function BarberPublicCard({
             Графік
           </div>
           <div className="flex flex-col gap-1">
-            {DAY_KEYS.map((dayKey) => renderDayTile(dayKey, "desktop"))}
+            {DAY_KEYS.map((dayKey) => renderDayTile(dayKey))}
           </div>
         </div>
       </div>

@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import Image from "next/image";
 import type { WeekSchedule } from "@/lib/db/schema";
 import { normalizeWeekSchedule } from "@/lib/schedule";
+import { useModalStack } from "@/lib/modal-stack-context";
 import BarberPreview from "./barber-preview";
 
 type Barber = {
@@ -254,14 +255,7 @@ export default function ManagementModal({ isOpen, onClose }: Props) {
     }
   }, [isOpen]);
 
-  useEffect(() => {
-    if (!isOpen) return;
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, [isOpen, onClose]);
+  const { zIndex, isTop } = useModalStack("management-modal", isOpen, onClose);
 
   const handlePromote = async () => {
     const email = promoteEmail.trim();
@@ -323,18 +317,12 @@ export default function ManagementModal({ isOpen, onClose }: Props) {
 
   return createPortal(
     <div
-      style={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "16px",
-        zIndex: 60,
-        pointerEvents: "none",
+      className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4"
+      style={{ zIndex }}
+      onMouseDown={(e) => {
+        if (e.target !== e.currentTarget) return;
+        if (!isTop) return;
+        onClose();
       }}
     >
       <div
@@ -344,7 +332,6 @@ export default function ManagementModal({ isOpen, onClose }: Props) {
         data-management-modal
         className="w-full max-w-[calc(100vw-32px)] md:w-[960px] md:max-w-[calc(100vw-32px)] max-h-[90vh] overflow-y-auto bg-white border border-[var(--color-line)] rounded-[16px] shadow-[0_24px_48px_rgba(0,0,0,0.18)] p-4 md:p-6"
         style={{
-          pointerEvents: "auto",
           opacity: animateIn ? 1 : 0,
           transform: animateIn ? "translateY(0)" : "translateY(8px)",
           transition:

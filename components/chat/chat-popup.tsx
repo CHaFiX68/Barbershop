@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { X } from "lucide-react";
 import type { ChatListItem } from "@/lib/chat-client";
+import { useModalStack } from "@/lib/modal-stack-context";
 import ChatListPane from "./chat-list-pane";
 import ChatConversationPane from "./chat-conversation-pane";
 
@@ -14,6 +15,7 @@ type Props = {
   onSelectChat: (chatId: string | null) => void;
   onChatsRefetch: () => void;
   onClose: () => void;
+  currentUserRole?: string | null;
 };
 
 export default function ChatPopup({
@@ -23,8 +25,12 @@ export default function ChatPopup({
   onSelectChat,
   onChatsRefetch,
   onClose,
+  currentUserRole = null,
 }: Props) {
   const [isMobile, setIsMobile] = useState(false);
+  const { zIndex } = useModalStack("chat-popup", true, onClose, {
+    respectEsc: false,
+  });
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768);
@@ -42,8 +48,9 @@ export default function ChatPopup({
       animate={{ opacity: 1, scale: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95, y: 20 }}
       transition={{ duration: 0.2 }}
-      className="fixed z-50 bg-[#FAF7F1] rounded-[16px] shadow-2xl overflow-hidden flex flex-col"
+      className="fixed bg-[#FAF7F1] rounded-[16px] shadow-2xl overflow-hidden flex flex-col"
       style={{
+        zIndex,
         bottom: "24px",
         right: "24px",
         width: "min(700px, calc(100vw - 48px))",
@@ -89,6 +96,7 @@ export default function ChatPopup({
             onSelectChat={(id) => onSelectChat(id)}
             onChatsRefetch={onChatsRefetch}
             loading={loading}
+            currentUserRole={currentUserRole}
           />
         )}
         {!isMobile && (
@@ -105,6 +113,7 @@ export default function ChatPopup({
                 onBackMobile={
                   isMobile ? () => onSelectChat(null) : undefined
                 }
+                currentUserRole={currentUserRole}
               />
             ) : (
               <div className="flex items-center justify-center h-full px-6">

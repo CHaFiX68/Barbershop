@@ -1,14 +1,15 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { signOut, useSession } from "@/lib/auth-client";
 import { useChatActions } from "@/lib/chat-context";
+import { useModalStack } from "@/lib/modal-stack-context";
 import Avatar from "./avatar";
 import AvatarEditorModal from "./avatar-editor-modal";
 import AnketaModal from "./barber/anketa-modal";
 import ManagementModal from "./admin/management-modal";
+import MyBookingsPopup from "./my-bookings/my-bookings-popup";
 
 export type InitialSession = {
   user: {
@@ -43,6 +44,7 @@ export default function ProfileDropdown({ initialSession = null }: Props) {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [isAnketaOpen, setIsAnketaOpen] = useState(false);
   const [isManagementOpen, setIsManagementOpen] = useState(false);
+  const [isBookingsOpen, setIsBookingsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const nameInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
@@ -86,42 +88,27 @@ export default function ProfileDropdown({ initialSession = null }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
+  const dropdownClose = useCallback(() => setIsOpen(false), []);
+  const { zIndex: dropdownZ, isTop: dropdownIsTop } = useModalStack(
+    "profile-dropdown",
+    isOpen,
+    dropdownClose
+  );
+
+  // Close on outside click only when dropdown is the topmost stack item.
+  // When chat popup / anketa / management modal is on top, the user is
+  // interacting with that overlay — those clicks aren't "outside" from the
+  // user's perspective, so the dropdown stays open for multitasking.
   useEffect(() => {
-    if (!isOpen && !isAnketaOpen && !isManagementOpen) return;
+    if (!isOpen) return;
     const handleClickOutside = (e: MouseEvent) => {
-      const target = e.target as Node;
-      const insideDropdown = dropdownRef.current?.contains(target);
-      const insideAnketaModal = (e.target as HTMLElement)?.closest?.(
-        "[data-anketa-modal]"
-      );
-      const insideManagementModal = (e.target as HTMLElement)?.closest?.(
-        "[data-management-modal]"
-      );
-      if (insideDropdown || insideAnketaModal || insideManagementModal) return;
-      if (isAnketaOpen) {
-        setIsAnketaOpen(false);
-        return;
-      }
-      if (isManagementOpen) {
-        setIsManagementOpen(false);
-        return;
-      }
-      if (isOpen) {
-        setIsOpen(false);
-      }
+      if (!dropdownIsTop) return;
+      if (dropdownRef.current?.contains(e.target as Node)) return;
+      setIsOpen(false);
     };
     window.addEventListener("mousedown", handleClickOutside);
     return () => window.removeEventListener("mousedown", handleClickOutside);
-  }, [isOpen, isAnketaOpen, isManagementOpen]);
-
-  useEffect(() => {
-    if (!isOpen) return;
-    const handleKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setIsOpen(false);
-    };
-    window.addEventListener("keydown", handleKey);
-    return () => window.removeEventListener("keydown", handleKey);
-  }, [isOpen]);
+  }, [isOpen, dropdownIsTop]);
 
   if (!session?.user) return null;
 
@@ -197,12 +184,6 @@ export default function ProfileDropdown({ initialSession = null }: Props) {
     router.refresh();
   };
 
-  const closeAll = () => {
-    setIsOpen(false);
-    setIsAnketaOpen(false);
-    setIsManagementOpen(false);
-  };
-
   return (
     <div className="relative" ref={dropdownRef}>
       <button
@@ -244,8 +225,9 @@ export default function ProfileDropdown({ initialSession = null }: Props) {
 
       {isMounted && (
         <div
-          className="fixed top-[68px] left-4 right-4 md:absolute md:top-full md:right-0 md:left-auto md:mt-2 md:w-[280px] bg-white border border-[var(--color-line)] rounded-[12px] shadow-[0_12px_32px_rgba(0,0,0,0.08)] overflow-hidden z-[65] origin-top-right transition-[opacity,transform] duration-150"
+          className="fixed top-[68px] left-4 right-4 md:absolute md:top-full md:right-0 md:left-auto md:mt-2 md:w-[280px] bg-white border border-[var(--color-line)] rounded-[12px] shadow-[0_12px_32px_rgba(0,0,0,0.08)] overflow-hidden origin-top-right transition-[opacity,transform] duration-150"
           style={{
+            zIndex: dropdownZ,
             opacity: isOpen && !isAnimating ? 1 : 0,
             transform:
               isOpen && !isAnimating ? "scale(1)" : "scale(0.95)",
@@ -291,10 +273,10 @@ export default function ProfileDropdown({ initialSession = null }: Props) {
 
           <div className="p-1.5">
             {!isBarberRole && !isAdminRole && (
-              <Link
-                href="/my-bookings"
-                onClick={closeAll}
-                className="flex items-center gap-3 px-3 py-2.5 rounded-[8px] hover:bg-[#F5F0E6] transition-colors text-[13px]"
+              <button
+                type="button"
+                onClick={() => setIsBookingsOpen(true)}
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-[8px] hover:bg-[#F5F0E6] transition-colors text-[13px] text-left"
               >
                 <svg
                   className="w-[18px] h-[18px] flex-shrink-0 text-[var(--color-text-muted)]"
@@ -308,14 +290,11 @@ export default function ProfileDropdown({ initialSession = null }: Props) {
                   <path d="M16 3v4M8 3v4M3 10h18" />
                 </svg>
                 <span>Мої записи</span>
-              </Link>
+              </button>
             )}
             <button
               type="button"
-              onClick={() => {
-                closeAll();
-                openChat();
-              }}
+              onClick={() => openChat()}
               className="w-full flex items-center gap-3 px-3 py-2.5 rounded-[8px] hover:bg-[#F5F0E6] transition-colors text-[13px] text-left"
             >
               <svg
@@ -330,13 +309,10 @@ export default function ProfileDropdown({ initialSession = null }: Props) {
               </svg>
               <span>Чат</span>
             </button>
-            {!isAdminRole ? (
+            {!isAdminRole && (
               <button
                 type="button"
-                onClick={() => {
-                  closeAll();
-                  requestOpenSupport();
-                }}
+                onClick={() => requestOpenSupport()}
                 className="w-full flex items-center gap-3 px-3 py-2.5 rounded-[8px] hover:bg-[#F5F0E6] transition-colors text-[13px] text-left"
               >
                 <svg
@@ -353,26 +329,6 @@ export default function ProfileDropdown({ initialSession = null }: Props) {
                 </svg>
                 <span>Підтримка</span>
               </button>
-            ) : (
-              <Link
-                href="/admin/support"
-                onClick={closeAll}
-                className="flex items-center gap-3 px-3 py-2.5 rounded-[8px] hover:bg-[#F5F0E6] transition-colors text-[13px]"
-              >
-                <svg
-                  className="w-[18px] h-[18px] flex-shrink-0 text-[var(--color-text-muted)]"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  aria-hidden="true"
-                >
-                  <path d="M12 22c5.5 0 10-4.5 10-10S17.5 2 12 2 2 6.5 2 12c0 1.7.4 3.3 1.2 4.7L2 22l5.3-1.2c1.4.8 3 1.2 4.7 1.2z" />
-                  <path d="M9.5 9.5c.5-1 1.5-1.5 2.5-1.5 1.7 0 3 1.3 3 3 0 1.5-1 2-2 2.5-.5.3-1 .5-1 1.5" />
-                  <circle cx="12" cy="17" r=".5" fill="currentColor" />
-                </svg>
-                <span>Підтримка</span>
-              </Link>
             )}
           </div>
 
@@ -386,7 +342,6 @@ export default function ProfileDropdown({ initialSession = null }: Props) {
                 onClick={() => {
                   const isMobile = window.innerWidth < 768;
                   if (isMobile) {
-                    setIsOpen(false);
                     router.push("/anketa");
                     return;
                   }
@@ -476,6 +431,11 @@ export default function ProfileDropdown({ initialSession = null }: Props) {
         isOpen={isAvatarEditorOpen}
         onClose={() => setIsAvatarEditorOpen(false)}
         onSuccess={handleAvatarUploadSuccess}
+      />
+
+      <MyBookingsPopup
+        open={isBookingsOpen}
+        onClose={() => setIsBookingsOpen(false)}
       />
     </div>
   );

@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import Cropper, { type Area } from "react-easy-crop";
 import { getCroppedImg, type CropArea } from "@/lib/crop-utils";
+import { useModalStack } from "@/lib/modal-stack-context";
 
 interface Props {
   isOpen: boolean;
@@ -76,11 +77,18 @@ export default function LandingImageEditorModal({
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     handleReset();
     setError(null);
     onClose();
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [onClose]);
+
+  const { zIndex, isTop } = useModalStack(
+    "landing-image-editor",
+    isOpen,
+    handleClose
+  );
 
   const handleApply = async () => {
     if (!imageSrc || !croppedAreaPixels) return;
@@ -120,9 +128,12 @@ export default function LandingImageEditorModal({
       aria-modal="true"
       aria-label="Редагувати фото на лендингу"
       data-anketa-modal
-      className="fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+      className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+      style={{ zIndex }}
       onMouseDown={(e) => {
-        if (e.target === e.currentTarget) handleClose();
+        if (e.target !== e.currentTarget) return;
+        if (!isTop) return;
+        handleClose();
       }}
     >
       <div className="bg-white rounded-[16px] p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">

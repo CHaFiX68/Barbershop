@@ -11,6 +11,7 @@ import {
   type AdminDirectChat,
   type AdminSupportChat,
 } from "@/lib/admin-chat-client";
+import { useModalStack } from "@/lib/modal-stack-context";
 import ChatThread from "./chat-thread";
 
 const MONTH_SHORT = [
@@ -76,6 +77,9 @@ export default function AdminChatPopup({
   const [barbers, setBarbers] = useState<AdminBarberOption[]>([]);
   const [openingDirectFor, setOpeningDirectFor] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+  const { zIndex } = useModalStack("admin-chat-popup", true, onClose, {
+    respectEsc: false,
+  });
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768);
@@ -163,8 +167,9 @@ export default function AdminChatPopup({
       animate={{ opacity: 1, scale: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95, y: 20 }}
       transition={{ duration: 0.2 }}
-      className="fixed z-50 bg-[#FAF7F1] rounded-[16px] shadow-2xl overflow-hidden flex flex-col"
+      className="fixed bg-[#FAF7F1] rounded-[16px] shadow-2xl overflow-hidden flex flex-col"
       style={{
+        zIndex,
         bottom: "24px",
         right: "24px",
         width: "min(720px, calc(100vw - 48px))",

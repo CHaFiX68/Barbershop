@@ -43,6 +43,7 @@ type Props = {
   startsAt: string;
   status: Status;
   isUpcoming: boolean;
+  onChanged?: () => void;
 };
 
 export default function BookingCard({
@@ -53,6 +54,7 @@ export default function BookingCard({
   startsAt,
   status,
   isUpcoming,
+  onChanged,
 }: Props) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
@@ -75,6 +77,7 @@ export default function BookingCard({
         );
       }
       router.refresh();
+      onChanged?.();
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Не вдалось скасувати запис"

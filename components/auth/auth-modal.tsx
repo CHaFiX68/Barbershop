@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "@/lib/auth-client";
+import { useModalStack } from "@/lib/modal-stack-context";
 import LoginForm from "./login-form";
 import RegisterForm from "./register-form";
 import OtpForm from "./otp-form";
@@ -32,7 +33,7 @@ export default function AuthModal() {
     setMounted(true);
   }, []);
 
-  const close = () => {
+  const close = useCallback(() => {
     const params = new URLSearchParams(searchParams.toString());
     params.delete("auth");
     const query = params.toString();
@@ -41,17 +42,9 @@ export default function AuthModal() {
     });
     setPendingVerify(null);
     setShowForgot(false);
-  };
+  }, [pathname, router, searchParams]);
 
-  useEffect(() => {
-    if (!isOpen) return;
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") close();
-    };
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen]);
+  const { zIndex, isTop } = useModalStack("auth-modal", isOpen, close);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -82,7 +75,11 @@ export default function AuthModal() {
   };
 
   const handleMouseUp = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (e.target === e.currentTarget && mouseDownOnBackdropRef.current) {
+    if (
+      e.target === e.currentTarget &&
+      mouseDownOnBackdropRef.current &&
+      isTop
+    ) {
       close();
     }
     mouseDownOnBackdropRef.current = false;
@@ -114,7 +111,8 @@ export default function AuthModal() {
       aria-label={mode === "login" ? "Увійти" : "Створити акаунт"}
       onMouseDown={handleMouseDown}
       onMouseUp={handleMouseUp}
-      className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4"
+      className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4"
+      style={{ zIndex }}
     >
       <div
         className="relative bg-white rounded-[16px] max-w-md w-full max-h-[90vh] overflow-hidden flex flex-col"

@@ -27,44 +27,46 @@ export default function Step1Barbers({ barbers, onSelect }: Props) {
   }
 
   return (
-    <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <section className="flex flex-wrap justify-center gap-3 pt-2 pb-2">
       {barbers.map((b) => (
-        <article
+        <button
           key={b.id}
-          className="flex flex-col bg-[#FAF7F1] border border-[var(--color-line)] rounded-[12px] p-4"
+          type="button"
+          onClick={() => onSelect(b.id)}
+          className="block bg-[#FAF7F1] rounded-[10px] p-2.5 max-w-45 mx-auto transition-all duration-300 hover:scale-105 hover:ring-2 hover:ring-[#1C1B19] hover:shadow-[0_8px_30px_rgba(28,27,25,0.25)]"
         >
-          <div className="relative aspect-square bg-[#F5F0E6] rounded-[12px] overflow-hidden mb-3 flex items-center justify-center">
+          <h3 className="font-display text-sm text-center mb-1 text-[#1C1B19]">
+            {b.name}
+          </h3>
+          <div className="relative w-40 h-40 mx-auto mb-2 bg-[#F5F0E6] rounded-[8px] overflow-hidden flex items-center justify-center">
             {b.landingImage ? (
               <Image
                 src={b.landingImage}
                 alt={b.name}
                 fill
-                sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                sizes="160px"
                 className="object-cover"
               />
             ) : (
               <span
                 className="font-display italic text-[var(--color-text-muted)]"
-                style={{ fontSize: "64px" }}
+                style={{ fontSize: "60px" }}
               >
                 {b.initials}
               </span>
             )}
           </div>
-          <h3
-            className="font-display text-center mb-3 text-[var(--color-text)]"
-            style={{ fontSize: "20px", fontWeight: 500 }}
-          >
-            {b.name}
-          </h3>
-          <button
-            type="button"
-            onClick={() => onSelect(b.id)}
-            className="w-full bg-[var(--color-text)] text-white px-4 py-2.5 rounded-[8px] text-[14px] font-medium hover:opacity-90 transition-opacity"
-          >
-            Вибрати
-          </button>
-        </article>
+          {b.phone && (
+            <p className="text-center text-[10px] text-[#1C1B19] mb-0.5">
+              {b.phone}
+            </p>
+          )}
+          {b.bio && (
+            <p className="text-center text-[10px] italic text-[#7A736A]">
+              {b.bio}
+            </p>
+          )}
+        </button>
       ))}
     </section>
   );

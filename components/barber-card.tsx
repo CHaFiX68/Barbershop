@@ -13,8 +13,6 @@ export default function BarberCard({ barber }: Props) {
       bio={barber.bio}
       landingImage={barber.landingImage}
       initials={barber.initials}
-      services={barber.services}
-      schedule={barber.schedule}
       ctaHref={`/booking?barber=${barber.id}`}
     />
   );

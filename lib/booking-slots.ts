@@ -4,7 +4,7 @@ import type { WeekSchedule } from "./db/schema";
 
 export const SLOT_MINUTES = 30;
 export const BOOKING_DAYS_AHEAD = 30;
-export const BOOKING_TZ = "Europe/Stockholm";
+export const BOOKING_TZ = "Europe/Kyiv";
 export const BOOKING_CUTOFF_MINUTES = 30;
 
 const WEEKDAY_TO_KEY: Record<string, keyof WeekSchedule> = {

@@ -169,6 +169,7 @@ export default function ChatBubble({ initialRole = null }: Props) {
               onSelectChat={setSelectedChatId}
               onChatsRefetch={refetchChats}
               onClose={handleClose}
+              currentUserRole={initialRole}
             />
           )
         )}

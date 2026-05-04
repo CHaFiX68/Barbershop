@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { createPortal } from "react-dom";
+import { useModalStack } from "@/lib/modal-stack-context";
 import HeaderAuth from "./header-auth";
 import EditableText from "./editable-text";
 import type { InitialSession } from "./profile-dropdown";
@@ -42,16 +43,12 @@ export default function Header({ navItems, initialSession = null }: Props) {
     }
   }, [open]);
 
-  useEffect(() => {
-    if (!open) return;
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
-    };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, [open]);
-
-  const close = () => setOpen(false);
+  const close = useCallback(() => setOpen(false), []);
+  const { zIndex: drawerZ } = useModalStack(
+    "header-mobile-drawer",
+    open,
+    close
+  );
 
   if (hidden) return null;
 
@@ -110,7 +107,8 @@ export default function Header({ navItems, initialSession = null }: Props) {
         createPortal(
           <>
             <div
-              className="fixed inset-0 z-[55] bg-black/40 md:hidden"
+              className="fixed inset-0 bg-black/40 md:hidden"
+              style={{ zIndex: drawerZ - 1 }}
               onClick={close}
               aria-hidden="true"
             />
@@ -118,7 +116,8 @@ export default function Header({ navItems, initialSession = null }: Props) {
               role="dialog"
               aria-modal="true"
               aria-label="Меню"
-              className="fixed top-0 right-0 bottom-0 z-[56] w-[280px] max-w-[85vw] bg-[#EDEAE5] shadow-2xl md:hidden flex flex-col"
+              className="fixed top-0 right-0 bottom-0 w-[280px] max-w-[85vw] bg-[#EDEAE5] shadow-2xl md:hidden flex flex-col"
+              style={{ zIndex: drawerZ }}
             >
               <div className="flex items-center justify-between p-5 border-b border-[var(--color-line)]">
                 <span

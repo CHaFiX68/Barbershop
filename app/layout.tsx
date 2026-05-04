@@ -10,6 +10,7 @@ import { auth } from "@/lib/auth";
 import { ChatProvider } from "@/lib/chat-context";
 import { getContentMap } from "@/lib/content";
 import { NAV_ITEMS } from "@/lib/data";
+import { ModalStackProvider } from "@/lib/modal-stack-context";
 
 const fraunces = Fraunces({
   variable: "--font-display",
@@ -81,16 +82,18 @@ export default async function RootLayout({
         className="min-h-screen flex flex-col bg-[var(--color-bg)] text-[var(--color-text)]"
         suppressHydrationWarning
       >
-        <ChatProvider>
-          <Header navItems={navItems} initialSession={initialSession} />
-          {children}
-          <Suspense fallback={null}>
-            <AuthModal />
-          </Suspense>
-          {initialSession && (
-            <ChatBubble initialRole={initialSession.user.role ?? null} />
-          )}
-        </ChatProvider>
+        <ModalStackProvider>
+          <ChatProvider>
+            <Header navItems={navItems} initialSession={initialSession} />
+            {children}
+            <Suspense fallback={null}>
+              <AuthModal />
+            </Suspense>
+            {initialSession && (
+              <ChatBubble initialRole={initialSession.user.role ?? null} />
+            )}
+          </ChatProvider>
+        </ModalStackProvider>
       </body>
     </html>
   );

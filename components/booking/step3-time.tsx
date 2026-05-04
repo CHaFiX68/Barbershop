@@ -1,6 +1,5 @@
 "use client";
 
-// TODO: handle non-Stockholm user timezones
 import { useEffect, useState } from "react";
 import type { WeekSchedule } from "@/lib/db/schema";
 import BookingCalendar from "./booking-calendar";

@@ -10,7 +10,12 @@ type Props = {
   onSelectChat: (chatId: string) => void;
   onChatsRefetch: () => void;
   loading: boolean;
+  currentUserRole?: string | null;
 };
+
+function getSupportLabel(role: string | null | undefined): string {
+  return role === "barber" ? "Адміністратор" : "Підтримка";
+}
 
 const MONTH_SHORT = [
   "01",
@@ -62,6 +67,7 @@ export default function ChatListPane({
   onSelectChat,
   onChatsRefetch,
   loading,
+  currentUserRole = null,
 }: Props) {
   const [openingSupport, setOpeningSupport] = useState(false);
   const [supportError, setSupportError] = useState<string | null>(null);
@@ -111,6 +117,7 @@ export default function ChatListPane({
             chat={supportChat}
             isSelected={selectedChatId === supportChat.id}
             onSelect={() => onSelectChat(supportChat.id)}
+            currentUserRole={currentUserRole}
           />
         ) : (
           <button
@@ -163,6 +170,7 @@ export default function ChatListPane({
             chat={c}
             isSelected={selectedChatId === c.id}
             onSelect={() => onSelectChat(c.id)}
+            currentUserRole={currentUserRole}
           />
         ))}
 
@@ -186,14 +194,18 @@ function ChatRow({
   chat,
   isSelected,
   onSelect,
+  currentUserRole,
 }: {
   chat: ChatListItem;
   isSelected: boolean;
   onSelect: () => void;
+  currentUserRole: string | null;
 }) {
   const isArchived = chat.status === "archived";
   const isSupport = chat.type === "support";
-  const name = isSupport ? "Підтримка" : chat.otherParticipant.name;
+  const name = isSupport
+    ? getSupportLabel(currentUserRole)
+    : chat.otherParticipant.name;
   const initial = getInitial(name);
 
   return (

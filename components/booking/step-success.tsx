@@ -82,16 +82,10 @@ export default function StepSuccess({
       >
         Якщо плани зміняться — ви можете скасувати запис у розділі «Мої записи».
       </p>
-      <div className="flex items-center justify-center gap-3 flex-wrap">
-        <Link
-          href="/my-bookings"
-          className="inline-flex items-center justify-center bg-[var(--color-text)] text-white px-6 py-2.5 rounded-[8px] text-[14px] hover:opacity-90 transition-opacity"
-        >
-          Мої записи
-        </Link>
+      <div className="flex items-center justify-center">
         <Link
           href="/"
-          className="text-[#C9B89A] hover:text-[var(--color-text)] text-[14px] hover:underline transition-colors px-3 py-2"
+          className="inline-flex items-center justify-center bg-[var(--color-text)] text-white px-6 py-2.5 rounded-[8px] text-[14px] hover:opacity-90 transition-opacity"
         >
           На головну
         </Link>
