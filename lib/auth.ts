@@ -15,6 +15,12 @@ export const auth = betterAuth({
       verification: schema.verification,
     },
   }),
+  trustedOrigins: [
+    "http://localhost:3000",
+    "https://barbershop-mocha.vercel.app",
+    ...(process.env.NEXT_PUBLIC_APP_URL ? [process.env.NEXT_PUBLIC_APP_URL] : []),
+    ...(process.env.BETTER_AUTH_URL ? [process.env.BETTER_AUTH_URL] : []),
+  ],
   emailAndPassword: {
     enabled: true,
     // TODO: повернути на true коли налаштовано власний Resend домен
