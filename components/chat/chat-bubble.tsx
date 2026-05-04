@@ -4,12 +4,25 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { MessageCircle } from "lucide-react";
 import { fetchChats, openSupport, type ChatListItem } from "@/lib/chat-client";
+import {
+  fetchAdminChats,
+  type AdminChatsList,
+} from "@/lib/admin-chat-client";
 import { useChatActions } from "@/lib/chat-context";
+import AdminChatPopup from "./admin-chat-popup";
 import ChatPopup from "./chat-popup";
 
 const POLL_INTERVAL_MS = 5000;
 
-export default function ChatBubble() {
+const EMPTY_ADMIN_CHATS: AdminChatsList = { support: [], direct: [] };
+
+type Props = {
+  initialRole?: string | null;
+};
+
+export default function ChatBubble({ initialRole = null }: Props) {
+  const isAdmin = initialRole === "admin";
+
   const {
     isOpen,
     selectedChatId: ctxSelectedId,
@@ -19,6 +32,8 @@ export default function ChatBubble() {
   } = useChatActions();
 
   const [chats, setChats] = useState<ChatListItem[]>([]);
+  const [adminChats, setAdminChats] =
+    useState<AdminChatsList>(EMPTY_ADMIN_CHATS);
   const [loading, setLoading] = useState(true);
   const [selectedChatId, setSelectedChatId] = useState<string | null>(
     ctxSelectedId
@@ -30,22 +45,29 @@ export default function ChatBubble() {
     if (ctxSelectedId && ctxSelectedId !== selectedChatId) {
       setSelectedChatId(ctxSelectedId);
     }
-    // intentionally not depending on selectedChatId — only react to external changes
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ctxSelectedId]);
 
-  const totalUnread = chats.reduce((sum, c) => sum + c.unreadCount, 0);
+  const totalUnread = isAdmin
+    ? adminChats.support.reduce((s, c) => s + c.unreadByAdmin, 0) +
+      adminChats.direct.reduce((s, c) => s + c.unreadByAdmin, 0)
+    : chats.reduce((sum, c) => sum + c.unreadCount, 0);
 
   const refetchChats = useCallback(async () => {
     try {
-      const list = await fetchChats();
-      setChats(list);
+      if (isAdmin) {
+        const data = await fetchAdminChats();
+        setAdminChats(data);
+      } else {
+        const list = await fetchChats();
+        setChats(list);
+      }
       setLoading(false);
     } catch {
       // 401 (logged out) or network — keep last known list, don't blow up UI
       setLoading(false);
     }
-  }, []);
+  }, [isAdmin]);
 
   // Initial fetch + light polling
   useEffect(() => {
@@ -62,8 +84,11 @@ export default function ChatBubble() {
     return () => clearInterval(id);
   }, [refetchChats]);
 
-  // External request to open support chat (from user-menu)
+  // External request to open support chat (from user-menu).
+  // Admin doesn't have a "support" entry-point — they're the one receiving
+  // tickets — so we no-op for admin.
   useEffect(() => {
+    if (isAdmin) return;
     if (openSupportRequested === 0) return;
     if (openSupportRequested === lastSupportTickRef.current) return;
     lastSupportTickRef.current = openSupportRequested;
@@ -81,7 +106,7 @@ export default function ChatBubble() {
     return () => {
       cancelled = true;
     };
-  }, [openSupportRequested, refetchChats]);
+  }, [isAdmin, openSupportRequested, refetchChats]);
 
   const handleClose = () => {
     closeChat();
@@ -125,15 +150,27 @@ export default function ChatBubble() {
 
       <AnimatePresence>
         {isOpen && (
-          <ChatPopup
-            key="popup"
-            chats={chats}
-            loading={loading}
-            selectedChatId={selectedChatId}
-            onSelectChat={setSelectedChatId}
-            onChatsRefetch={refetchChats}
-            onClose={handleClose}
-          />
+          isAdmin ? (
+            <AdminChatPopup
+              key="admin-popup"
+              chats={adminChats}
+              loading={loading}
+              selectedChatId={selectedChatId}
+              onSelectChat={setSelectedChatId}
+              onChatsRefetch={refetchChats}
+              onClose={handleClose}
+            />
+          ) : (
+            <ChatPopup
+              key="popup"
+              chats={chats}
+              loading={loading}
+              selectedChatId={selectedChatId}
+              onSelectChat={setSelectedChatId}
+              onChatsRefetch={refetchChats}
+              onClose={handleClose}
+            />
+          )
         )}
       </AnimatePresence>
     </>

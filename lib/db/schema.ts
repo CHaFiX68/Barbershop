@@ -169,11 +169,16 @@ export const booking = pgTable("booking", {
   cancelledAt: timestamp("cancelled_at"),
 });
 
+export type ChatType = "booking" | "support" | "direct_admin";
+
 export const chat = pgTable(
   "chat",
   {
     id: text("id").primaryKey(),
-    type: text("type").notNull(),
+    // ChatType: "booking" (customer↔barber per booking),
+    // "support" (customer↔admin), "direct_admin" (admin↔barber direct).
+    // For direct_admin: participantA = admin, participantB = barber.
+    type: text("type").$type<ChatType>().notNull(),
     status: text("status").notNull().default("active"),
     bookingId: text("booking_id").references(() => booking.id, {
       onDelete: "set null",

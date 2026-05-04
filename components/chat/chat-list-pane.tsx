@@ -67,7 +67,7 @@ export default function ChatListPane({
   const [supportError, setSupportError] = useState<string | null>(null);
 
   const supportChat = chats.find((c) => c.type === "support") ?? null;
-  const bookingChats = chats.filter((c) => c.type === "booking");
+  const otherChats = chats.filter((c) => c.type !== "support");
 
   const handleOpenSupport = async () => {
     if (openingSupport) return;
@@ -156,8 +156,8 @@ export default function ChatListPane({
           </p>
         )}
 
-        {/* Booking chats */}
-        {bookingChats.map((c) => (
+        {/* Booking + direct_admin chats */}
+        {otherChats.map((c) => (
           <ChatRow
             key={c.id}
             chat={c}
@@ -166,7 +166,7 @@ export default function ChatListPane({
           />
         ))}
 
-        {!loading && bookingChats.length === 0 && supportChat == null && (
+        {!loading && otherChats.length === 0 && supportChat == null && (
           <div className="px-4 py-6 text-center">
             <p
               className="italic text-[var(--color-text-muted)]"

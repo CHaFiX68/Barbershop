@@ -87,7 +87,9 @@ export default async function RootLayout({
           <Suspense fallback={null}>
             <AuthModal />
           </Suspense>
-          {initialSession && <ChatBubble />}
+          {initialSession && (
+            <ChatBubble initialRole={initialSession.user.role ?? null} />
+          )}
         </ChatProvider>
       </body>
     </html>

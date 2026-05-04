@@ -2,7 +2,7 @@
 
 export type ChatListItem = {
   id: string;
-  type: "booking" | "support";
+  type: "booking" | "support" | "direct_admin";
   status: "active" | "archived";
   otherParticipant: {
     userId: string;
@@ -28,7 +28,7 @@ export type ChatMessage = {
 
 export type ChatDetail = {
   id: string;
-  type: "booking" | "support";
+  type: "booking" | "support" | "direct_admin";
   status: "active" | "archived";
   otherParticipant: {
     userId: string;
