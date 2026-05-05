@@ -1,7 +1,7 @@
 import crypto from "crypto";
 import { NextResponse } from "next/server";
 import { headers } from "next/headers";
-import { and, eq, gte, lt } from "drizzle-orm";
+import { and, eq, gte, lt, or } from "drizzle-orm";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
@@ -119,20 +119,48 @@ export async function POST(request: Request) {
       status: "active",
     });
 
-    // Auto-create booking chat (Neon HTTP has no transactions; sequential
-    // insert. If this fails, booking exists without chat — chat creation
-    // can be retried by a background job or first message attempt.)
+    // Booking chat is per (customer, barber) pair — reuse the existing active
+    // chat if one exists, otherwise create a new one. Prevents duplicate
+    // chats when a customer books the same barber multiple times.
+    // Neon HTTP has no transactions; sequential queries. If this fails,
+    // booking exists without chat — non-fatal.
     try {
-      await db.insert(chat).values({
-        id: crypto.randomUUID(),
-        type: "booking",
-        status: "active",
-        bookingId: id,
-        participantAUserId: customerUserId,
-        participantBUserId: barberId,
-      });
+      const [existingChat] = await db
+        .select({ id: chat.id })
+        .from(chat)
+        .where(
+          and(
+            eq(chat.type, "booking"),
+            eq(chat.status, "active"),
+            or(
+              and(
+                eq(chat.participantAUserId, customerUserId),
+                eq(chat.participantBUserId, barberId)
+              ),
+              and(
+                eq(chat.participantAUserId, barberId),
+                eq(chat.participantBUserId, customerUserId)
+              )
+            )
+          )
+        )
+        .limit(1);
+
+      if (!existingChat) {
+        await db.insert(chat).values({
+          id: crypto.randomUUID(),
+          type: "booking",
+          status: "active",
+          bookingId: id,
+          participantAUserId: customerUserId,
+          participantBUserId: barberId,
+        });
+      }
     } catch (chatErr) {
-      console.error("[BOOKING-CREATE] chat insert failed (non-fatal):", chatErr);
+      console.error(
+        "[BOOKING-CREATE] chat lookup/insert failed (non-fatal):",
+        chatErr
+      );
     }
 
     return NextResponse.json({

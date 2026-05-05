@@ -35,32 +35,32 @@ function formatDateTime(d: Date): string {
 
 type Status = "active" | "cancelled" | "completed";
 
-type Props = {
+export type BookingItem = {
   id: string;
-  barberName: string;
   serviceName: string;
   servicePrice: string;
   startsAt: string;
   status: Status;
-  isUpcoming: boolean;
+  // Customer view
+  barberName?: string;
+  // Barber view
+  customerName?: string;
+  customerEmail?: string;
+};
+
+type Props = {
+  booking: BookingItem;
+  role: "customer" | "barber";
   onChanged?: () => void;
 };
 
-export default function BookingCard({
-  id,
-  barberName,
-  serviceName,
-  servicePrice,
-  startsAt,
-  status,
-  isUpcoming,
-  onChanged,
-}: Props) {
+export default function BookingCard({ booking: b, role, onChanged }: Props) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const startsDate = new Date(startsAt);
+  const startsDate = new Date(b.startsAt);
+  const isUpcoming = b.status === "active" && startsDate > new Date();
 
   const handleCancel = async () => {
     if (busy) return;
@@ -68,7 +68,9 @@ export default function BookingCard({
     setBusy(true);
     setError(null);
     try {
-      const res = await fetch(`/api/booking/${id}/cancel`, { method: "PATCH" });
+      const res = await fetch(`/api/booking/${b.id}/cancel`, {
+        method: "PATCH",
+      });
       const json = await res.json().catch(() => null);
       if (!res.ok) {
         throw new Error(
@@ -88,36 +90,45 @@ export default function BookingCard({
   };
 
   const statusLabel =
-    status === "cancelled"
+    b.status === "cancelled"
       ? "Скасований"
-      : status === "completed"
+      : b.status === "completed"
         ? "Завершений"
         : "Активний";
 
   const statusClass =
-    status === "cancelled"
+    b.status === "cancelled"
       ? "text-[#A03030]"
-      : status === "completed"
+      : b.status === "completed"
         ? "text-[var(--color-text-muted)]"
         : "text-[#5A7A5A]";
+
+  const personLine =
+    role === "customer"
+      ? b.barberName ?? ""
+      : `${b.customerName ?? ""}${b.customerEmail ? ` · ${b.customerEmail}` : ""}`;
 
   return (
     <article
       className="bg-[#FAF7F1] rounded-[12px] p-4 sm:p-5 grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-3 sm:gap-6 sm:items-center"
-      style={{ borderWidth: "0.5px", borderStyle: "solid", borderColor: "#D5D0C8" }}
+      style={{
+        borderWidth: "0.5px",
+        borderStyle: "solid",
+        borderColor: "#D5D0C8",
+      }}
     >
       <div className="flex flex-col gap-1 min-w-0">
         <span
           className="text-[var(--color-text)] truncate"
           style={{ fontSize: "15px", fontWeight: 500 }}
         >
-          {serviceName}
+          {b.serviceName}
         </span>
         <span
           className="italic text-[var(--color-text-muted)] truncate"
           style={{ fontSize: "12px" }}
         >
-          {barberName} · {servicePrice}
+          {personLine} · {b.servicePrice}
         </span>
         <span
           className="font-display italic text-[#C9B89A]"
@@ -134,7 +145,7 @@ export default function BookingCard({
         >
           {statusLabel}
         </span>
-        {isUpcoming && status === "active" && (
+        {isUpcoming && (
           <button
             type="button"
             onClick={handleCancel}

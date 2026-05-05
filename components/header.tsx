@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { createPortal } from "react-dom";
+import { useBooking } from "@/lib/booking-context";
 import { useModalStack } from "@/lib/modal-stack-context";
 import HeaderAuth from "./header-auth";
 import EditableText from "./editable-text";
@@ -24,6 +25,7 @@ type Props = {
 
 export default function Header({ navItems, initialSession = null }: Props) {
   const pathname = usePathname();
+  const booking = useBooking();
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
 
@@ -68,20 +70,36 @@ export default function Header({ navItems, initialSession = null }: Props) {
           </Link>
 
           <nav className="hidden md:flex items-center gap-8">
-            {navItems.map((item) => (
-              <a
-                key={item.href}
-                href={item.href}
-                className="nav-link text-sm tracking-wide"
-              >
-                <EditableText
-                  contentKey={item.contentKey}
-                  initialValue={item.label}
-                  as="span"
-                  maxLength={30}
-                />
-              </a>
-            ))}
+            {navItems.map((item) =>
+              item.href === "#booking" ? (
+                <button
+                  key={item.href}
+                  type="button"
+                  onClick={() => booking.open()}
+                  className="nav-link text-sm tracking-wide bg-transparent border-0 p-0 cursor-pointer"
+                >
+                  <EditableText
+                    contentKey={item.contentKey}
+                    initialValue={item.label}
+                    as="span"
+                    maxLength={30}
+                  />
+                </button>
+              ) : (
+                <a
+                  key={item.href}
+                  href={item.href}
+                  className="nav-link text-sm tracking-wide"
+                >
+                  <EditableText
+                    contentKey={item.contentKey}
+                    initialValue={item.label}
+                    as="span"
+                    maxLength={30}
+                  />
+                </a>
+              )
+            )}
           </nav>
 
           <div className="flex items-center gap-2">
@@ -138,22 +156,41 @@ export default function Header({ navItems, initialSession = null }: Props) {
                 </button>
               </div>
 
-              <nav className="flex flex-col p-3 gap-1">
-                {navItems.map((item) => (
-                  <a
-                    key={item.href}
-                    href={item.href}
-                    onClick={close}
-                    className="py-3 px-4 rounded-[8px] hover:bg-[#F5F0E6] text-[16px] font-medium transition-colors"
-                  >
-                    <EditableText
-                      contentKey={item.contentKey}
-                      initialValue={item.label}
-                      as="span"
-                      maxLength={30}
-                    />
-                  </a>
-                ))}
+              <nav className="flex flex-col border-t-[0.5px] border-[#D5D0C8]">
+                {navItems.map((item) =>
+                  item.href === "#booking" ? (
+                    <button
+                      key={item.href}
+                      type="button"
+                      onClick={() => {
+                        close();
+                        booking.open();
+                      }}
+                      className="block py-4 px-5 text-lg text-[#1C1B19] hover:text-[#7A736A] transition-colors border-b-[0.5px] border-[#D5D0C8] text-left bg-transparent w-full cursor-pointer border-x-0 border-t-0"
+                    >
+                      <EditableText
+                        contentKey={item.contentKey}
+                        initialValue={item.label}
+                        as="span"
+                        maxLength={30}
+                      />
+                    </button>
+                  ) : (
+                    <a
+                      key={item.href}
+                      href={item.href}
+                      onClick={close}
+                      className="block py-4 px-5 text-lg text-[#1C1B19] hover:text-[#7A736A] transition-colors border-b-[0.5px] border-[#D5D0C8]"
+                    >
+                      <EditableText
+                        contentKey={item.contentKey}
+                        initialValue={item.label}
+                        as="span"
+                        maxLength={30}
+                      />
+                    </a>
+                  )
+                )}
               </nav>
             </div>
           </>,

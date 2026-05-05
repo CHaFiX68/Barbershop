@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 
 const WEEKDAY_FULL = [
@@ -33,6 +35,7 @@ type Props = {
   serviceName: string;
   date: Date;
   time: string;
+  onClose?: () => void;
 };
 
 export default function StepSuccess({
@@ -40,6 +43,7 @@ export default function StepSuccess({
   serviceName,
   date,
   time,
+  onClose,
 }: Props) {
   return (
     <div className="text-center py-12 max-w-[560px] mx-auto">
@@ -83,12 +87,22 @@ export default function StepSuccess({
         Якщо плани зміняться — ви можете скасувати запис у розділі «Мої записи».
       </p>
       <div className="flex items-center justify-center">
-        <Link
-          href="/"
-          className="inline-flex items-center justify-center bg-[var(--color-text)] text-white px-6 py-2.5 rounded-[8px] text-[14px] hover:opacity-90 transition-opacity"
-        >
-          На головну
-        </Link>
+        {onClose ? (
+          <button
+            type="button"
+            onClick={onClose}
+            className="inline-flex items-center justify-center bg-[var(--color-text)] text-white px-6 py-2.5 rounded-[8px] text-[14px] hover:opacity-90 transition-opacity"
+          >
+            Готово
+          </button>
+        ) : (
+          <Link
+            href="/"
+            className="inline-flex items-center justify-center bg-[var(--color-text)] text-white px-6 py-2.5 rounded-[8px] text-[14px] hover:opacity-90 transition-opacity"
+          >
+            На головну
+          </Link>
+        )}
       </div>
     </div>
   );

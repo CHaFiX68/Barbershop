@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { HERO_CONTENT } from "@/lib/data";
+import { useBooking } from "@/lib/booking-context";
 import type { HeroSlideData } from "@/lib/hero-slides";
 import {
   buildSchedule,
@@ -45,6 +46,7 @@ export default function HeroSlider({
   scheduleEntries,
   initialOpenStatus,
 }: Props) {
+  const booking = useBooking();
   const [current, setCurrent] = useState(0);
   const [openStatus, setOpenStatus] = useState<OpenStatus>(initialOpenStatus);
   const total = slides.length;
@@ -202,13 +204,14 @@ export default function HeroSlider({
                 maxLength={200}
               />
             </p>
-            <a
-              href={HERO_CONTENT.ctaHref}
-              className="hidden md:inline-flex mt-8 pointer-events-auto items-center justify-center bg-[#EDEAE5] text-[#1C1B19] border border-[#EDEAE5] px-5 py-2.5 transition-colors hover:bg-transparent hover:text-[#EDEAE5] rounded-[8px]"
+            <button
+              type="button"
+              onClick={() => booking.open()}
+              className="hidden md:inline-flex mt-8 pointer-events-auto items-center justify-center bg-[#EDEAE5] text-[#1C1B19] border border-[#EDEAE5] px-5 py-2.5 transition-colors hover:bg-transparent hover:text-[#EDEAE5] rounded-[8px] cursor-pointer"
               style={{ fontSize: "14px", fontWeight: 500 }}
             >
               {HERO_CONTENT.ctaLabel}
-            </a>
+            </button>
           </div>
 
           {showNav && (
@@ -291,12 +294,13 @@ export default function HeroSlider({
         </div>
 
         <div className="md:hidden flex justify-center py-6">
-          <a
-            href={HERO_CONTENT.ctaHref}
-            className="inline-flex items-center justify-center bg-white border border-[var(--color-line)] text-[var(--color-text)] px-6 py-3 rounded-[8px] text-[14px] font-medium hover:bg-[#F5F0E6] transition-colors"
+          <button
+            type="button"
+            onClick={() => booking.open()}
+            className="inline-flex items-center justify-center bg-white border border-[var(--color-line)] text-[var(--color-text)] px-6 py-3 rounded-[8px] text-[14px] font-medium hover:bg-[#F5F0E6] transition-colors cursor-pointer"
           >
             {HERO_CONTENT.ctaLabel}
-          </a>
+          </button>
         </div>
         </div>
        </div>

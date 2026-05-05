@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { usePathname } from "next/navigation";
+import Image from "next/image";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import type { BarberPublic } from "@/lib/barbers";
 import Step1Barbers from "./step1-barbers";
@@ -51,14 +51,15 @@ type Props = {
   barbers: BarberPublic[];
   initialBarberId: string | null;
   initialServiceId: string | null;
+  onSuccess?: () => void;
 };
 
 export default function BookingFlow({
   barbers,
   initialBarberId,
   initialServiceId,
+  onSuccess,
 }: Props) {
-  const pathname = usePathname();
   const reducedMotion = useReducedMotion();
   const [direction, setDirection] = useState<Direction>("forward");
 
@@ -67,6 +68,10 @@ export default function BookingFlow({
       ? initialBarberId
       : null;
 
+  // Step 1 is skipped only when initialBarberId came via URL (?barber=X) —
+  // i.e. the user clicked a specific barber card. A bare /booking entry
+  // (header "Букінг") always shows step 1 even with a single active barber,
+  // so the user can see who they're booking with.
   const initialFlow: Flow = validInitialBarberId
     ? initialServiceId
       ? { kind: 3 }
@@ -94,14 +99,6 @@ export default function BookingFlow({
         : null,
     [barbers, selectedBarberId]
   );
-
-  useEffect(() => {
-    if (initialBarberId && !validInitialBarberId) {
-      if (typeof window !== "undefined") {
-        window.history.replaceState(null, "", pathname);
-      }
-    }
-  }, [initialBarberId, validInitialBarberId, pathname]);
 
   useEffect(() => {
     if (!selectedBarberId) {
@@ -134,19 +131,6 @@ export default function BookingFlow({
     };
   }, [selectedBarberId]);
 
-  const updateUrl = useCallback(
-    (barberId: string | null, serviceId: string | null) => {
-      if (typeof window === "undefined") return;
-      const params = new URLSearchParams();
-      if (barberId) params.set("barber", barberId);
-      if (serviceId) params.set("service", serviceId);
-      const qs = params.toString();
-      const newUrl = qs ? `${pathname}?${qs}` : pathname;
-      window.history.replaceState(null, "", newUrl);
-    },
-    [pathname]
-  );
-
   // Validate initial service against barber data once loaded — drop to step 2 if invalid
   useEffect(() => {
     if (step !== 3 || !barberData || !selectedServiceId) return;
@@ -155,45 +139,34 @@ export default function BookingFlow({
       setDirection("backward");
       setSelectedServiceId(null);
       setFlow({ kind: 2 });
-      updateUrl(selectedBarberId, null);
     }
-  }, [step, barberData, selectedServiceId, selectedBarberId, updateUrl]);
+  }, [step, barberData, selectedServiceId]);
 
-  const handleBarberSelect = useCallback(
-    (userId: string) => {
-      setDirection("forward");
-      setSelectedBarberId(userId);
-      setSelectedServiceId(null);
-      setFlow({ kind: 2 });
-      updateUrl(userId, null);
-    },
-    [updateUrl]
-  );
+  const handleBarberSelect = useCallback((userId: string) => {
+    setDirection("forward");
+    setSelectedBarberId(userId);
+    setSelectedServiceId(null);
+    setFlow({ kind: 2 });
+  }, []);
 
-  const handleServiceSelect = useCallback(
-    (serviceId: string) => {
-      setDirection("forward");
-      setSelectedServiceId(serviceId);
-      setFlow({ kind: 3 });
-      updateUrl(selectedBarberId, serviceId);
-    },
-    [selectedBarberId, updateUrl]
-  );
+  const handleServiceSelect = useCallback((serviceId: string) => {
+    setDirection("forward");
+    setSelectedServiceId(serviceId);
+    setFlow({ kind: 3 });
+  }, []);
 
   const handleBackToBarbers = useCallback(() => {
     setDirection("backward");
     setSelectedBarberId(null);
     setSelectedServiceId(null);
     setFlow({ kind: 1 });
-    updateUrl(null, null);
-  }, [updateUrl]);
+  }, []);
 
   const handleBackToServices = useCallback(() => {
     setDirection("backward");
     setSelectedServiceId(null);
     setFlow({ kind: 2 });
-    updateUrl(selectedBarberId, null);
-  }, [selectedBarberId, updateUrl]);
+  }, []);
 
   const handleStepClick = (target: 1 | 2 | 3) => {
     if (typeof step !== "number" || target >= step) return;
@@ -247,18 +220,48 @@ export default function BookingFlow({
     ? { duration: 0 }
     : { duration: 0.3, ease: [0.4, 0, 0.2, 1] as const };
 
+  if (barbers.length === 0) {
+    return (
+      <div className="text-center py-16">
+        <p className="text-[var(--color-text-muted)] italic text-[14px] mb-2">
+          Зараз немає доступних барберів.
+        </p>
+        <p className="text-[var(--color-text-muted)] italic text-[12px]">
+          Зайдіть пізніше або скористайтесь чатом підтримки.
+        </p>
+      </div>
+    );
+  }
+
+  // Hide step 1 from breadcrumb when user arrived via a deep-link with a
+  // pre-selected barber AND has already moved past step 1. If the user
+  // returns to step 1 (e.g. via "↻ Змінити" pill), show the full 3-step
+  // breadcrumb so the active step matches what's displayed.
+  const skippedBarberStep = !!validInitialBarberId && step !== 1;
+  const visibleSteps = skippedBarberStep
+    ? STEPS.filter((s) => s.num !== 1)
+    : STEPS;
+
   return (
     <div className="flex flex-col gap-8">
       {step !== "success" && (
         <header>
-          <h1
-            className="font-display text-[var(--color-text)] mb-6"
-            style={{ fontWeight: 600, fontSize: "clamp(28px, 5vw, 40px)" }}
-          >
-            Запис на стрижку
-          </h1>
+          {(step === 3 || (step === 2 && !validInitialBarberId)) && (
+            <button
+              type="button"
+              onClick={
+                step === 3 ? handleBackToServices : handleBackToBarbers
+              }
+              aria-label="Назад"
+              className="inline-flex items-center gap-1.5 px-2 py-2 -ml-2 mb-3 text-sm text-[#7A736A] hover:text-[var(--color-text)] transition-colors"
+            >
+              <span className="text-base leading-none">←</span>
+              <span>Назад</span>
+            </button>
+          )}
           <ol className="flex items-center gap-2 sm:gap-4 flex-wrap">
-            {STEPS.map((s, idx) => {
+            {visibleSteps.map((s, idx) => {
+              const displayNumber = idx + 1;
               const isCurrent = s.num === step;
               const isPast = typeof step === "number" && s.num < step;
               const isFuture = typeof step === "number" && s.num > step;
@@ -279,9 +282,9 @@ export default function BookingFlow({
                     style={{ letterSpacing: "0.15em" }}
                     aria-current={isCurrent ? "step" : undefined}
                   >
-                    {s.num}. {s.label}
+                    {displayNumber}. {s.label}
                   </button>
-                  {idx < STEPS.length - 1 && (
+                  {idx < visibleSteps.length - 1 && (
                     <span
                       aria-hidden="true"
                       className={`text-[11px] ${
@@ -298,6 +301,45 @@ export default function BookingFlow({
             })}
           </ol>
         </header>
+      )}
+
+      {(step === 2 || step === 3) && selectedBarberPublic && (
+        <div className="flex items-center justify-center mb-2">
+          <div
+            className="flex items-center gap-3 pl-2 pr-5 py-2 bg-white rounded-full"
+            style={{
+              borderWidth: "0.5px",
+              borderStyle: "solid",
+              borderColor: "#D5D0C8",
+            }}
+          >
+            {selectedBarberPublic.landingImage ? (
+              <Image
+                src={selectedBarberPublic.landingImage}
+                alt=""
+                width={40}
+                height={40}
+                className="w-10 h-10 rounded-full object-cover shrink-0"
+              />
+            ) : (
+              <div className="w-10 h-10 rounded-full bg-[#F5F0E6] flex items-center justify-center text-[14px] font-display italic text-[var(--color-text-muted)] shrink-0">
+                {selectedBarberPublic.initials}
+              </div>
+            )}
+            <span className="font-display text-lg text-[var(--color-text)]">
+              {selectedBarberPublic.name}
+            </span>
+            {barbers.length > 1 && (
+              <button
+                type="button"
+                onClick={handleBackToBarbers}
+                className="ml-2 text-xs text-[#7A736A] hover:text-[var(--color-text)] transition-colors"
+              >
+                ↻ Змінити
+              </button>
+            )}
+          </div>
+        </div>
       )}
 
       <div className="overflow-x-hidden">
@@ -321,7 +363,9 @@ export default function BookingFlow({
                 loading={barberLoading}
                 error={barberError}
                 onSelect={handleServiceSelect}
-                onBack={handleBackToBarbers}
+                onBack={
+                  barbers.length > 1 ? handleBackToBarbers : undefined
+                }
               />
             )}
 
@@ -351,6 +395,7 @@ export default function BookingFlow({
                 serviceName={flow.info.serviceName}
                 date={flow.info.date}
                 time={flow.info.time}
+                onClose={onSuccess}
               />
             )}
           </motion.div>

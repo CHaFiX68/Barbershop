@@ -1,7 +1,9 @@
+"use client";
+
 import Image from "next/image";
-import Link from "next/link";
 import type { DaySchedule, WeekSchedule } from "@/lib/db/schema";
 import { DAY_KEYS } from "@/lib/schedule";
+import { useBooking } from "@/lib/booking-context";
 
 const DAY_LABELS: Record<keyof WeekSchedule, string> = {
   mon: "Пн",
@@ -51,7 +53,7 @@ type Props = {
   bio: string | null;
   landingImage: string | null;
   initials?: string;
-  ctaHref?: string;
+  barberId?: string;
   variant?: "compact" | "preview";
   services?: ServicePublic[];
   schedule?: WeekSchedule;
@@ -65,7 +67,7 @@ export default function BarberPublicCard({
   bio,
   landingImage,
   initials,
-  ctaHref,
+  barberId,
   variant = "compact",
   services = [],
   schedule,
@@ -89,45 +91,37 @@ export default function BarberPublicCard({
   return (
     <CompactLayout
       name={name}
-      phone={phone}
-      bio={bio}
       landingImage={landingImage}
       initials={renderedInitials}
-      ctaHref={ctaHref}
+      barberId={barberId}
     />
   );
 }
 
 function CompactLayout({
   name,
-  phone,
-  bio,
   landingImage,
   initials,
-  ctaHref,
+  barberId,
 }: {
   name: string;
-  phone: string | null;
-  bio: string | null;
   landingImage: string | null;
   initials: string;
-  ctaHref?: string;
+  barberId?: string;
 }) {
+  const booking = useBooking();
   const photo = (
-    <div className="relative w-40 h-40 mx-auto mb-2 bg-[#F5F0E6] rounded-[8px] overflow-hidden flex items-center justify-center">
+    <div className="relative w-40 h-40 md:w-60 md:h-60 mx-auto bg-[#F5F0E6] rounded-[8px] md:rounded-[10px] overflow-hidden flex items-center justify-center">
       {landingImage ? (
         <Image
           src={landingImage}
           alt={name}
           fill
-          sizes="160px"
+          sizes="(min-width: 768px) 240px, 160px"
           className="object-cover"
         />
       ) : (
-        <span
-          className="font-display italic text-[var(--color-text-muted)]"
-          style={{ fontSize: "60px" }}
-        >
+        <span className="font-display italic text-[var(--color-text-muted)] text-[60px] md:text-[80px]">
           {initials}
         </span>
       )}
@@ -136,32 +130,25 @@ function CompactLayout({
 
   const body = (
     <>
-      <h3 className="font-display text-sm text-center mb-1 text-[#1C1B19]">
+      {photo}
+      <h3 className="font-display text-sm md:text-[22px] text-center mt-2 md:mt-3 text-[#1C1B19]">
         {name}
       </h3>
-      {photo}
-      {phone && (
-        <p className="text-center text-[10px] text-[#1C1B19] mb-0.5">
-          {phone}
-        </p>
-      )}
-      {bio && (
-        <p className="text-center text-[10px] italic text-[#7A736A]">{bio}</p>
-      )}
     </>
   );
 
   const baseClass =
-    "block bg-[#FAF7F1] rounded-[10px] p-2.5 max-w-45 mx-auto";
+    "block bg-[#FAF7F1] rounded-[10px] md:rounded-[12px] p-2.5 md:p-4 max-w-45 md:max-w-[270px] mx-auto";
 
-  if (ctaHref) {
+  if (barberId) {
     return (
-      <Link
-        href={ctaHref}
-        className={`${baseClass} transition-all duration-300 hover:scale-105 hover:ring-2 hover:ring-[#1C1B19] hover:shadow-[0_8px_30px_rgba(28,27,25,0.25)]`}
+      <button
+        type="button"
+        onClick={() => booking.open(barberId)}
+        className={`${baseClass} text-left transition-all duration-300 hover:scale-105 hover:ring-2 hover:ring-[#1C1B19] hover:shadow-[0_8px_30px_rgba(28,27,25,0.25)]`}
       >
         {body}
-      </Link>
+      </button>
     );
   }
   return <article className={baseClass}>{body}</article>;

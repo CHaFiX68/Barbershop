@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { headers } from "next/headers";
-import { and, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { booking, chat } from "@/lib/db/schema";
+import { booking } from "@/lib/db/schema";
 
 export const dynamic = "force-dynamic";
 
@@ -22,7 +22,10 @@ export async function PATCH(
   if (!row) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
-  if (row.customerUserId !== session.user.id) {
+  if (
+    row.customerUserId !== session.user.id &&
+    row.barberUserId !== session.user.id
+  ) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
   if (row.status !== "active") {
@@ -42,16 +45,6 @@ export async function PATCH(
     .update(booking)
     .set({ status: "cancelled", cancelledAt: new Date() })
     .where(eq(booking.id, id));
-
-  // Archive associated booking chat (best-effort, non-fatal)
-  try {
-    await db
-      .update(chat)
-      .set({ status: "archived", archivedAt: new Date() })
-      .where(and(eq(chat.bookingId, id), eq(chat.status, "active")));
-  } catch (chatErr) {
-    console.error("[BOOKING-CANCEL] chat archive failed:", chatErr);
-  }
 
   return NextResponse.json({ id, status: "cancelled" });
 }

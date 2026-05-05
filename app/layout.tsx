@@ -6,7 +6,9 @@ import "./globals.css";
 import AuthModal from "@/components/auth/auth-modal";
 import ChatBubble from "@/components/chat/chat-bubble";
 import Header from "@/components/header";
+import BookingPopupRoot from "@/components/booking/booking-popup-root";
 import { auth } from "@/lib/auth";
+import { BookingProvider } from "@/lib/booking-context";
 import { ChatProvider } from "@/lib/chat-context";
 import { getContentMap } from "@/lib/content";
 import { NAV_ITEMS } from "@/lib/data";
@@ -83,16 +85,19 @@ export default async function RootLayout({
         suppressHydrationWarning
       >
         <ModalStackProvider>
-          <ChatProvider>
-            <Header navItems={navItems} initialSession={initialSession} />
-            {children}
-            <Suspense fallback={null}>
-              <AuthModal />
-            </Suspense>
-            {initialSession && (
-              <ChatBubble initialRole={initialSession.user.role ?? null} />
-            )}
-          </ChatProvider>
+          <BookingProvider>
+            <ChatProvider>
+              <Header navItems={navItems} initialSession={initialSession} />
+              {children}
+              <Suspense fallback={null}>
+                <AuthModal />
+              </Suspense>
+              {initialSession && (
+                <ChatBubble initialRole={initialSession.user.role ?? null} />
+              )}
+              <BookingPopupRoot />
+            </ChatProvider>
+          </BookingProvider>
         </ModalStackProvider>
       </body>
     </html>

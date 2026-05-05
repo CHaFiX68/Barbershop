@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import type { BookingServiceItem } from "./booking-flow";
 
 type BarberInfo = {
@@ -15,16 +14,8 @@ type Props = {
   loading: boolean;
   error: string | null;
   onSelect: (serviceId: string) => void;
-  onBack: () => void;
+  onBack?: () => void;
 };
-
-function getInitials(name: string): string {
-  const trimmed = name.trim();
-  if (!trimmed) return "?";
-  const parts = trimmed.split(/\s+/);
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-  return (parts[0][0] + parts[1][0]).toUpperCase();
-}
 
 export default function Step2Services({
   barberData,
@@ -38,19 +29,20 @@ export default function Step2Services({
       return (
         <div className="text-center py-12">
           <p className="text-[var(--color-text-muted)] italic mb-6">{error}</p>
-          <button
-            type="button"
-            onClick={onBack}
-            className="bg-[var(--color-text)] text-[var(--color-bg)] px-6 py-2.5 rounded-[8px] text-[14px] hover:opacity-90 transition-opacity"
-          >
-            ← Назад до вибору барбера
-          </button>
+          {onBack && (
+            <button
+              type="button"
+              onClick={onBack}
+              className="bg-[var(--color-text)] text-[var(--color-bg)] px-6 py-2.5 rounded-[8px] text-[14px] hover:opacity-90 transition-opacity"
+            >
+              ← Назад до вибору барбера
+            </button>
+          )}
         </div>
       );
     }
     return (
-      <section className="grid grid-cols-1 md:grid-cols-[280px_1fr] gap-6">
-        <div className="bg-[#F5F0E6] rounded-[12px] aspect-square animate-pulse" />
+      <section className="max-w-200 mx-auto">
         <div className="flex flex-col gap-2">
           <div className="bg-[#F5F0E6] rounded-[8px] h-6 animate-pulse" />
           <div className="bg-[#F5F0E6] rounded-[8px] h-14 animate-pulse" />
@@ -61,45 +53,10 @@ export default function Step2Services({
     );
   }
 
-  const { barber, services } = barberData;
+  const { services } = barberData;
 
   return (
-    <section className="grid grid-cols-1 md:grid-cols-[280px_1fr] gap-6 md:items-start">
-      <div className="flex flex-col gap-3">
-        <div className="relative aspect-square bg-[#F5F0E6] rounded-[12px] overflow-hidden flex items-center justify-center">
-          {barber.landingImage ? (
-            <Image
-              src={barber.landingImage}
-              alt={barber.name}
-              fill
-              sizes="280px"
-              className="object-cover"
-            />
-          ) : (
-            <span
-              className="font-display italic text-[var(--color-text-muted)]"
-              style={{ fontSize: "72px" }}
-            >
-              {getInitials(barber.name)}
-            </span>
-          )}
-        </div>
-        <h2
-          className="font-display text-center text-[var(--color-text)]"
-          style={{ fontSize: "24px", fontWeight: 500 }}
-        >
-          {barber.name}
-        </h2>
-        {barber.bio && (
-          <p
-            className="text-center italic text-[var(--color-text-muted)]"
-            style={{ fontSize: "13px", lineHeight: 1.5 }}
-          >
-            {barber.bio}
-          </p>
-        )}
-      </div>
-
+    <section className="max-w-200 mx-auto">
       <div className="flex flex-col">
         <div
           className="text-[var(--color-text)] mb-3"
@@ -192,13 +149,15 @@ export default function Step2Services({
           </ul>
         )}
 
-        <button
-          type="button"
-          onClick={onBack}
-          className="self-start mt-6 text-[#C9B89A] hover:text-[var(--color-text)] text-[13px] hover:underline transition-colors"
-        >
-          ← Назад до вибору барбера
-        </button>
+        {onBack && (
+          <button
+            type="button"
+            onClick={onBack}
+            className="self-start mt-6 text-[#C9B89A] hover:text-[var(--color-text)] text-[13px] hover:underline transition-colors"
+          >
+            ← Назад до вибору барбера
+          </button>
+        )}
       </div>
     </section>
   );

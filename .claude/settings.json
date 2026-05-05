@@ -133,7 +133,12 @@
       "Bash(curl -s -o /tmp/auth.html -w \"auth-login %{http_code}\\\\n\" \"http://localhost:3000/?auth=login\")",
       "Bash(git --no-pager diff lib/modal-stack-context.tsx)",
       "Bash(git --no-pager diff -- \"lib/modal-stack-context.tsx\")",
-      "Bash(npx tsc *)"
+      "Bash(npx tsc *)",
+      "Bash(taskkill /PID 3768 /F)",
+      "PowerShell(Stop-Process -Id 3768 -Force)",
+      "Bash(npx tsx *)",
+      "Bash(git checkout *)",
+      "Bash(grep -rn \"contacts.phone\\\\|contacts\\\\\\\\.phone\\\\|footer.phone\\\\|getContent\" lib/ components/)"
     ],
     "additionalDirectories": [
       "C:\\Projects\\Barbershop",

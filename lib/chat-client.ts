@@ -34,10 +34,14 @@ export type ChatDetail = {
     userId: string;
     name: string;
     role: string;
+    phone: string | null;
   };
   bookingId: string | null;
   bookingServiceName: string | null;
+  bookingServicePrice: string | null;
   bookingStartsAt: string | null;
+  bookingStatus: string | null;
+  supportPhone: string | null;
 };
 
 export async function fetchChats(signal?: AbortSignal): Promise<ChatListItem[]> {

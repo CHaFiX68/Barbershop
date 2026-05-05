@@ -3,7 +3,8 @@ import { headers } from "next/headers";
 import { aliasedTable, asc, eq } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { booking, chat, message, user } from "@/lib/db/schema";
+import { barberProfile, booking, chat, message, user } from "@/lib/db/schema";
+import { getContent } from "@/lib/content";
 
 export const dynamic = "force-dynamic";
 
@@ -21,6 +22,8 @@ export async function GET(
 
   const userA = aliasedTable(user, "user_a");
   const userB = aliasedTable(user, "user_b");
+  const profileA = aliasedTable(barberProfile, "profile_a");
+  const profileB = aliasedTable(barberProfile, "profile_b");
 
   const [chatRow] = await db
     .select({
@@ -32,14 +35,20 @@ export async function GET(
       participantBUserId: chat.participantBUserId,
       participantAName: userA.name,
       participantARole: userA.role,
+      participantAPhone: profileA.phone,
       participantBName: userB.name,
       participantBRole: userB.role,
+      participantBPhone: profileB.phone,
       bookingServiceName: booking.serviceName,
+      bookingServicePrice: booking.servicePrice,
       bookingStartsAt: booking.startsAt,
+      bookingStatus: booking.status,
     })
     .from(chat)
     .innerJoin(userA, eq(userA.id, chat.participantAUserId))
     .innerJoin(userB, eq(userB.id, chat.participantBUserId))
+    .leftJoin(profileA, eq(profileA.userId, chat.participantAUserId))
+    .leftJoin(profileB, eq(profileB.userId, chat.participantBUserId))
     .leftJoin(booking, eq(booking.id, chat.bookingId))
     .where(eq(chat.id, chatId));
 
@@ -69,9 +78,21 @@ export async function GET(
   const isA = chatRow.participantAUserId === me;
   const otherName = isA ? chatRow.participantBName : chatRow.participantAName;
   const otherRole = isA ? chatRow.participantBRole : chatRow.participantARole;
+  const otherPhone = isA
+    ? chatRow.participantBPhone
+    : chatRow.participantAPhone;
   const otherId = isA
     ? chatRow.participantBUserId
     : chatRow.participantAUserId;
+
+  // For support chats, surface the shop's public phone (managed via the
+  // editable "contacts.phone" content block) so the user can see it without
+  // closing the chat. Empty string means admin never set it; treat as null.
+  let supportPhone: string | null = null;
+  if (chatRow.type === "support") {
+    const raw = await getContent("contacts.phone", "");
+    supportPhone = raw.trim() ? raw : null;
+  }
 
   return NextResponse.json({
     chat: {
@@ -82,12 +103,16 @@ export async function GET(
         userId: otherId,
         name: otherName,
         role: otherRole,
+        phone: otherPhone ?? null,
       },
       bookingId: chatRow.bookingId,
       bookingServiceName: chatRow.bookingServiceName ?? null,
+      bookingServicePrice: chatRow.bookingServicePrice ?? null,
       bookingStartsAt: chatRow.bookingStartsAt
         ? chatRow.bookingStartsAt.toISOString()
         : null,
+      bookingStatus: chatRow.bookingStatus ?? null,
+      supportPhone,
     },
     messages: messages.map((m) => ({
       id: m.id,

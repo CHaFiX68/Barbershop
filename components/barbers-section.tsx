@@ -12,7 +12,7 @@ export default async function BarbersSection() {
   return (
     <section
       id="barbers"
-      className="py-12 md:py-16 border-t border-[var(--color-line)]"
+      className="pt-6 md:pt-8 pb-12 md:pb-16 border-t border-[var(--color-line)]"
     >
       <div className="max-w-[1536px] mx-auto px-4 sm:px-6">
         <SectionHeading
@@ -24,23 +24,11 @@ export default async function BarbersSection() {
         />
 
         {barbers.length > 0 ? (
-          barbers.length === 1 ? (
-            <div className="mt-6 md:mt-8 max-w-45 mx-auto pt-2 pb-2">
-              <BarberCard barber={barbers[0]} />
-            </div>
-          ) : barbers.length <= 4 ? (
-            <div className="mt-6 md:mt-8 max-w-200 mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 pt-2 pb-2">
-              {barbers.map((barber) => (
-                <BarberCard key={barber.id} barber={barber} />
-              ))}
-            </div>
-          ) : (
-            <div className="mt-6 md:mt-8 max-w-250 mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 pt-2 pb-2">
-              {barbers.map((barber) => (
-                <BarberCard key={barber.id} barber={barber} />
-              ))}
-            </div>
-          )
+          <div className="mt-6 md:mt-8 flex flex-wrap justify-center gap-3 md:gap-4 pt-2 pb-2 max-w-7xl mx-auto">
+            {barbers.map((barber) => (
+              <BarberCard key={barber.id} barber={barber} />
+            ))}
+          </div>
         ) : (
           <div className="mt-6 md:mt-8 text-center py-16 px-6">
             <p className="text-[var(--color-text-muted)] italic text-[15px] max-w-md mx-auto">

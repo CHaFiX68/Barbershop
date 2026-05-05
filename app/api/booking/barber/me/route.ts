@@ -12,15 +12,20 @@ export async function GET() {
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+  if (session.user.role !== "barber") {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
 
   const now = new Date();
+  const barberUserId = session.user.id;
 
   const [upcoming, history] = await Promise.all([
     db
       .select({
         id: booking.id,
-        barberUserId: booking.barberUserId,
-        barberName: user.name,
+        customerUserId: booking.customerUserId,
+        customerName: user.name,
+        customerEmail: user.email,
         serviceName: booking.serviceName,
         servicePrice: booking.servicePrice,
         estimatedMinutes: booking.estimatedMinutes,
@@ -29,10 +34,10 @@ export async function GET() {
         status: booking.status,
       })
       .from(booking)
-      .innerJoin(user, eq(user.id, booking.barberUserId))
+      .innerJoin(user, eq(user.id, booking.customerUserId))
       .where(
         and(
-          eq(booking.customerUserId, session.user.id),
+          eq(booking.barberUserId, barberUserId),
           eq(booking.status, "active"),
           gt(booking.startsAt, now)
         )
@@ -41,8 +46,9 @@ export async function GET() {
     db
       .select({
         id: booking.id,
-        barberUserId: booking.barberUserId,
-        barberName: user.name,
+        customerUserId: booking.customerUserId,
+        customerName: user.name,
+        customerEmail: user.email,
         serviceName: booking.serviceName,
         servicePrice: booking.servicePrice,
         estimatedMinutes: booking.estimatedMinutes,
@@ -51,12 +57,11 @@ export async function GET() {
         status: booking.status,
       })
       .from(booking)
-      .innerJoin(user, eq(user.id, booking.barberUserId))
-      .where(eq(booking.customerUserId, session.user.id))
+      .innerJoin(user, eq(user.id, booking.customerUserId))
+      .where(eq(booking.barberUserId, barberUserId))
       .orderBy(desc(booking.startsAt)),
   ]);
 
-  // History = all rows except those already in upcoming
   const upcomingIds = new Set(upcoming.map((r) => r.id));
   const historyFiltered = history.filter((r) => !upcomingIds.has(r.id));
 
