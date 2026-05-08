@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { X, HelpCircle } from "lucide-react";
 import {
   fetchAdminBarbers,
   openDirectChat,
@@ -13,6 +12,7 @@ import {
 } from "@/lib/admin-chat-client";
 import { useModalStack } from "@/lib/modal-stack-context";
 import ChatThread from "./chat-thread";
+import CloseButton from "@/components/ui/close-button";
 
 const MONTH_SHORT = [
   "01",
@@ -103,13 +103,29 @@ export default function AdminChatPopup({
     };
   }, []);
 
-  const supportUnread = useMemo(
-    () => chats.support.reduce((s, c) => s + c.unreadByAdmin, 0),
+  // Split support chats by counterpart role: barbers' support tickets show
+  // up in the "Барбери" tab next to direct_admin chats, regular customers
+  // stay in "Підтримка". The role flag comes from the API (joined on user)
+  // so a counterpart promoted to barber after the chat existed will move
+  // tabs on the next refetch — no chat.type mutation needed.
+  const customerSupportChats = useMemo(
+    () => chats.support.filter((c) => c.otherParticipant.role !== "barber"),
     [chats.support]
   );
+  const barberSupportChats = useMemo(
+    () => chats.support.filter((c) => c.otherParticipant.role === "barber"),
+    [chats.support]
+  );
+
+  const supportUnread = useMemo(
+    () => customerSupportChats.reduce((s, c) => s + c.unreadByAdmin, 0),
+    [customerSupportChats]
+  );
   const directUnread = useMemo(
-    () => chats.direct.reduce((s, c) => s + c.unreadByAdmin, 0),
-    [chats.direct]
+    () =>
+      chats.direct.reduce((s, c) => s + c.unreadByAdmin, 0) +
+      barberSupportChats.reduce((s, c) => s + c.unreadByAdmin, 0),
+    [chats.direct, barberSupportChats]
   );
 
   const selected = useMemo<SelectedView>(() => {
@@ -121,16 +137,28 @@ export default function AdminChatPopup({
     return null;
   }, [selectedChatId, chats]);
 
-  // If selected chat changes type, snap tab to its type so user sees it highlighted.
+  // Snap tab to the selected chat's bucket. A support-typed chat with a
+  // barber counterpart belongs to "Барбери", so check role too.
   useEffect(() => {
-    if (selected?.kind === "support" && tab !== "support") setTab("support");
-    if (selected?.kind === "direct" && tab !== "direct") setTab("direct");
+    if (!selected) return;
+    if (selected.kind === "direct") {
+      if (tab !== "direct") setTab("direct");
+      return;
+    }
+    const isBarberCounterpart =
+      selected.chat.otherParticipant.role === "barber";
+    const wantedTab = isBarberCounterpart ? "direct" : "support";
+    if (tab !== wantedTab) setTab(wantedTab);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selected?.chat.id]);
 
   const directBarberIds = useMemo(
-    () => new Set(chats.direct.map((c) => c.barber.userId)),
-    [chats.direct]
+    () =>
+      new Set([
+        ...chats.direct.map((c) => c.barber.userId),
+        ...barberSupportChats.map((c) => c.otherParticipant.userId),
+      ]),
+    [chats.direct, barberSupportChats]
   );
 
   const newBarbers = useMemo(
@@ -191,14 +219,7 @@ export default function AdminChatPopup({
         >
           Чат
         </h3>
-        <button
-          type="button"
-          onClick={onClose}
-          aria-label="Закрити чат"
-          className="w-9 h-9 flex items-center justify-center rounded-[8px] hover:bg-black/5 transition-colors text-[var(--color-text)]"
-        >
-          <X size={18} />
-        </button>
+        <CloseButton onClick={onClose} ariaLabel="Закрити чат" />
       </div>
 
       <div
@@ -221,14 +242,14 @@ export default function AdminChatPopup({
               <TabButton
                 active={tab === "support"}
                 label="Підтримка"
-                count={chats.support.length}
+                count={customerSupportChats.length}
                 hasUnread={supportUnread > 0}
                 onClick={() => setTab("support")}
               />
               <TabButton
                 active={tab === "direct"}
                 label="Барбери"
-                count={chats.direct.length}
+                count={chats.direct.length + barberSupportChats.length}
                 hasUnread={directUnread > 0}
                 onClick={() => setTab("direct")}
               />
@@ -246,7 +267,7 @@ export default function AdminChatPopup({
             <div className="flex-1 overflow-y-auto custom-scrollbar">
               {tab === "support" && (
                 <SupportList
-                  chats={chats.support}
+                  chats={customerSupportChats}
                   loading={loading}
                   selectedChatId={selectedChatId}
                   onSelectChat={onSelectChat}
@@ -255,6 +276,7 @@ export default function AdminChatPopup({
               {tab === "direct" && (
                 <DirectList
                   existingChats={chats.direct}
+                  barberSupportChats={barberSupportChats}
                   newBarbers={newBarbers}
                   loading={loading}
                   selectedChatId={selectedChatId}
@@ -376,6 +398,7 @@ function SupportList({
 
 function DirectList({
   existingChats,
+  barberSupportChats,
   newBarbers,
   loading,
   selectedChatId,
@@ -384,6 +407,7 @@ function DirectList({
   onOpenWithBarber,
 }: {
   existingChats: AdminDirectChat[];
+  barberSupportChats: AdminSupportChat[];
   newBarbers: AdminBarberOption[];
   loading: boolean;
   selectedChatId: string | null;
@@ -391,7 +415,9 @@ function DirectList({
   onSelectChat: (id: string) => void;
   onOpenWithBarber: (barberUserId: string) => void;
 }) {
-  if (!loading && existingChats.length === 0 && newBarbers.length === 0) {
+  const hasExisting =
+    existingChats.length > 0 || barberSupportChats.length > 0;
+  if (!loading && !hasExisting && newBarbers.length === 0) {
     return (
       <p
         className="italic text-center px-4 py-8 text-[var(--color-text-muted)]"
@@ -411,7 +437,15 @@ function DirectList({
           onSelect={() => onSelectChat(c.id)}
         />
       ))}
-      {existingChats.length > 0 && newBarbers.length > 0 && (
+      {barberSupportChats.map((c) => (
+        <SupportRow
+          key={c.id}
+          chat={c}
+          isSelected={selectedChatId === c.id}
+          onSelect={() => onSelectChat(c.id)}
+        />
+      ))}
+      {hasExisting && newBarbers.length > 0 && (
         <SectionDivider label="Новий чат" />
       )}
       {newBarbers.map((b) => (
@@ -555,11 +589,6 @@ function SupportRow({
           )}
         </div>
       </div>
-      <HelpCircle
-        size={14}
-        className="shrink-0 text-[#C9B89A]"
-        aria-hidden="true"
-      />
     </button>
   );
 }

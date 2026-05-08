@@ -111,17 +111,17 @@ function CompactLayout({
 }) {
   const booking = useBooking();
   const photo = (
-    <div className="relative w-40 h-40 md:w-60 md:h-60 mx-auto bg-[#F5F0E6] rounded-[8px] md:rounded-[10px] overflow-hidden flex items-center justify-center">
+    <div className="relative w-36.25 h-36.25 md:w-62.5 md:h-62.5 mx-auto bg-[#F5F0E6] rounded-[8px] md:rounded-[10px] overflow-hidden flex items-center justify-center">
       {landingImage ? (
         <Image
           src={landingImage}
           alt={name}
           fill
-          sizes="(min-width: 768px) 240px, 160px"
+          sizes="(min-width: 768px) 250px, 145px"
           className="object-cover"
         />
       ) : (
-        <span className="font-display italic text-[var(--color-text-muted)] text-[60px] md:text-[80px]">
+        <span className="font-display italic text-[var(--color-text-muted)] text-[55px] md:text-[83px]">
           {initials}
         </span>
       )}
@@ -138,7 +138,7 @@ function CompactLayout({
   );
 
   const baseClass =
-    "block bg-[#FAF7F1] rounded-[10px] md:rounded-[12px] p-2.5 md:p-4 max-w-45 md:max-w-[270px] mx-auto";
+    "block bg-[#FAF7F1] rounded-[10px] md:rounded-[12px] p-2.5 md:p-4 max-w-41.25 md:max-w-70 mx-auto";
 
   if (barberId) {
     return (

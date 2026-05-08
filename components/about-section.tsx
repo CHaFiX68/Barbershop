@@ -1,6 +1,5 @@
 import { getContentMap } from "@/lib/content";
 import EditableText from "./editable-text";
-import SectionHeading from "./section-heading";
 
 const ABOUT_DEFAULTS = {
   "about.title": "Наша історія",
@@ -16,23 +15,48 @@ export default async function AboutSection() {
   return (
     <section
       id="about"
-      className="py-12 md:py-16 lg:py-20 border-t border-[var(--color-line)]"
+      className="py-12 md:py-16 lg:py-20 border-t border-[var(--color-line)] scroll-mt-16 md:scroll-mt-20"
     >
       <div className="max-w-[1536px] mx-auto px-4 sm:px-6">
         <div className="max-w-6xl mx-auto">
-          <SectionHeading
-            eyebrow="Про нас"
-            title={content["about.title"]}
-            align="left"
-            number="02"
-            titleContentKey="about.title"
-            titleMaxLength={80}
-          />
+          <div className="flex flex-col text-left items-start">
+            <div
+              className="hidden lg:block font-display text-[11px] tracking-[0.2em] text-[var(--color-text-muted)] mb-3"
+              aria-hidden="true"
+            >
+              — 02
+            </div>
+            <span
+              className="text-[var(--color-text-muted)]"
+              style={{
+                fontSize: "10px",
+                letterSpacing: "0.3em",
+                textTransform: "uppercase",
+              }}
+            >
+              Про нас
+            </span>
+            <h2
+              className="font-display mt-4 leading-[1.1]"
+              style={{ fontWeight: 600, fontSize: "clamp(29px, 4.25vw, 46px)" }}
+            >
+              <EditableText
+                contentKey="about.title"
+                initialValue={content["about.title"]}
+                as="span"
+                maxLength={80}
+              />
+            </h2>
+            <span
+              className="block mt-6 h-px bg-[var(--color-text)]"
+              style={{ width: "40px" }}
+            />
+          </div>
 
           <div className="mt-12 max-w-3xl text-left">
             <p
               className="font-display italic leading-relaxed"
-              style={{ fontSize: "clamp(17px, 2vw, 24px)" }}
+              style={{ fontSize: "clamp(15px, 1.7vw, 20px)" }}
             >
               <EditableText
                 contentKey="about.quote"
@@ -44,7 +68,7 @@ export default async function AboutSection() {
             </p>
             <p
               className="mt-6 text-[var(--color-text-muted)] leading-relaxed"
-              style={{ fontSize: "14px" }}
+              style={{ fontSize: "13px" }}
             >
               <EditableText
                 contentKey="about.body"

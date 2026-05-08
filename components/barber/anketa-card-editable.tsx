@@ -9,6 +9,7 @@ import { useModalStack } from "@/lib/modal-stack-context";
 import EditableBio from "./editable-bio";
 import EditablePhone from "./editable-phone";
 import LandingImageEditorModal from "./landing-image-editor";
+import CloseButton from "@/components/ui/close-button";
 
 const DAY_LABELS: Record<keyof WeekSchedule, string> = {
   mon: "Пн",
@@ -266,14 +267,14 @@ export default function AnketaCardEditable(props: Props) {
             type="button"
             onClick={() => setImageEditorOpen(true)}
             aria-label="Змінити фото"
-            className="relative aspect-[4/5] bg-[#F5F0E6] rounded-[12px] overflow-hidden flex items-center justify-center mb-3 group cursor-pointer"
+            className="relative aspect-[4/5] w-full max-h-[240px] md:max-h-none bg-[#F5F0E6] rounded-[12px] overflow-hidden flex items-center justify-center mb-3 group cursor-pointer"
           >
             {landingImage ? (
               <Image
                 src={landingImage}
                 alt={userName}
                 fill
-                sizes="160px"
+                sizes="(max-width: 768px) 100vw, 200px"
                 className="object-cover"
               />
             ) : (
@@ -376,7 +377,7 @@ export default function AnketaCardEditable(props: Props) {
         >
           Графік
         </p>
-        <div className="grid grid-cols-7 gap-1.5 md:gap-3">
+        <div className="grid grid-cols-7 gap-1.5 md:gap-2">
           {DAY_KEYS.map((dayKey) => {
             const day = schedule[dayKey];
             const enabled = day.enabled;
@@ -386,7 +387,7 @@ export default function AnketaCardEditable(props: Props) {
                 type="button"
                 key={dayKey}
                 onClick={() => handleDayClick(dayKey)}
-                className={`aspect-square rounded-[8px] flex flex-col items-center justify-center transition-all cursor-pointer ${
+                className={`aspect-square md:aspect-auto md:h-15 rounded-[8px] flex flex-col items-center justify-center transition-all cursor-pointer ${
                   enabled
                     ? "bg-[var(--color-text)] text-white"
                     : "bg-[#FAF7F1] text-[var(--color-text-muted)] hover:bg-[#F2EDE3]"
@@ -421,14 +422,7 @@ export default function AnketaCardEditable(props: Props) {
             <h4 className="font-display text-[15px] font-medium">
               Редагувати послугу
             </h4>
-            <button
-              type="button"
-              onClick={handleCloseServicePopup}
-              aria-label="Закрити"
-              className="text-[var(--color-text-muted)] hover:text-[var(--color-text)] text-[16px]"
-            >
-              ×
-            </button>
+            <CloseButton onClick={handleCloseServicePopup} />
           </div>
           <label className="flex flex-col gap-1 text-[12px]">
             <span className="text-[var(--color-text-muted)] uppercase tracking-[0.1em] text-[10px]">
@@ -527,14 +521,7 @@ export default function AnketaCardEditable(props: Props) {
             <h4 className="font-display text-[15px] font-medium">
               {DAY_FULL_LABELS[activeDayKey]}
             </h4>
-            <button
-              type="button"
-              onClick={() => setActiveDayKey(null)}
-              aria-label="Закрити"
-              className="text-[var(--color-text-muted)] hover:text-[var(--color-text)] text-[16px]"
-            >
-              ×
-            </button>
+            <CloseButton onClick={() => setActiveDayKey(null)} />
           </div>
 
           <div className="flex items-center gap-3 text-[12px] flex-wrap">

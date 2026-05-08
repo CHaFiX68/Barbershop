@@ -6,6 +6,7 @@ import type { WeekSchedule } from "@/lib/db/schema";
 import { normalizeWeekSchedule } from "@/lib/schedule";
 import { useModalStack } from "@/lib/modal-stack-context";
 import AnketaEditor from "./anketa-editor";
+import CloseButton from "@/components/ui/close-button";
 
 type AnketaData = {
   userName: string;
@@ -158,15 +159,7 @@ export default function AnketaModal({ isOpen, onClose }: Props) {
                 </span>
               )}
             </div>
-            <button
-              type="button"
-              aria-label="Закрити"
-              onClick={onClose}
-              className="relative w-8 h-8 rounded-[8px] hover:bg-black/5 transition-colors"
-            >
-              <span className="absolute left-1/2 top-1/2 w-[14px] h-px bg-[var(--color-text)] -translate-x-1/2 -translate-y-1/2 rotate-45" />
-              <span className="absolute left-1/2 top-1/2 w-[14px] h-px bg-[var(--color-text)] -translate-x-1/2 -translate-y-1/2 -rotate-45" />
-            </button>
+            <CloseButton onClick={onClose} />
           </div>
 
           {loading && !data && (

@@ -142,7 +142,8 @@
     ],
     "additionalDirectories": [
       "C:\\Projects\\Barbershop",
-      "\\tmp"
+      "\\tmp",
+      "c:\\Projects\\Barbershop\\app\\api\\admin\\barber\\[userId]"
     ]
   }
 }

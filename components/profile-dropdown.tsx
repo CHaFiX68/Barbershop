@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { signOut, useSession } from "@/lib/auth-client";
 import { useChatActions } from "@/lib/chat-context";
@@ -96,6 +97,36 @@ export default function ProfileDropdown({ initialSession = null }: Props) {
     isOpen,
     dropdownClose
   );
+
+  // Compute panel position relative to trigger so the dropdown's right edge
+  // aligns with the trigger's right edge on desktop (where header content is
+  // capped to max-w-[1536px] mx-auto and the trigger isn't at viewport edge).
+  // On mobile we render full-width with fixed offsets — no computation needed.
+  const [triggerRect, setTriggerRect] = useState<{
+    top: number;
+    right: number;
+  } | null>(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const update = () => {
+      if (window.innerWidth < 768) {
+        // Mobile: full-width positioning handled by Tailwind classes (top-[68px] left-4 right-4)
+        setTriggerRect(null);
+        return;
+      }
+      const node = dropdownRef.current;
+      if (!node) return;
+      const rect = node.getBoundingClientRect();
+      setTriggerRect({
+        top: rect.bottom + 8,
+        right: window.innerWidth - rect.right,
+      });
+    };
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, [isOpen]);
 
   // Close on outside click only when dropdown is the topmost stack item.
   // When chat popup / anketa / management modal is on top, the user is
@@ -225,9 +256,9 @@ export default function ProfileDropdown({ initialSession = null }: Props) {
         </svg>
       </button>
 
-      {isMounted && (
+      {isMounted && createPortal(
         <div
-          className="fixed top-[68px] left-4 right-4 md:absolute md:top-full md:right-0 md:left-auto md:mt-2 md:w-[280px] bg-white border border-[var(--color-line)] rounded-[12px] shadow-[0_12px_32px_rgba(0,0,0,0.08)] overflow-hidden origin-top-right transition-[opacity,transform] duration-150"
+          className="fixed top-[68px] left-4 right-4 bg-white border border-[var(--color-line)] rounded-[12px] shadow-[0_12px_32px_rgba(0,0,0,0.08)] overflow-hidden origin-top-right transition-[opacity,transform] duration-150"
           style={{
             zIndex: dropdownZ,
             opacity: isOpen && !isAnimating ? 1 : 0,
@@ -235,6 +266,12 @@ export default function ProfileDropdown({ initialSession = null }: Props) {
               isOpen && !isAnimating ? "scale(1)" : "scale(0.95)",
             transitionTimingFunction: "cubic-bezier(0.22, 1, 0.36, 1)",
             transformOrigin: "top right",
+            ...(triggerRect && {
+              top: `${triggerRect.top}px`,
+              right: `${triggerRect.right}px`,
+              left: "auto",
+              width: "280px",
+            }),
           }}
         >
           <div className="p-[18px] border-b border-[var(--color-line)] flex items-center gap-3">
@@ -436,7 +473,8 @@ export default function ProfileDropdown({ initialSession = null }: Props) {
               <span>Вийти</span>
             </button>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       <AnketaModal

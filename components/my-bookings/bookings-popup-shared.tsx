@@ -7,6 +7,7 @@ import { useModalStack } from "@/lib/modal-stack-context";
 import BookingCard, {
   type BookingItem,
 } from "@/components/bookings/booking-card";
+import CloseButton from "@/components/ui/close-button";
 
 type Tab = "active" | "history";
 
@@ -65,15 +66,6 @@ export default function BookingsPopupShared({
     fetchBookings();
   }, [open, fetchBookings]);
 
-  useEffect(() => {
-    if (!open) return;
-    const previous = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = previous;
-    };
-  }, [open]);
-
   if (!mounted) return null;
 
   const list = tab === "active" ? data.upcoming : data.history;
@@ -103,7 +95,7 @@ export default function BookingsPopupShared({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ duration: 0.2 }}
-            className="w-[calc(100vw-32px)] md:w-[600px] h-[calc(100vh-64px)] md:h-[700px] bg-[#FAF7F1] border border-[var(--color-line)] rounded-[16px] shadow-[0_24px_48px_rgba(0,0,0,0.18)] overflow-hidden flex flex-col"
+            className="w-[calc(100vw-32px)] max-h-[90vh] md:w-160 md:h-140 md:max-h-[calc(100vh-32px)] bg-[#FAF7F1] border border-[var(--color-line)] rounded-[16px] shadow-[0_24px_48px_rgba(0,0,0,0.18)] overflow-hidden flex flex-col"
           >
             <header className="shrink-0 px-6 md:px-8 pt-6 md:pt-8">
               <div className="flex items-start justify-between mb-4">
@@ -113,14 +105,7 @@ export default function BookingsPopupShared({
                 >
                   {title}
                 </h2>
-                <button
-                  type="button"
-                  onClick={onClose}
-                  aria-label="Закрити"
-                  className="text-[var(--color-text-muted)] hover:text-[var(--color-text)] text-2xl leading-none w-8 h-8 flex items-center justify-center"
-                >
-                  ×
-                </button>
+                <CloseButton onClick={onClose} />
               </div>
 
               <div className="flex gap-2 border-b-[0.5px] border-[#D5D0C8]">
@@ -139,27 +124,31 @@ export default function BookingsPopupShared({
               </div>
             </header>
 
-            <div className="flex-1 overflow-y-auto px-6 md:px-8 pt-4 pb-6 md:pb-8">
+            <div className="flex-1 min-h-0 flex flex-col px-6 md:px-8 pt-4 pb-6 md:pb-8">
               {!hasLoaded && loading ? (
-                <div className="text-center text-[var(--color-text-muted)] italic text-[13px] py-8">
+                <div className="flex-1 flex items-center justify-center text-[var(--color-text-muted)] italic text-[13px]">
                   Завантаження...
                 </div>
               ) : list.length === 0 ? (
-                <p className="italic text-[var(--color-text-muted)] text-[13px] text-center py-8">
-                  {tab === "active"
-                    ? "Активних записів немає."
-                    : "Історія порожня."}
-                </p>
+                <div className="flex-1 flex items-center justify-center">
+                  <p className="italic text-[var(--color-text-muted)] text-[13px] text-center">
+                    {tab === "active"
+                      ? "Активних записів немає."
+                      : "Історія порожня."}
+                  </p>
+                </div>
               ) : (
-                <div className="flex flex-col gap-3">
-                  {list.map((b) => (
-                    <BookingCard
-                      key={b.id}
-                      booking={b}
-                      role={role}
-                      onChanged={fetchBookings}
-                    />
-                  ))}
+                <div className="flex-1 min-h-0 overflow-y-auto pr-1">
+                  <div className="flex flex-col gap-3">
+                    {list.map((b) => (
+                      <BookingCard
+                        key={b.id}
+                        booking={b}
+                        role={role}
+                        onChanged={fetchBookings}
+                      />
+                    ))}
+                  </div>
                 </div>
               )}
             </div>

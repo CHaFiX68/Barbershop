@@ -50,17 +50,24 @@ export type BookingItem = {
 
 type Props = {
   booking: BookingItem;
-  role: "customer" | "barber";
+  role: "customer" | "barber" | "admin";
   onChanged?: () => void;
+  showBarberInfo?: boolean;
 };
 
-export default function BookingCard({ booking: b, role, onChanged }: Props) {
+export default function BookingCard({
+  booking: b,
+  role,
+  onChanged,
+  showBarberInfo = false,
+}: Props) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const startsDate = new Date(b.startsAt);
   const isUpcoming = b.status === "active" && startsDate > new Date();
+  const canCancel = isUpcoming && role !== "admin";
 
   const handleCancel = async () => {
     if (busy) return;
@@ -103,10 +110,16 @@ export default function BookingCard({ booking: b, role, onChanged }: Props) {
         ? "text-[var(--color-text-muted)]"
         : "text-[#5A7A5A]";
 
-  const personLine =
-    role === "customer"
-      ? b.barberName ?? ""
-      : `${b.customerName ?? ""}${b.customerEmail ? ` · ${b.customerEmail}` : ""}`;
+  const personLine = (() => {
+    if (role === "customer") return b.barberName ?? "";
+    const customerPart = `${b.customerName ?? ""}${
+      b.customerEmail ? ` · ${b.customerEmail}` : ""
+    }`;
+    if (showBarberInfo && b.barberName) {
+      return `Барбер: ${b.barberName} · ${customerPart}`;
+    }
+    return customerPart;
+  })();
 
   return (
     <article
@@ -118,39 +131,29 @@ export default function BookingCard({ booking: b, role, onChanged }: Props) {
       }}
     >
       <div className="flex flex-col gap-1 min-w-0">
-        <span
-          className="text-[var(--color-text)] truncate"
-          style={{ fontSize: "15px", fontWeight: 500 }}
-        >
+        <span className="text-base font-medium text-[var(--color-text)] truncate">
           {b.serviceName}
         </span>
-        <span
-          className="italic text-[var(--color-text-muted)] truncate"
-          style={{ fontSize: "12px" }}
-        >
+        <span className="text-sm text-[var(--color-text-muted)] truncate">
           {personLine} · {b.servicePrice}
         </span>
-        <span
-          className="font-display italic text-[#C9B89A]"
-          style={{ fontSize: "15px" }}
-        >
+        <span className="text-sm font-medium text-[var(--color-text)]">
           {formatDateTime(startsDate)}
         </span>
       </div>
 
       <div className="flex items-center gap-3 sm:flex-col sm:items-end">
         <span
-          className={`text-[11px] uppercase ${statusClass}`}
-          style={{ letterSpacing: "0.15em", fontWeight: 500 }}
+          className={`text-xs uppercase tracking-wider font-medium ${statusClass}`}
         >
           {statusLabel}
         </span>
-        {isUpcoming && (
+        {canCancel && (
           <button
             type="button"
             onClick={handleCancel}
             disabled={busy}
-            className="px-3 py-1.5 rounded-[8px] text-[12px] text-[#A03030] hover:bg-[rgba(160,48,48,0.06)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-3 py-1.5 rounded-[8px] text-sm text-[#A03030] hover:bg-[rgba(160,48,48,0.06)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {busy ? "Скасовуємо..." : "Скасувати"}
           </button>
@@ -158,7 +161,7 @@ export default function BookingCard({ booking: b, role, onChanged }: Props) {
       </div>
 
       {error && (
-        <p className="col-span-full text-[12px] text-[#A03030] italic">
+        <p className="col-span-full text-sm text-[#A03030]">
           {error}
         </p>
       )}

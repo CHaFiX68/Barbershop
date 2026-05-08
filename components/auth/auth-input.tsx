@@ -22,8 +22,13 @@ export default function AuthInput({ label, error, name, id, ...rest }: Props) {
         id={inputId}
         name={name}
         {...rest}
-        className="w-full px-4 py-3 bg-white border border-[var(--color-line)] rounded-[8px] outline-none transition-colors focus:border-black"
-        style={{ fontSize: "15px" }}
+        className="w-full px-4 py-3 bg-white border border-[var(--color-line)] rounded-[8px] outline-none transition-colors focus:border-black text-text caret-text placeholder:text-text-muted"
+        style={{
+          fontSize: "15px",
+          cursor: "text",
+          caretColor: "#1C1B19",
+          color: "#1C1B19",
+        }}
       />
       {error && (
         <p className="mt-2 text-sm text-red-600">{error}</p>

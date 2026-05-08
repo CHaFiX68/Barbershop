@@ -206,12 +206,12 @@ export default function BookingFlow({
       }
     : {
         enter: (dir: Direction) => ({
-          x: dir === "forward" ? 60 : -60,
+          x: dir === "forward" ? 24 : -24,
           opacity: 0,
         }),
         center: { x: 0, opacity: 1 },
         exit: (dir: Direction) => ({
-          x: dir === "forward" ? -60 : 60,
+          x: dir === "forward" ? -24 : 24,
           opacity: 0,
         }),
       };
@@ -243,7 +243,7 @@ export default function BookingFlow({
     : STEPS;
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-8 flex-1 min-h-0">
       {step !== "success" && (
         <header>
           {(step === 3 || (step === 2 && !validInitialBarberId)) && (
@@ -342,7 +342,7 @@ export default function BookingFlow({
         </div>
       )}
 
-      <div className="overflow-x-hidden">
+      <div className="relative overflow-x-hidden flex-1 min-h-0 w-full">
         <AnimatePresence mode="wait" initial={false} custom={direction}>
           <motion.div
             key={String(step)}
@@ -352,6 +352,7 @@ export default function BookingFlow({
             animate="center"
             exit="exit"
             transition={transitionConfig}
+            className="h-full w-full"
           >
             {step === 1 && (
               <Step1Barbers barbers={barbers} onSelect={handleBarberSelect} />

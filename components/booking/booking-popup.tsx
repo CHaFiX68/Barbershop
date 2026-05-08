@@ -8,6 +8,7 @@ import type { BarberPublic } from "@/lib/barbers";
 import { useSession } from "@/lib/auth-client";
 import { useModalStack } from "@/lib/modal-stack-context";
 import BookingFlow from "./booking-flow";
+import CloseButton from "@/components/ui/close-button";
 
 type Props = {
   open: boolean;
@@ -49,15 +50,6 @@ export default function BookingPopup({ open, onClose, initialBarberId }: Props) 
     };
   }, [open, barbers]);
 
-  useEffect(() => {
-    if (!open) return;
-    const previous = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = previous;
-    };
-  }, [open]);
-
   if (!mounted) return null;
 
   const userRole = session?.user?.role ?? null;
@@ -96,7 +88,7 @@ export default function BookingPopup({ open, onClose, initialBarberId }: Props) 
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ duration: 0.2 }}
-            className="w-[calc(100vw-32px)] md:w-[900px] md:max-w-[calc(100vw-64px)] h-[calc(100vh-64px)] md:h-[720px] md:max-h-[calc(100vh-80px)] bg-[#FAF7F1] border border-[var(--color-line)] rounded-[16px] shadow-[0_24px_48px_rgba(0,0,0,0.18)] overflow-hidden flex flex-col"
+            className="w-[calc(100vw-32px)] md:w-262.5 md:max-w-[calc(100vw-64px)] h-[calc(100vh-64px)] md:h-auto md:min-h-160 md:max-h-[calc(100vh-32px)] bg-[#FAF7F1] border border-[var(--color-line)] rounded-[16px] shadow-[0_24px_48px_rgba(0,0,0,0.18)] overflow-hidden flex flex-col"
           >
             <header className="shrink-0 flex items-start justify-between px-6 md:px-8 pt-6 md:pt-8 pb-4 border-b-[0.5px] border-[#D5D0C8]">
               <h2
@@ -105,17 +97,10 @@ export default function BookingPopup({ open, onClose, initialBarberId }: Props) 
               >
                 Запис на стрижку
               </h2>
-              <button
-                type="button"
-                onClick={onClose}
-                aria-label="Закрити"
-                className="text-[var(--color-text-muted)] hover:text-[var(--color-text)] text-2xl leading-none w-8 h-8 flex items-center justify-center"
-              >
-                ×
-              </button>
+              <CloseButton onClick={onClose} />
             </header>
 
-            <div className="flex-1 overflow-y-auto px-6 md:px-8 pt-6 pb-6 md:pb-8">
+            <div className="flex-1 overflow-y-auto px-6 md:px-8 pt-6 pb-6 md:pb-8 flex flex-col">
               {!isAuthed ? (
                 <div className="text-center py-12">
                   <p className="italic text-[var(--color-text-muted)] text-[14px] mb-6">

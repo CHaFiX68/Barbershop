@@ -9,6 +9,7 @@ import LoginForm from "./login-form";
 import RegisterForm from "./register-form";
 import OtpForm from "./otp-form";
 import ForgotPasswordForm from "./forgot-password-form";
+import CloseButton from "@/components/ui/close-button";
 
 type AuthMode = "login" | "register";
 
@@ -45,15 +46,6 @@ export default function AuthModal() {
   }, [pathname, router, searchParams]);
 
   const { zIndex, isTop } = useModalStack("auth-modal", isOpen, close);
-
-  useEffect(() => {
-    if (!isOpen) return;
-    const previous = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = previous;
-    };
-  }, [isOpen]);
 
   if (!mounted || !isOpen) return null;
 
@@ -112,21 +104,13 @@ export default function AuthModal() {
       onMouseDown={handleMouseDown}
       onMouseUp={handleMouseUp}
       className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4"
-      style={{ zIndex }}
+      style={{ zIndex, cursor: "auto" }}
     >
       <div
         className="relative bg-white rounded-[16px] max-w-md w-full max-h-[90vh] overflow-hidden flex flex-col"
-        style={{ paddingRight: 8 }}
+        style={{ paddingRight: 8, cursor: "auto" }}
       >
-        <button
-          type="button"
-          aria-label="Закрити"
-          onClick={close}
-          className="group absolute top-4 right-4 w-9 h-9 flex items-center justify-center cursor-pointer active:scale-95 transition-transform duration-150 z-10"
-        >
-          <span className="absolute w-3.5 h-px bg-[var(--color-text-muted)] rounded-full transition-all duration-[100ms] ease-out rotate-45 group-hover:w-5 group-hover:h-[2px] group-hover:bg-[var(--color-text)]" />
-          <span className="absolute w-3.5 h-px bg-[var(--color-text-muted)] rounded-full transition-all duration-[100ms] ease-out -rotate-45 group-hover:w-5 group-hover:h-[2px] group-hover:bg-[var(--color-text)]" />
-        </button>
+        <CloseButton onClick={close} className="absolute top-4 right-4 z-10" />
 
         <div
           className="custom-scrollbar flex-1 overflow-y-auto p-8 sm:p-10"

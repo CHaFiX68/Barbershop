@@ -26,6 +26,8 @@
 
 html {
   font-size: 87.5%;
+  scroll-behavior: smooth;
+  scrollbar-gutter: stable;
 }
 
 html,
@@ -38,6 +40,43 @@ body {
   font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+@layer base {
+  input,
+  textarea,
+  select {
+    color: var(--color-text);
+    caret-color: var(--color-text);
+    -webkit-text-fill-color: var(--color-text);
+  }
+
+  input,
+  textarea {
+    cursor: text;
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--color-text-muted);
+    opacity: 0.6;
+    -webkit-text-fill-color: var(--color-text-muted);
+  }
+
+  /* Chrome/Safari autofill rewrites color and bg via -webkit-text-fill-color
+     and an inline yellow background. Override both: text-fill stays dark, and
+     a 30px inset box-shadow paints over the autofill bg with white (matching
+     the input's bg-white). The 5000s transition keeps the yellow flash from
+     ever animating in. */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  input:-webkit-autofill:active {
+    -webkit-text-fill-color: var(--color-text) !important;
+    -webkit-box-shadow: 0 0 0 30px #fff inset !important;
+    caret-color: var(--color-text) !important;
+    transition: background-color 5000s ease-in-out 0s;
+  }
 }
 
 .font-display {

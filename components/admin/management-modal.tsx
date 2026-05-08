@@ -7,6 +7,11 @@ import type { WeekSchedule } from "@/lib/db/schema";
 import { normalizeWeekSchedule } from "@/lib/schedule";
 import { useModalStack } from "@/lib/modal-stack-context";
 import BarberPreview from "./barber-preview";
+import BarbersAdminList from "./barbers-admin-list";
+import BookingsAdminList from "./bookings-admin-list";
+import CloseButton from "@/components/ui/close-button";
+
+type Tab = "barbers" | "bookings";
 
 type Barber = {
   userId: string;
@@ -33,21 +38,19 @@ type Props = {
 type BarberRowProps = {
   barber: Barber;
   busy: boolean;
-  isExpanded: boolean;
-  onToggle: () => void;
+  toggleBusy: boolean;
   onApprove: () => void;
   onReject: () => void;
-  onDemote: () => void;
+  onToggleActive: () => void;
 };
 
 function BarberRow({
   barber,
   busy,
-  isExpanded,
-  onToggle,
+  toggleBusy,
   onApprove,
   onReject,
-  onDemote,
+  onToggleActive,
 }: BarberRowProps) {
   return (
     <div
@@ -110,45 +113,33 @@ function BarberRow({
           </div>
         </div>
 
-        <div className="flex items-center gap-2 flex-shrink-0">
+        <div className="flex items-center gap-3 flex-shrink-0">
           <button
             type="button"
-            onClick={onToggle}
-            aria-label={isExpanded ? "Згорнути анкету" : "Розгорнути анкету"}
-            aria-expanded={isExpanded}
-            className="w-8 h-8 flex items-center justify-center rounded-[8px] hover:bg-[#F5F0E6] transition-colors"
+            onClick={onToggleActive}
+            disabled={toggleBusy}
+            className="flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            title={barber.isActive ? "Прийняти зі списку публічних" : "Зробити публічним"}
           >
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 14 14"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              className={`transition-transform duration-150 ${
-                isExpanded ? "rotate-180" : ""
+            <span className="text-[10px] uppercase tracking-wider text-[var(--color-text-muted)]">
+              {barber.isActive ? "Активний" : "Прихований"}
+            </span>
+            <div
+              className={`w-9 h-5 rounded-full transition-colors ${
+                barber.isActive ? "bg-[#1C1B19]" : "bg-[var(--color-line)]"
               }`}
             >
-              <path
-                d="M3 5.5l4 4 4-4"
-                strokeLinecap="round"
-                strokeLinejoin="round"
+              <div
+                className={`w-4 h-4 rounded-full bg-white shadow-sm transition-transform mt-0.5 ${
+                  barber.isActive ? "translate-x-[18px]" : "translate-x-0.5"
+                }`}
               />
-            </svg>
-          </button>
-          <button
-            type="button"
-            onClick={onDemote}
-            disabled={busy}
-            className="px-3 py-1.5 rounded-[8px] text-[12px] text-[#A03030] hover:bg-[rgba(160,48,48,0.06)] transition-colors disabled:opacity-50"
-          >
-            Видалити
+            </div>
           </button>
         </div>
       </div>
 
-      {isExpanded && (
-        <div className="border-t border-[var(--color-line)] bg-[#F9F6F1] p-4">
+      <div className="border-t border-[var(--color-line)] bg-[#F9F6F1] p-4">
           <BarberPreview
             name={barber.name}
             phone={barber.phone}
@@ -192,7 +183,6 @@ function BarberRow({
             );
           })()}
         </div>
-      )}
     </div>
   );
 }
@@ -208,7 +198,8 @@ export default function ManagementModal({ isOpen, onClose }: Props) {
   const [promoteError, setPromoteError] = useState<string | null>(null);
   const [promoteSuccess, setPromoteSuccess] = useState<string | null>(null);
   const [actionBusyUserId, setActionBusyUserId] = useState<string | null>(null);
-  const [expandedUserId, setExpandedUserId] = useState<string | null>(null);
+  const [toggleBusyUserId, setToggleBusyUserId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<Tab>("barbers");
 
   useEffect(() => {
     setMounted(true);
@@ -240,7 +231,6 @@ export default function ManagementModal({ isOpen, onClose }: Props) {
       setPromoteEmail("");
       setPromoteError(null);
       setPromoteSuccess(null);
-      setExpandedUserId(null);
       return;
     }
     fetchBarbers();
@@ -313,6 +303,47 @@ export default function ManagementModal({ isOpen, onClose }: Props) {
     }
   };
 
+  const handleToggleActive = async (userId: string, current: boolean) => {
+    const next = !current;
+    setToggleBusyUserId(userId);
+    setBarbers((prev) =>
+      prev
+        ? prev.map((b) =>
+            b.userId === userId ? { ...b, isActive: next } : b
+          )
+        : prev
+    );
+    try {
+      const res = await fetch(`/api/admin/barber/${userId}/toggle-active`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isActive: next }),
+      });
+      if (!res.ok) {
+        setBarbers((prev) =>
+          prev
+            ? prev.map((b) =>
+                b.userId === userId ? { ...b, isActive: current } : b
+              )
+            : prev
+        );
+        const data = await res.json().catch(() => ({}));
+        alert(data.error ?? "Не вдалося змінити статус");
+      }
+    } catch {
+      setBarbers((prev) =>
+        prev
+          ? prev.map((b) =>
+              b.userId === userId ? { ...b, isActive: current } : b
+            )
+          : prev
+      );
+      alert("Не вдалося змінити статус");
+    } finally {
+      setToggleBusyUserId(null);
+    }
+  };
+
   if (!mounted || !isOpen) return null;
 
   return createPortal(
@@ -330,7 +361,7 @@ export default function ManagementModal({ isOpen, onClose }: Props) {
         aria-modal="true"
         aria-label="Менеджмент"
         data-management-modal
-        className="w-full max-w-[calc(100vw-32px)] md:w-[960px] md:max-w-[calc(100vw-32px)] max-h-[90vh] overflow-y-auto bg-white border border-[var(--color-line)] rounded-[16px] shadow-[0_24px_48px_rgba(0,0,0,0.18)] p-4 md:p-6"
+        className="w-full max-w-[calc(100vw-32px)] max-h-[90vh] md:w-[800px] md:max-w-[90vw] md:h-[600px] md:max-h-[85vh] overflow-hidden bg-white border border-[var(--color-line)] rounded-3xl shadow-[0_24px_48px_rgba(0,0,0,0.18)] flex flex-col"
         style={{
           opacity: animateIn ? 1 : 0,
           transform: animateIn ? "translateY(0)" : "translateY(8px)",
@@ -338,24 +369,44 @@ export default function ManagementModal({ isOpen, onClose }: Props) {
             "opacity 200ms cubic-bezier(0.22, 1, 0.36, 1), transform 200ms cubic-bezier(0.22, 1, 0.36, 1)",
         }}
       >
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between px-4 md:px-6 pt-3 md:pt-4 pb-2 shrink-0">
           <h2
             className="font-display"
             style={{ fontSize: "20px", fontWeight: 600 }}
           >
             Менеджмент
           </h2>
+          <CloseButton onClick={onClose} />
+        </div>
+
+        <div className="flex border-b border-[var(--color-line)] px-4 md:px-6 shrink-0">
           <button
             type="button"
-            aria-label="Закрити"
-            onClick={onClose}
-            className="relative w-8 h-8 rounded-[8px] hover:bg-black/5 transition-colors"
+            onClick={() => setActiveTab("barbers")}
+            className={`py-3 px-4 text-[13px] font-medium tracking-wide transition-colors ${
+              activeTab === "barbers"
+                ? "border-b-2 border-[var(--color-text)] text-[var(--color-text)] -mb-px"
+                : "text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
+            }`}
           >
-            <span className="absolute left-1/2 top-1/2 w-[14px] h-px bg-[var(--color-text)] -translate-x-1/2 -translate-y-1/2 rotate-45" />
-            <span className="absolute left-1/2 top-1/2 w-[14px] h-px bg-[var(--color-text)] -translate-x-1/2 -translate-y-1/2 -rotate-45" />
+            Барбери
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab("bookings")}
+            className={`py-3 px-4 text-[13px] font-medium tracking-wide transition-colors ${
+              activeTab === "bookings"
+                ? "border-b-2 border-[var(--color-text)] text-[var(--color-text)] -mb-px"
+                : "text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
+            }`}
+          >
+            Заброньовані
           </button>
         </div>
 
+        <div className="custom-scrollbar overflow-y-auto flex-1 px-4 md:px-6 py-3 md:py-4">
+        {activeTab === "barbers" && (
+        <>
         <div
           style={{
             background: "#F5F0E6",
@@ -400,9 +451,36 @@ export default function ManagementModal({ isOpen, onClose }: Props) {
           )}
         </div>
 
+        {!loading && !error && barbers && barbers.length > 0 && (
+          <div className="mb-6">
+            <div className="text-[10px] uppercase tracking-[0.2em] text-[var(--color-text-muted)] mb-2">
+              Барбери
+            </div>
+            <BarbersAdminList
+              barbers={barbers.map((b) => ({
+                userId: b.userId,
+                name: b.name,
+                email: b.email,
+                avatar: b.avatar,
+                isActive: b.isActive,
+              }))}
+              busyUserId={actionBusyUserId}
+              onDelete={(userId, name) => {
+                if (
+                  confirm(
+                    `Видалити ${name} з барберів? Анкета лишиться в БД, але стане неактивною.`
+                  )
+                ) {
+                  handleAction("demote", userId);
+                }
+              }}
+            />
+          </div>
+        )}
+
         <div>
           <div className="text-[10px] uppercase tracking-[0.2em] text-[var(--color-text-muted)] mb-3">
-            Барбери
+            Анкети
           </div>
 
           {loading && (
@@ -436,27 +514,19 @@ export default function ManagementModal({ isOpen, onClose }: Props) {
                   key={b.userId}
                   barber={b}
                   busy={actionBusyUserId === b.userId}
-                  isExpanded={expandedUserId === b.userId}
-                  onToggle={() =>
-                    setExpandedUserId((prev) =>
-                      prev === b.userId ? null : b.userId
-                    )
-                  }
+                  toggleBusy={toggleBusyUserId === b.userId}
                   onApprove={() => handleAction("approve", b.userId)}
                   onReject={() => handleAction("reject", b.userId)}
-                  onDemote={() => {
-                    if (
-                      confirm(
-                        `Видалити ${b.name} з барберів? Анкета лишиться в БД, але стане неактивною.`
-                      )
-                    ) {
-                      handleAction("demote", b.userId);
-                    }
-                  }}
+                  onToggleActive={() => handleToggleActive(b.userId, b.isActive)}
                 />
               ))}
             </div>
           )}
+        </div>
+        </>
+        )}
+
+        {activeTab === "bookings" && <BookingsAdminList />}
         </div>
       </div>
     </div>,

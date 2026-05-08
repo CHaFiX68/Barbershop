@@ -81,6 +81,18 @@ export function ModalStackProvider({
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [stack]);
 
+  // Centralized body lock: when ≥1 modal is open, lock body scroll. The
+  // html `scrollbar-gutter: stable` reservation prevents layout shift when
+  // overflow toggles, so no padding compensation is needed.
+  useEffect(() => {
+    if (stack.length === 0) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [stack.length]);
+
   const value = useMemo<ModalStackContextValue>(
     () => ({ register, unregister, isTop, getZIndex }),
     [register, unregister, isTop, getZIndex]

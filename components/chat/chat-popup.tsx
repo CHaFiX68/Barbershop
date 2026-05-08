@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { X } from "lucide-react";
 import type { ChatListItem } from "@/lib/chat-client";
 import { useModalStack } from "@/lib/modal-stack-context";
+import CloseButton from "@/components/ui/close-button";
 import ChatListPane from "./chat-list-pane";
 import ChatConversationPane from "./chat-conversation-pane";
 
@@ -72,14 +72,7 @@ export default function ChatPopup({
         >
           Чат
         </h3>
-        <button
-          type="button"
-          onClick={onClose}
-          aria-label="Закрити чат"
-          className="w-9 h-9 flex items-center justify-center rounded-[8px] hover:bg-black/5 transition-colors text-[var(--color-text)]"
-        >
-          <X size={18} />
-        </button>
+        <CloseButton onClick={onClose} ariaLabel="Закрити чат" />
       </div>
 
       <div

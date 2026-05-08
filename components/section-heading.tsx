@@ -7,6 +7,7 @@ type Props = {
   number?: string;
   titleContentKey?: string;
   titleMaxLength?: number;
+  showTitle?: boolean;
 };
 
 export default function SectionHeading({
@@ -16,6 +17,7 @@ export default function SectionHeading({
   number,
   titleContentKey,
   titleMaxLength,
+  showTitle = true,
 }: Props) {
   const alignClass =
     align === "center" ? "text-center items-center" : "text-left items-start";
@@ -39,25 +41,29 @@ export default function SectionHeading({
       >
         {eyebrow}
       </span>
-      <h2
-        className="font-display mt-4 leading-[1.1]"
-        style={{ fontWeight: 600, fontSize: "clamp(34px, 5vw, 54px)" }}
-      >
-        {titleContentKey ? (
-          <EditableText
-            contentKey={titleContentKey}
-            initialValue={title}
-            as="span"
-            maxLength={titleMaxLength ?? 120}
+      {showTitle && (
+        <>
+          <h2
+            className="font-display mt-4 leading-[1.1]"
+            style={{ fontWeight: 600, fontSize: "clamp(34px, 5vw, 54px)" }}
+          >
+            {titleContentKey ? (
+              <EditableText
+                contentKey={titleContentKey}
+                initialValue={title}
+                as="span"
+                maxLength={titleMaxLength ?? 120}
+              />
+            ) : (
+              title
+            )}
+          </h2>
+          <span
+            className="block mt-6 h-px bg-[var(--color-text)]"
+            style={{ width: "40px" }}
           />
-        ) : (
-          title
-        )}
-      </h2>
-      <span
-        className="block mt-6 h-px bg-[var(--color-text)]"
-        style={{ width: "40px" }}
-      />
+        </>
+      )}
     </div>
   );
 }

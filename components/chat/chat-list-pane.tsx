@@ -94,23 +94,7 @@ export default function ChatListPane({
 
   return (
     <div className="flex flex-col h-full min-h-0">
-      <div
-        className="px-4 py-3"
-        style={{
-          fontSize: "10px",
-          letterSpacing: "0.2em",
-          textTransform: "uppercase",
-          fontWeight: 500,
-          color: "var(--color-text)",
-          borderBottomWidth: "1px",
-          borderBottomStyle: "solid",
-          borderBottomColor: "#D5D0C8",
-        }}
-      >
-        Чати
-      </div>
-
-      <div className="flex-1 overflow-y-auto custom-scrollbar">
+      <div className="flex-1 overflow-y-auto custom-scrollbar pt-2">
         {/* Support row — pinned */}
         {supportChat ? (
           <ChatRow

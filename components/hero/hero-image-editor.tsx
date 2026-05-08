@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import Cropper, { type Area } from "react-easy-crop";
 import { getCroppedImg, type CropArea } from "@/lib/crop-utils";
 import { useModalStack } from "@/lib/modal-stack-context";
+import CloseButton from "@/components/ui/close-button";
 
 interface Props {
   isOpen: boolean;
@@ -33,15 +34,6 @@ export default function HeroImageEditor({
   useEffect(() => {
     setMounted(true);
   }, []);
-
-  useEffect(() => {
-    if (!isOpen) return;
-    const previous = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = previous;
-    };
-  }, [isOpen]);
 
   const onCropComplete = useCallback((_: Area, areaPixels: Area) => {
     setCroppedAreaPixels(areaPixels);
@@ -170,14 +162,7 @@ export default function HeroImageEditor({
           <h2 className="font-display text-[18px] font-medium">
             Фото у hero-слайдері
           </h2>
-          <button
-            type="button"
-            aria-label="Закрити"
-            onClick={handleClose}
-            className="w-8 h-8 flex items-center justify-center text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors"
-          >
-            ✕
-          </button>
+          <CloseButton onClick={handleClose} />
         </div>
 
         {!imageSrc ? (
