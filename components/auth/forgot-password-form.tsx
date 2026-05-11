@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import { signIn } from "@/lib/auth-client";
 import AuthInput from "./auth-input";
 import AuthButton from "./auth-button";
@@ -13,6 +14,7 @@ type Props = {
 const LENGTH = 6;
 
 export default function ForgotPasswordForm({ onBack, onSuccess }: Props) {
+  const t = useTranslations("auth");
   const [step, setStep] = useState<"email" | "code">("email");
   const [email, setEmail] = useState("");
   const [emailError, setEmailError] = useState<string | null>(null);
@@ -39,7 +41,7 @@ export default function ForgotPasswordForm({ onBack, onSuccess }: Props) {
     if (isSendingOtp) return;
     const trimmed = email.trim();
     if (!trimmed) {
-      setEmailError("Введи email");
+      setEmailError(t("errorInvalidEmail"));
       return;
     }
     setEmailError(null);
@@ -54,13 +56,13 @@ export default function ForgotPasswordForm({ onBack, onSuccess }: Props) {
         error?: { message?: string };
       };
       if (!res.ok) {
-        setEmailError(json?.error?.message ?? "Не вдалось надіслати код");
+        setEmailError(json?.error?.message ?? t("errorGeneric"));
         return;
       }
       setEmail(trimmed);
       setStep("code");
     } catch {
-      setEmailError("Помилка з'єднання. Спробуй ще раз");
+      setEmailError(t("errorGeneric"));
     } finally {
       setIsSendingOtp(false);
     }
@@ -116,15 +118,15 @@ export default function ForgotPasswordForm({ onBack, onSuccess }: Props) {
     setResetError(null);
 
     if (code.length < LENGTH) {
-      setResetError("Введи 6-значний код");
+      setResetError(t("errorOtpInvalid"));
       return;
     }
     if (newPassword.length < 8) {
-      setResetError("Пароль має бути не менше 8 символів");
+      setResetError(t("errorPasswordShort"));
       return;
     }
     if (newPassword !== confirmPassword) {
-      setResetError("Паролі не співпадають");
+      setResetError(t("errorPasswordMismatch"));
       return;
     }
 
@@ -139,7 +141,7 @@ export default function ForgotPasswordForm({ onBack, onSuccess }: Props) {
         error?: { message?: string };
       };
       if (!res.ok) {
-        setResetError(json?.error?.message ?? "Не вдалось скинути пароль");
+        setResetError(json?.error?.message ?? t("errorGeneric"));
         return;
       }
 
@@ -148,14 +150,12 @@ export default function ForgotPasswordForm({ onBack, onSuccess }: Props) {
         password: newPassword,
       });
       if (signInResult.error) {
-        setResetError(
-          "Пароль змінено, але не вдалось увійти. Спробуй увійти вручну."
-        );
+        setResetError(t("errorGeneric"));
         return;
       }
       onSuccess();
     } catch {
-      setResetError("Помилка з'єднання. Спробуй ще раз");
+      setResetError(t("errorGeneric"));
     } finally {
       setIsResetting(false);
     }
@@ -168,7 +168,7 @@ export default function ForgotPasswordForm({ onBack, onSuccess }: Props) {
         onClick={onBack}
         className="text-[12px] text-[var(--color-text-muted)] hover:text-[var(--color-text)] mb-4"
       >
-        ← Назад до входу
+        ← {t("signIn")}
       </button>
 
       {step === "email" ? (
@@ -177,18 +177,18 @@ export default function ForgotPasswordForm({ onBack, onSuccess }: Props) {
             className="font-display mb-2"
             style={{ fontWeight: 600, fontSize: "32px" }}
           >
-            Відновлення пароля
+            {t("forgotTitle")}
           </h1>
           <p
             className="mb-8 text-[var(--color-text-muted)]"
             style={{ fontSize: "14px" }}
           >
-            Введи email — ми надішлемо код підтвердження
+            {t("forgotSubtitle")}
           </p>
 
           <form onSubmit={handleSendOtp} noValidate>
             <AuthInput
-              label="Email"
+              label={t("email")}
               type="email"
               autoComplete="email"
               value={email}
@@ -197,7 +197,7 @@ export default function ForgotPasswordForm({ onBack, onSuccess }: Props) {
             />
 
             <AuthButton type="submit" loading={isSendingOtp}>
-              Надіслати код
+              {t("submitForgot")}
             </AuthButton>
           </form>
         </>
@@ -207,13 +207,13 @@ export default function ForgotPasswordForm({ onBack, onSuccess }: Props) {
             className="font-display mb-2"
             style={{ fontWeight: 600, fontSize: "32px" }}
           >
-            Новий пароль
+            {t("newPassword")}
           </h1>
           <p
             className="mb-8 text-[var(--color-text-muted)]"
             style={{ fontSize: "14px", lineHeight: 1.6 }}
           >
-            Код надіслано на{" "}
+            {t("otpSubtitle")}{" "}
             <span className="text-[var(--color-text)]">{email}</span>
           </p>
 
@@ -232,21 +232,21 @@ export default function ForgotPasswordForm({ onBack, onSuccess }: Props) {
                   value={d}
                   onChange={(e) => handleOtpChange(i, e)}
                   onKeyDown={(e) => handleOtpKeyDown(i, e)}
-                  className="w-12 h-14 text-center font-medium border border-[var(--color-line)] bg-white rounded-[8px] outline-none transition-colors focus:border-black"
+                  className="w-12 h-14 text-center font-medium border border-[var(--color-line)] bg-[var(--color-surface)] rounded-[8px] outline-none transition-colors focus:border-black"
                   style={{ fontSize: "24px" }}
                 />
               ))}
             </div>
 
             <AuthInput
-              label="Новий пароль"
+              label={t("newPassword")}
               type="password"
               autoComplete="new-password"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
             />
             <AuthInput
-              label="Підтвердити пароль"
+              label={t("confirmPassword")}
               type="password"
               autoComplete="new-password"
               value={confirmPassword}
@@ -260,7 +260,7 @@ export default function ForgotPasswordForm({ onBack, onSuccess }: Props) {
             )}
 
             <AuthButton type="submit" loading={isResetting}>
-              Підтвердити
+              {t("submitOtp")}
             </AuthButton>
           </form>
         </>

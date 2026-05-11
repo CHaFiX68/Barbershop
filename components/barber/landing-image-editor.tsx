@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { useRouter } from "@/i18n/navigation";
 import Cropper, { type Area } from "react-easy-crop";
 import { getCroppedImg, type CropArea } from "@/lib/crop-utils";
 import { useModalStack } from "@/lib/modal-stack-context";
@@ -31,6 +32,8 @@ export default function LandingImageEditorModal({
   const [mounted, setMounted] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
+  const t = useTranslations("editors");
+  const tAnketa = useTranslations("anketa");
 
   useEffect(() => {
     setMounted(true);
@@ -106,7 +109,7 @@ export default function LandingImageEditorModal({
       handleClose();
     } catch (err) {
       console.error(err);
-      setError("Не вдалось завантажити. Спробуй ще раз.");
+      setError(t("uploadFailed"));
     } finally {
       setIsUploading(false);
     }
@@ -118,7 +121,7 @@ export default function LandingImageEditorModal({
     <div
       role="dialog"
       aria-modal="true"
-      aria-label="Редагувати фото на лендингу"
+      aria-label={tAnketa("editPhoto")}
       data-anketa-modal
       className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
       style={{ zIndex }}
@@ -128,10 +131,10 @@ export default function LandingImageEditorModal({
         handleClose();
       }}
     >
-      <div className="bg-white rounded-[16px] p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
+      <div className="bg-[var(--color-surface)] rounded-[16px] p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-4">
           <h2 className="font-display text-[18px] font-medium">
-            Фото на лендингу
+            {tAnketa("editPhoto")}
           </h2>
           <CloseButton onClick={handleClose} />
         </div>
@@ -139,14 +142,14 @@ export default function LandingImageEditorModal({
         {!imageSrc ? (
           <div className="border-2 border-dashed border-[var(--color-line)] rounded-[12px] p-8 text-center">
             <p className="text-[13px] text-[var(--color-text-muted)] mb-4">
-              Обери фото зі свого пристрою
+              {t("selectFromDevice")}
             </p>
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="px-5 py-2.5 bg-[var(--color-text)] text-[var(--color-bg)] rounded-[8px] text-[13px] hover:opacity-90 transition-opacity"
+              className="px-5 py-2.5 bg-[var(--color-action-bg)] text-[var(--color-action-text)] rounded-[8px] text-[13px] hover:opacity-90 transition-opacity"
             >
-              Вибрати файл
+              {t("selectFile")}
             </button>
             <input
               ref={fileInputRef}
@@ -161,7 +164,7 @@ export default function LandingImageEditorModal({
           </div>
         ) : (
           <>
-            <div className="relative w-full h-[360px] bg-[#1C1B19] rounded-[12px] overflow-hidden mb-4">
+            <div className="relative w-full h-[360px] bg-[var(--color-text)] rounded-[12px] overflow-hidden mb-4">
               <Cropper
                 image={imageSrc}
                 crop={crop}
@@ -198,7 +201,7 @@ export default function LandingImageEditorModal({
               <button
                 type="button"
                 onClick={() => setRotation((r) => (r + 90) % 360)}
-                className="w-8 h-8 flex items-center justify-center border border-[var(--color-line)] rounded-[6px] text-[var(--color-text-muted)] hover:bg-[#F5F0E6]"
+                className="w-8 h-8 flex items-center justify-center border border-[var(--color-line)] rounded-[6px] text-[var(--color-text-muted)] hover:bg-[var(--color-surface-2)]"
                 title="Обернути"
               >
                 ↻
@@ -223,7 +226,7 @@ export default function LandingImageEditorModal({
                   type="button"
                   onClick={handleClose}
                   disabled={isUploading}
-                  className="px-4 py-2 text-[13px] hover:bg-[#F5F0E6] rounded-[6px] disabled:opacity-50"
+                  className="px-4 py-2 text-[13px] hover:bg-[var(--color-surface-2)] rounded-[6px] disabled:opacity-50"
                 >
                   Скасувати
                 </button>
@@ -231,7 +234,7 @@ export default function LandingImageEditorModal({
                   type="button"
                   onClick={handleApply}
                   disabled={isUploading || !imageSrc || !croppedAreaPixels}
-                  className="px-5 py-2 bg-[var(--color-text)] text-[var(--color-bg)] rounded-[6px] text-[13px] hover:opacity-90 disabled:opacity-50"
+                  className="px-5 py-2 bg-[var(--color-action-bg)] text-[var(--color-action-text)] rounded-[6px] text-[13px] hover:opacity-90 disabled:opacity-50"
                 >
                   {isUploading ? "Завантаження..." : "Застосувати"}
                 </button>

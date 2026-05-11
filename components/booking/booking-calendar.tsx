@@ -1,23 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import type { WeekSchedule } from "@/lib/db/schema";
 
-const WEEKDAY_LABELS = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Нд"];
-const MONTH_NAMES = [
-  "Січень",
-  "Лютий",
-  "Березень",
-  "Квітень",
-  "Травень",
-  "Червень",
-  "Липень",
-  "Серпень",
-  "Вересень",
-  "Жовтень",
-  "Листопад",
-  "Грудень",
-];
 const DAY_KEYS_BY_INDEX: (keyof WeekSchedule)[] = [
   "sun",
   "mon",
@@ -65,6 +51,32 @@ export default function BookingCalendar({
   onDateSelect,
   schedule,
 }: Props) {
+  const t = useTranslations("booking");
+  const tWeekdays = useTranslations("booking.weekdays");
+  const tMonths = useTranslations("booking.months");
+  const WEEKDAY_LABELS = [
+    tWeekdays("mon"),
+    tWeekdays("tue"),
+    tWeekdays("wed"),
+    tWeekdays("thu"),
+    tWeekdays("fri"),
+    tWeekdays("sat"),
+    tWeekdays("sun"),
+  ];
+  const MONTH_NAMES = [
+    tMonths("january"),
+    tMonths("february"),
+    tMonths("march"),
+    tMonths("april"),
+    tMonths("may"),
+    tMonths("june"),
+    tMonths("july"),
+    tMonths("august"),
+    tMonths("september"),
+    tMonths("october"),
+    tMonths("november"),
+    tMonths("december"),
+  ];
   const [today, setToday] = useState<Date | null>(null);
   const [currentMonth, setCurrentMonth] = useState<{
     year: number;
@@ -86,7 +98,7 @@ export default function BookingCalendar({
 
   if (!today || !currentMonth) {
     return (
-      <div className="bg-[#FAF7F1] border border-[var(--color-line)] rounded-[12px] p-4 h-[360px] animate-pulse" />
+      <div className="bg-[var(--color-surface)] border border-[var(--color-line)] rounded-[12px] p-4 h-[360px] animate-pulse" />
     );
   }
 
@@ -119,14 +131,14 @@ export default function BookingCalendar({
   };
 
   return (
-    <div className="bg-[#FAF7F1] border border-[var(--color-line)] rounded-[12px] p-4">
+    <div className="bg-[var(--color-surface)] border border-[var(--color-line)] rounded-[12px] p-4">
       <div className="flex items-center justify-between mb-3">
         <button
           type="button"
           onClick={handlePrev}
           disabled={!canGoBack}
-          aria-label="Попередній місяць"
-          className="w-8 h-8 flex items-center justify-center rounded-[8px] hover:bg-[#EDEAE5] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+          aria-label={t("calendarPrev")}
+          className="w-8 h-8 flex items-center justify-center rounded-[8px] hover:bg-[var(--color-bg)] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
         >
           <svg
             width="14"
@@ -154,8 +166,8 @@ export default function BookingCalendar({
           type="button"
           onClick={handleNext}
           disabled={!canGoForward}
-          aria-label="Наступний місяць"
-          className="w-8 h-8 flex items-center justify-center rounded-[8px] hover:bg-[#EDEAE5] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+          aria-label={t("calendarNext")}
+          className="w-8 h-8 flex items-center justify-center rounded-[8px] hover:bg-[var(--color-bg)] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
         >
           <svg
             width="14"
@@ -206,13 +218,13 @@ export default function BookingCalendar({
             cls +=
               " opacity-30 cursor-not-allowed text-[var(--color-text-muted)]";
           } else if (isOffDay) {
-            cls += " opacity-50 cursor-not-allowed text-[#C9B89A]";
+            cls += " opacity-50 cursor-not-allowed text-[var(--color-bronze)]";
           } else if (isSelected) {
             cls +=
-              " bg-[var(--color-text)] text-white cursor-pointer font-medium";
+              " bg-[var(--color-action-bg)] text-[var(--color-action-text)] cursor-pointer font-medium";
           } else {
-            cls += " text-[var(--color-text)] hover:bg-[#EDEAE5] cursor-pointer";
-            if (isToday) cls += " ring-1 ring-[#C9B89A]";
+            cls += " text-[var(--color-text)] hover:bg-[var(--color-bg)] cursor-pointer";
+            if (isToday) cls += " ring-1 ring-[var(--color-bronze)]";
           }
 
           let title: string | undefined;

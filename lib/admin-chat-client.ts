@@ -1,71 +1,38 @@
 "use client";
 
-export type AdminSupportChat = {
-  id: string;
-  otherParticipant: {
-    userId: string;
-    name: string;
-    email: string;
-    image: string | null;
-    role: string;
-  };
-  lastMessagePreview: string | null;
+export type AdminChatListItem = {
+  kind: "barber" | "support";
+  chatId: string | null;
+  partnerId: string;
+  partnerName: string;
+  partnerEmail: string;
+  partnerAvatar: string | null;
+  isPinned: boolean;
+  lastMessageText: string | null;
   lastMessageAt: string | null;
-  unreadByAdmin: number;
+  unreadCount: number;
 };
 
-export type AdminDirectChat = {
-  id: string;
-  barber: {
-    userId: string;
-    name: string;
-    image: string | null;
-  };
-  lastMessagePreview: string | null;
-  lastMessageAt: string | null;
-  unreadByAdmin: number;
-};
-
-export type AdminChatsList = {
-  support: AdminSupportChat[];
-  direct: AdminDirectChat[];
-};
-
-export type AdminBarberOption = {
-  userId: string;
-  name: string;
-  image: string | null;
-  isActive: boolean;
-};
-
-export async function fetchAdminChats(
+export async function fetchAdminChatList(
   signal?: AbortSignal
-): Promise<AdminChatsList> {
+): Promise<AdminChatListItem[]> {
   const res = await fetch("/api/admin/chats/list", { signal });
-  if (!res.ok) throw new Error(`fetchAdminChats ${res.status}`);
-  return (await res.json()) as AdminChatsList;
+  if (!res.ok) throw new Error(`fetchAdminChatList ${res.status}`);
+  const data = (await res.json()) as { items: AdminChatListItem[] };
+  return data.items;
 }
 
-export async function fetchAdminBarbers(
-  signal?: AbortSignal
-): Promise<AdminBarberOption[]> {
-  const res = await fetch("/api/admin/barbers/list-for-chat", { signal });
-  if (!res.ok) throw new Error(`fetchAdminBarbers ${res.status}`);
-  const data = (await res.json()) as { barbers: AdminBarberOption[] };
-  return data.barbers;
-}
-
-export async function openDirectChat(barberUserId: string): Promise<string> {
-  const res = await fetch("/api/admin/chats/direct/open", {
+export async function openChatWithBarber(barberId: string): Promise<string> {
+  const res = await fetch("/api/admin/chats/with-barber", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ barberUserId }),
+    body: JSON.stringify({ barberId }),
   });
   const json = (await res.json().catch(() => null)) as
     | { chatId?: string; error?: string }
     | null;
   if (!res.ok || !json?.chatId) {
-    throw new Error(json?.error || `openDirectChat ${res.status}`);
+    throw new Error(json?.error || `openChatWithBarber ${res.status}`);
   }
   return json.chatId;
 }

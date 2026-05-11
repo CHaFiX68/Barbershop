@@ -52,7 +52,7 @@ function TimeSelect({
       value={value}
       onChange={(e) => onChange(parseInt(e.target.value, 10))}
       disabled={disabled}
-      className="h-[32px] bg-white border border-[var(--color-line)] rounded-[6px] px-2 text-[12px] outline-none focus:border-[var(--color-text)] disabled:opacity-50"
+      className="h-[32px] bg-[var(--color-surface)] border border-[var(--color-line)] rounded-[6px] px-2 text-[12px] outline-none focus:border-[var(--color-text)] disabled:opacity-50"
     >
       {TIME_OPTIONS.map((o) => (
         <option key={o.value} value={o.value}>
@@ -102,7 +102,7 @@ export default function ScheduleBlock({ schedule, onChange }: Props) {
   };
 
   return (
-    <article className="bg-white border border-[var(--color-line)] rounded-[16px] p-5 sm:p-7">
+    <article className="bg-[var(--color-surface)] border border-[var(--color-line)] rounded-[16px] p-5 sm:p-7">
       <p
         className="text-center text-[var(--color-text-muted)] mb-4"
         style={{
@@ -162,7 +162,7 @@ export default function ScheduleBlock({ schedule, onChange }: Props) {
                         onClick={() => removeBreak(key)}
                         title="Прибрати перерву"
                         aria-label="Прибрати перерву"
-                        className="w-[32px] h-[32px] flex items-center justify-center rounded-[6px] text-[var(--color-text-muted)] hover:bg-black/5 hover:text-[#A03030] transition-colors text-[14px]"
+                        className="w-[32px] h-[32px] flex items-center justify-center rounded-[6px] text-[var(--color-text-muted)] hover:bg-black/5 hover:text-[var(--color-danger)] transition-colors text-[14px]"
                       >
                         ×
                       </button>
@@ -171,7 +171,7 @@ export default function ScheduleBlock({ schedule, onChange }: Props) {
                     <button
                       type="button"
                       onClick={() => addBreak(key)}
-                      className="h-[32px] border border-[var(--color-line)] bg-transparent text-[12px] text-[var(--color-text)] px-3 rounded-[6px] hover:bg-[#F5F0E6] transition-colors ml-2"
+                      className="h-[32px] border border-[var(--color-line)] bg-transparent text-[12px] text-[var(--color-text)] px-3 rounded-[6px] hover:bg-[var(--color-surface-2)] transition-colors ml-2"
                     >
                       + Перерва
                     </button>
@@ -188,8 +188,8 @@ export default function ScheduleBlock({ schedule, onChange }: Props) {
                 onClick={() => toggleEnabled(key)}
                 className={`h-[32px] px-3 rounded-[6px] text-[11px] uppercase tracking-[0.15em] transition-colors ${
                   day.enabled
-                    ? "bg-black text-white"
-                    : "bg-[#F5F0E6] text-[var(--color-text-muted)] hover:bg-[#EBE5D8]"
+                    ? "bg-[var(--color-action-bg)] text-[var(--color-action-text)]"
+                    : "bg-[var(--color-surface-2)] text-[var(--color-text-muted)] hover:bg-[#EBE5D8]"
                 }`}
               >
                 {day.enabled ? "Працює" : "Вихідний"}

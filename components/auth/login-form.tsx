@@ -1,7 +1,9 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { Link } from "@/i18n/navigation";
+import { useSearchParams } from "next/navigation";
+import { usePathname, useRouter } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signIn } from "@/lib/auth-client";
@@ -10,15 +12,6 @@ import AuthCard from "./auth-card";
 import AuthInput from "./auth-input";
 import AuthButton from "./auth-button";
 import AuthModalTrigger from "./auth-modal-trigger";
-
-function mapSignInError(message: string | undefined): string {
-  if (!message) return "Не вдалось увійти. Спробуй ще раз";
-  const m = message.toLowerCase();
-  if (m.includes("invalid") || m.includes("not found") || m.includes("password")) {
-    return "Невірний email або пароль";
-  }
-  return "Не вдалось увійти. Спробуй ще раз";
-}
 
 type Props = {
   hideCard?: boolean;
@@ -31,10 +24,20 @@ export default function LoginForm({
   inModal,
   onForgotPassword,
 }: Props) {
+  const t = useTranslations("auth");
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") ?? "/";
+
+  function mapSignInError(message: string | undefined): string {
+    if (!message) return t("errorGeneric");
+    const m = message.toLowerCase();
+    if (m.includes("invalid") || m.includes("not found") || m.includes("password")) {
+      return t("errorInvalidCredentials");
+    }
+    return t("errorGeneric");
+  }
   const {
     register,
     handleSubmit,
@@ -71,7 +74,7 @@ export default function LoginForm({
         router.refresh();
       }
     } catch {
-      setError("root", { message: "Не вдалось увійти. Спробуй ще раз" });
+      setError("root", { message: t("errorGeneric") });
     }
   };
 
@@ -81,37 +84,37 @@ export default function LoginForm({
         className="font-display mb-2"
         style={{ fontWeight: 600, fontSize: "32px" }}
       >
-        Увійти
+        {t("signInTitle")}
       </h1>
       <p
         className="mb-8 text-[var(--color-text-muted)]"
         style={{ fontSize: "14px" }}
       >
-        Ще не маєш акаунту?{" "}
+        {t("noAccount")}{" "}
         {inModal ? (
           <AuthModalTrigger
             mode="register"
             className="nav-link text-[var(--color-text)]"
           >
-            Зареєструватись
+            {t("signUp")}
           </AuthModalTrigger>
         ) : (
           <Link href="/register" className="nav-link text-[var(--color-text)]">
-            Зареєструватись
+            {t("signUp")}
           </Link>
         )}
       </p>
 
       <form onSubmit={handleSubmit(onSubmit)} noValidate>
         <AuthInput
-          label="Email"
+          label={t("email")}
           type="email"
           autoComplete="email"
           error={errors.email?.message}
           {...register("email")}
         />
         <AuthInput
-          label="Пароль"
+          label={t("password")}
           type="password"
           autoComplete="current-password"
           error={errors.password?.message}
@@ -125,7 +128,7 @@ export default function LoginForm({
               onClick={onForgotPassword}
               className="text-[12px] text-[var(--color-text-muted)] hover:text-[var(--color-text)] underline opacity-60 hover:opacity-100 transition-opacity"
             >
-              Забули пароль?
+              {t("forgotPassword")}
             </button>
           </div>
         )}
@@ -135,7 +138,7 @@ export default function LoginForm({
         )}
 
         <AuthButton type="submit" loading={isSubmitting}>
-          Увійти
+          {t("submitSignIn")}
         </AuthButton>
       </form>
     </>

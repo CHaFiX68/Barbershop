@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import type { BookingServiceItem } from "./booking-flow";
 
 type BarberInfo = {
@@ -24,6 +25,7 @@ export default function Step2Services({
   onSelect,
   onBack,
 }: Props) {
+  const t = useTranslations("booking");
   if (loading || !barberData) {
     if (error) {
       return (
@@ -33,9 +35,9 @@ export default function Step2Services({
             <button
               type="button"
               onClick={onBack}
-              className="bg-[var(--color-text)] text-[var(--color-bg)] px-6 py-2.5 rounded-[8px] text-[14px] hover:opacity-90 transition-opacity"
+              className="bg-[var(--color-action-bg)] text-[var(--color-action-text)] px-6 py-2.5 rounded-[8px] text-[14px] hover:opacity-90 transition-opacity"
             >
-              ← Назад до вибору барбера
+              ← {t("back")}
             </button>
           )}
         </div>
@@ -44,10 +46,10 @@ export default function Step2Services({
     return (
       <section className="max-w-200 mx-auto">
         <div className="flex flex-col gap-2">
-          <div className="bg-[#F5F0E6] rounded-[8px] h-6 animate-pulse" />
-          <div className="bg-[#F5F0E6] rounded-[8px] h-14 animate-pulse" />
-          <div className="bg-[#F5F0E6] rounded-[8px] h-14 animate-pulse" />
-          <div className="bg-[#F5F0E6] rounded-[8px] h-14 animate-pulse" />
+          <div className="bg-[var(--color-surface-2)] rounded-[8px] h-6 animate-pulse" />
+          <div className="bg-[var(--color-surface-2)] rounded-[8px] h-14 animate-pulse" />
+          <div className="bg-[var(--color-surface-2)] rounded-[8px] h-14 animate-pulse" />
+          <div className="bg-[var(--color-surface-2)] rounded-[8px] h-14 animate-pulse" />
         </div>
       </section>
     );
@@ -67,21 +69,21 @@ export default function Step2Services({
             fontWeight: 500,
           }}
         >
-          Оберіть послугу
+          {t("selectService")}
         </div>
 
         {services.length === 0 ? (
           <p className="italic text-[var(--color-text-muted)] text-[13px] py-6">
-            Цей барбер ще не додав послуг.
+            {t("noServices")}
           </p>
         ) : (
-          <ul className="flex flex-col bg-[#FAF7F1] border border-[var(--color-line)] rounded-[12px] overflow-hidden">
+          <ul className="flex flex-col bg-[var(--color-surface)] border border-[var(--color-line)] rounded-[12px] overflow-hidden">
             {services.map((s, i) => {
               const isLast = i === services.length - 1;
               const disabled = s.estimatedMinutes == null;
               const meta = disabled
-                ? "тривалість не вказана"
-                : `≈ ${s.estimatedMinutes} хв`;
+                ? "—"
+                : `≈ ${t("duration", { minutes: s.estimatedMinutes ?? 0 })}`;
 
               const rowBase = `flex items-center gap-3 py-3 px-4 transition-colors text-left w-full ${
                 isLast ? "" : "border-b border-[var(--color-line)]"
@@ -112,14 +114,14 @@ export default function Step2Services({
                         className="italic text-[var(--color-text-muted)] text-right shrink-0"
                         style={{ fontSize: "11px" }}
                       >
-                        недоступно для онлайн запису
+                        —
                       </span>
                     </div>
                   ) : (
                     <button
                       type="button"
                       onClick={() => onSelect(s.id)}
-                      className={`${rowBase} hover:bg-[#F5F0E6] cursor-pointer`}
+                      className={`${rowBase} hover:bg-[var(--color-surface-2)] cursor-pointer`}
                     >
                       <div className="flex flex-col gap-0.5 flex-1 min-w-0">
                         <span
@@ -153,9 +155,9 @@ export default function Step2Services({
           <button
             type="button"
             onClick={onBack}
-            className="self-start mt-6 text-[#C9B89A] hover:text-[var(--color-text)] text-[13px] hover:underline transition-colors"
+            className="self-start mt-6 text-[var(--color-bronze)] hover:text-[var(--color-text)] text-[13px] hover:underline transition-colors"
           >
-            ← Назад до вибору барбера
+            ← {t("back")}
           </button>
         )}
       </div>

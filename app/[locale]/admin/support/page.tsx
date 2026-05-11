@@ -7,7 +7,7 @@ import { chat, message, user } from "@/lib/db/schema";
 import SupportDashboard from "@/components/admin/support-dashboard";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Підтримка — BARBER&CO" };
+export const metadata = { title: "Підтримка — TWOBarbers" };
 
 export default async function AdminSupportPage() {
   // Layout already enforces auth + admin role; double-check session for adminId

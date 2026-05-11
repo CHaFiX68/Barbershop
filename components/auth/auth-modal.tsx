@@ -2,7 +2,9 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { usePathname, useRouter } from "@/i18n/navigation";
 import { signIn } from "@/lib/auth-client";
 import { useModalStack } from "@/lib/modal-stack-context";
 import LoginForm from "./login-form";
@@ -14,6 +16,7 @@ import CloseButton from "@/components/ui/close-button";
 type AuthMode = "login" | "register";
 
 export default function AuthModal() {
+  const t = useTranslations("auth");
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -100,14 +103,14 @@ export default function AuthModal() {
     <div
       role="dialog"
       aria-modal="true"
-      aria-label={mode === "login" ? "Увійти" : "Створити акаунт"}
+      aria-label={mode === "login" ? t("signInTitle") : t("signUpTitle")}
       onMouseDown={handleMouseDown}
       onMouseUp={handleMouseUp}
       className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4"
       style={{ zIndex, cursor: "auto" }}
     >
       <div
-        className="relative bg-white rounded-[16px] max-w-md w-full max-h-[90vh] overflow-hidden flex flex-col"
+        className="relative bg-[var(--color-surface)] rounded-[16px] max-w-md w-full max-h-[90vh] overflow-hidden flex flex-col"
         style={{ paddingRight: 8, cursor: "auto" }}
       >
         <CloseButton onClick={close} className="absolute top-4 right-4 z-10" />
@@ -134,22 +137,22 @@ export default function AuthModal() {
                 onClick={() => switchTo("login")}
                 className={`text-sm px-3 py-1.5 rounded-[8px] transition-colors ${
                   mode === "login"
-                    ? "bg-[var(--color-text)] text-white"
+                    ? "bg-[var(--color-action-bg)] text-[var(--color-action-text)]"
                     : "text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
                 }`}
               >
-                Увійти
+                {t("signIn")}
               </button>
               <button
                 type="button"
                 onClick={() => switchTo("register")}
                 className={`text-sm px-3 py-1.5 rounded-[8px] transition-colors ${
                   mode === "register"
-                    ? "bg-[var(--color-text)] text-white"
+                    ? "bg-[var(--color-action-bg)] text-[var(--color-action-text)]"
                     : "text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
                 }`}
               >
-                Реєстрація
+                {t("signUp")}
               </button>
             </div>
 

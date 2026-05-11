@@ -1,7 +1,9 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { Link } from "@/i18n/navigation";
+import { useSearchParams } from "next/navigation";
+import { usePathname, useRouter } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signIn } from "@/lib/auth-client";
@@ -10,15 +12,6 @@ import AuthCard from "./auth-card";
 import AuthInput from "./auth-input";
 import AuthButton from "./auth-button";
 import AuthModalTrigger from "./auth-modal-trigger";
-
-function mapSignUpError(message: string | undefined): string {
-  if (!message) return "Не вдалось створити акаунт. Спробуй ще раз";
-  const m = message.toLowerCase();
-  if (m.includes("already") || m.includes("exists") || m.includes("taken")) {
-    return "Користувач з таким email уже зареєстрований";
-  }
-  return "Не вдалось створити акаунт. Спробуй ще раз";
-}
 
 type Props = {
   hideCard?: boolean;
@@ -31,9 +24,19 @@ export default function RegisterForm({
   inModal,
   onRegistered,
 }: Props) {
+  const t = useTranslations("auth");
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+
+  function mapSignUpError(message: string | undefined): string {
+    if (!message) return t("errorGeneric");
+    const m = message.toLowerCase();
+    if (m.includes("already") || m.includes("exists") || m.includes("taken")) {
+      return t("errorEmailTaken");
+    }
+    return t("errorGeneric");
+  }
   const callbackUrl = searchParams.get("callbackUrl") ?? "/";
   const {
     register,
@@ -80,10 +83,7 @@ export default function RegisterForm({
         password: data.password,
       });
       if (signInResult.error) {
-        setError("root", {
-          message:
-            "Акаунт створено, але не вдалось увійти автоматично. Спробуй увійти вручну.",
-        });
+        setError("root", { message: t("errorGeneric") });
         return;
       }
       if (inModal) {
@@ -93,7 +93,7 @@ export default function RegisterForm({
         router.refresh();
       }
     } catch {
-      setError("root", { message: "Не вдалось створити акаунт. Спробуй ще раз" });
+      setError("root", { message: t("errorGeneric") });
     }
   };
 
@@ -103,51 +103,51 @@ export default function RegisterForm({
         className="font-display mb-2"
         style={{ fontWeight: 600, fontSize: "32px" }}
       >
-        Створити акаунт
+        {t("signUpTitle")}
       </h1>
       <p
         className="mb-8 text-[var(--color-text-muted)]"
         style={{ fontSize: "14px" }}
       >
-        Уже маєш акаунт?{" "}
+        {t("haveAccount")}{" "}
         {inModal ? (
           <AuthModalTrigger
             mode="login"
             className="nav-link text-[var(--color-text)]"
           >
-            Увійти
+            {t("signIn")}
           </AuthModalTrigger>
         ) : (
           <Link href="/login" className="nav-link text-[var(--color-text)]">
-            Увійти
+            {t("signIn")}
           </Link>
         )}
       </p>
 
       <form onSubmit={handleSubmit(onSubmit)} noValidate>
         <AuthInput
-          label="Ім'я"
+          label={t("name")}
           type="text"
           autoComplete="name"
           error={errors.name?.message}
           {...register("name")}
         />
         <AuthInput
-          label="Email"
+          label={t("email")}
           type="email"
           autoComplete="email"
           error={errors.email?.message}
           {...register("email")}
         />
         <AuthInput
-          label="Пароль"
+          label={t("password")}
           type="password"
           autoComplete="new-password"
           error={errors.password?.message}
           {...register("password")}
         />
         <AuthInput
-          label="Підтвердити пароль"
+          label={t("confirmPassword")}
           type="password"
           autoComplete="new-password"
           error={errors.confirmPassword?.message}
@@ -159,7 +159,7 @@ export default function RegisterForm({
         )}
 
         <AuthButton type="submit" loading={isSubmitting}>
-          Зареєструватись
+          {t("submitSignUp")}
         </AuthButton>
       </form>
     </>

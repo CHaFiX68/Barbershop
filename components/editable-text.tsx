@@ -115,7 +115,7 @@ export default function EditableText({
       color: "inherit",
       letterSpacing: "inherit",
       lineHeight: "inherit",
-      borderBottom: `1px dashed ${saveError ? "#A03030" : "#C9B89A"}`,
+      borderBottom: `1px dashed ${saveError ? "var(--color-danger)" : "var(--color-bronze)"}`,
     };
     if (multiline) {
       return (
@@ -172,7 +172,7 @@ export default function EditableText({
         outline: "1px dashed transparent",
       }}
       onMouseEnter={(e) => {
-        (e.currentTarget as HTMLElement).style.outline = "1px dashed #C9B89A";
+        (e.currentTarget as HTMLElement).style.outline = "1px dashed var(--color-bronze)";
       }}
       onMouseLeave={(e) => {
         (e.currentTarget as HTMLElement).style.outline =

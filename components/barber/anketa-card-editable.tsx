@@ -3,8 +3,10 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+import { useTranslations } from "next-intl";
 import type { DaySchedule, WeekSchedule } from "@/lib/db/schema";
 import { DAY_KEYS } from "@/lib/schedule";
+import { useConfirm } from "@/lib/confirm-context";
 import { useModalStack } from "@/lib/modal-stack-context";
 import EditableBio from "./editable-bio";
 import EditablePhone from "./editable-phone";
@@ -95,7 +97,7 @@ function TimeSelect({
     <select
       value={value}
       onChange={(e) => onChange(parseInt(e.target.value, 10))}
-      className="h-[32px] bg-white border border-[var(--color-line)] rounded-[6px] px-2 text-[12px] outline-none focus:border-[var(--color-text)]"
+      className="h-[32px] bg-[var(--color-surface)] border border-[var(--color-line)] rounded-[6px] px-2 text-[12px] outline-none focus:border-[var(--color-text)]"
     >
       {TIME_OPTIONS.map((o) => (
         <option key={o.value} value={o.value}>
@@ -130,7 +132,7 @@ function FloatingPopup({
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="pointer-events-auto bg-white border border-[var(--color-line)] rounded-[12px] shadow-2xl p-4 w-full max-w-[360px] flex flex-col gap-3">
+      <div className="pointer-events-auto bg-[var(--color-surface)] border border-[var(--color-line)] rounded-[12px] shadow-2xl p-4 w-full max-w-[360px] flex flex-col gap-3">
         {children}
       </div>
     </div>,
@@ -143,6 +145,8 @@ export default function AnketaCardEditable(props: Props) {
   const [activeDayKey, setActiveDayKey] =
     useState<keyof WeekSchedule | null>(null);
   const [imageEditorOpen, setImageEditorOpen] = useState(false);
+  const confirm = useConfirm();
+  const t = useTranslations("anketa");
 
   const {
     userName,
@@ -171,7 +175,14 @@ export default function AnketaCardEditable(props: Props) {
       services.map((s) => (s.id === id ? { ...s, ...patch } : s))
     );
   };
-  const removeService = (id: string) => {
+  const removeService = async (id: string) => {
+    const ok = await confirm({
+      title: t("removeServiceConfirmTitle"),
+      message: t("removeServiceConfirmMessage"),
+      confirmLabel: t("removeService"),
+      danger: true,
+    });
+    if (!ok) return;
     onServicesChange(services.filter((s) => s.id !== id));
     if (activeServiceId === id) setActiveServiceId(null);
   };
@@ -225,10 +236,10 @@ export default function AnketaCardEditable(props: Props) {
 
   return (
     <div className="space-y-4">
-      <article className="relative grid grid-cols-1 md:grid-cols-[160px_1fr] md:items-start gap-5 md:gap-6 bg-[#FAF7F1] border border-[var(--color-line)] rounded-[16px] p-5">
+      <article className="relative grid grid-cols-1 md:grid-cols-[160px_1fr] md:items-start gap-5 md:gap-6 bg-[var(--color-surface)] border border-[var(--color-line)] rounded-[16px] p-5">
         <div className="col-span-full flex items-center justify-end gap-3 mb-2">
           {!hasPhone && (
-            <span className="italic text-[11px] text-[#A03030]">
+            <span className="italic text-[11px] text-[var(--color-danger)]">
               Спочатку додайте номер телефону
             </span>
           )}
@@ -243,16 +254,18 @@ export default function AnketaCardEditable(props: Props) {
             title={toggleTitle}
           >
             <span className="text-[10px] uppercase tracking-wider text-[var(--color-text-muted)]">
-              {isActive ? "Активний" : "Неактивний"}
+              {isActive ? t("active") : t("inactive")}
             </span>
             <div
-              className={`w-9 h-5 rounded-full transition-colors ${
-                isActive ? "bg-[#1C1B19]" : "bg-[var(--color-line)]"
+              className={`relative w-9 h-5 rounded-full border-2 border-[#1C1B19] transition-colors ${
+                isActive ? "bg-[var(--color-action-bg)]" : "bg-[var(--color-line)]"
               }`}
             >
               <div
-                className={`w-4 h-4 rounded-full bg-white shadow-sm transition-transform mt-0.5 ${
-                  isActive ? "translate-x-[18px]" : "translate-x-0.5"
+                className={`absolute top-1/2 -translate-y-1/2 w-3.5 h-3.5 rounded-full transition-[left] ${
+                  isActive
+                    ? "bg-[var(--color-action-text)] left-[14px]"
+                    : "bg-[var(--color-surface)] left-0"
                 }`}
               />
             </div>
@@ -267,7 +280,7 @@ export default function AnketaCardEditable(props: Props) {
             type="button"
             onClick={() => setImageEditorOpen(true)}
             aria-label="Змінити фото"
-            className="relative aspect-[4/5] w-full max-h-[240px] md:max-h-none bg-[#F5F0E6] rounded-[12px] overflow-hidden flex items-center justify-center mb-3 group cursor-pointer"
+            className="relative aspect-[4/5] w-full max-h-[240px] md:max-h-none bg-[var(--color-surface-2)] rounded-[12px] overflow-hidden flex items-center justify-center mb-3 group cursor-pointer"
           >
             {landingImage ? (
               <Image
@@ -308,22 +321,22 @@ export default function AnketaCardEditable(props: Props) {
                 key={service.id}
                 type="button"
                 onClick={() => setActiveServiceId(service.id)}
-                className="flex items-center justify-between p-3 md:p-4 rounded-[10px] border-[#D5D0C8] bg-white text-left transition-all hover:bg-[#FAF7F1] hover:border-[#1C1B19]"
+                className="flex items-center justify-between p-3 md:p-4 rounded-[10px] border-[var(--color-line)] bg-[var(--color-surface)] text-left transition-all hover:bg-[var(--color-surface)] hover:border-[var(--color-text)]"
                 style={{ borderWidth: "0.5px" }}
               >
                 <div className="flex-1 min-w-0 mr-3">
-                  <div className="text-[14px] md:text-[15px] text-[#1C1B19] mb-0.5 break-words">
+                  <div className="text-[14px] md:text-[15px] text-[var(--color-text)] mb-0.5 break-words">
                     {service.name || "Без назви"}
                   </div>
-                  <div className="text-[11px] md:text-[12px] text-[#7A736A]">
+                  <div className="text-[11px] md:text-[12px] text-[var(--color-text-muted)]">
                     {service.estimatedMinutes
                       ? `~${service.estimatedMinutes} хв`
                       : "тривалість не вказана"}
                   </div>
                 </div>
                 <div className="text-right shrink-0">
-                  <div className="text-[13px] md:text-[14px] font-medium text-[#1C1B19] whitespace-nowrap">
-                    {service.price ? `${service.price} грн` : "—"}
+                  <div className="text-[13px] md:text-[14px] font-medium text-[var(--color-text)] whitespace-nowrap">
+                    {service.price ? service.price : "—"}
                   </div>
                 </div>
               </button>
@@ -333,9 +346,9 @@ export default function AnketaCardEditable(props: Props) {
               <button
                 type="button"
                 onClick={handleAddNewService}
-                className="w-full p-3 md:p-4 border border-dashed border-[#C9B89A] rounded-[10px] text-[#7A736A] italic text-[13px] md:text-[14px] hover:bg-[#FAF7F1] hover:text-[#1C1B19] hover:border-[#1C1B19] transition-all"
+                className="w-full p-3 md:p-4 border border-dashed border-[var(--color-bronze)] rounded-[10px] text-[var(--color-text-muted)] italic text-[13px] md:text-[14px] hover:bg-[var(--color-surface)] hover:text-[var(--color-text)] hover:border-[var(--color-text)] transition-all"
               >
-                + Додати послугу
+                + {t("addService")}
               </button>
             )}
           </div>
@@ -344,10 +357,10 @@ export default function AnketaCardEditable(props: Props) {
             {(submitSuccess || submitError) && (
               <div className="flex items-center justify-center gap-3 mb-2 text-[12px]">
                 {submitSuccess && (
-                  <span className="text-green-700">✓ Збережено</span>
+                  <span className="text-green-700">✓ {t("saved")}</span>
                 )}
                 {submitError && (
-                  <span className="text-[#A03030]">{submitError}</span>
+                  <span className="text-[var(--color-danger)]">{submitError}</span>
                 )}
               </div>
             )}
@@ -355,9 +368,9 @@ export default function AnketaCardEditable(props: Props) {
               type="button"
               onClick={onSubmit}
               disabled={!isDirty || isSubmitting}
-              className="w-full bg-[var(--color-text)] text-white px-4 py-2.5 rounded-[8px] text-[13px] font-medium hover:bg-transparent hover:text-[var(--color-text)] hover:border-[var(--color-text)] border border-transparent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-[var(--color-action-bg)] text-[var(--color-action-text)] px-4 py-2.5 rounded-[8px] text-[13px] font-medium hover:bg-transparent hover:text-[var(--color-text)] hover:border-[var(--color-text)] border border-transparent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isSubmitting ? "Зберігаю..." : "Оновити"}
+              {isSubmitting ? t("saving") : t("save")}
             </button>
           </div>
         </div>
@@ -389,9 +402,9 @@ export default function AnketaCardEditable(props: Props) {
                 onClick={() => handleDayClick(dayKey)}
                 className={`aspect-square md:aspect-auto md:h-15 rounded-[8px] flex flex-col items-center justify-center transition-all cursor-pointer ${
                   enabled
-                    ? "bg-[var(--color-text)] text-white"
-                    : "bg-[#FAF7F1] text-[var(--color-text-muted)] hover:bg-[#F2EDE3]"
-                } ${isActiveDay ? "ring-2 ring-[#C9B89A] ring-offset-1" : ""}`}
+                    ? "bg-[var(--color-action-bg)] text-[var(--color-action-text)]"
+                    : "bg-[var(--color-surface)] text-[var(--color-text-muted)] hover:bg-[#F2EDE3]"
+                } ${isActiveDay ? "ring-2 ring-[var(--color-bronze)] ring-offset-1" : ""}`}
               >
                 <div
                   className={`text-[11px] md:text-[13px] ${enabled ? "font-medium" : ""}`}
@@ -436,12 +449,12 @@ export default function AnketaCardEditable(props: Props) {
               }
               maxLength={80}
               autoFocus
-              className="bg-white border border-[var(--color-line)] rounded-[6px] px-3 py-2 text-[13px] outline-none focus:border-[var(--color-text)]"
+              className="bg-[var(--color-surface)] border border-[var(--color-line)] rounded-[6px] px-3 py-2 text-[13px] outline-none focus:border-[var(--color-text)]"
             />
           </label>
           <label className="flex flex-col gap-1 text-[12px]">
             <span className="text-[var(--color-text-muted)] uppercase tracking-[0.1em] text-[10px]">
-              Ціна (грн)
+              {t("servicePrice")}
             </span>
             <input
               type="text"
@@ -451,7 +464,7 @@ export default function AnketaCardEditable(props: Props) {
                 updateService(activeService.id, { price: e.target.value })
               }
               placeholder="0"
-              className="bg-white border border-[var(--color-line)] rounded-[6px] px-3 py-2 text-[13px] outline-none focus:border-[var(--color-text)]"
+              className="bg-[var(--color-surface)] border border-[var(--color-line)] rounded-[6px] px-3 py-2 text-[13px] outline-none focus:border-[var(--color-text)]"
             />
           </label>
           <div className="flex flex-col gap-1">
@@ -459,7 +472,7 @@ export default function AnketaCardEditable(props: Props) {
               className="text-[var(--color-text)] uppercase text-[10px]"
               style={{ letterSpacing: "0.2em", fontWeight: 500 }}
             >
-              Тривалість
+              {t("serviceDuration")}
             </span>
             <div className="grid grid-cols-4 gap-2 mt-1">
               {([30, 60, 90, 120] as const).map((m) => {
@@ -473,12 +486,12 @@ export default function AnketaCardEditable(props: Props) {
                     }
                     className={`py-2 px-1 rounded-[8px] text-xs transition-colors ${
                       active
-                        ? "bg-[#1C1B19] text-white border border-[#1C1B19]"
-                        : "bg-white text-[#7A736A] border border-[#D5D0C8] hover:border-[#1C1B19]"
+                        ? "bg-[var(--color-action-bg)] text-[var(--color-action-text)] border border-[var(--color-text)]"
+                        : "bg-[var(--color-surface)] text-[var(--color-text-muted)] border border-[var(--color-line)] hover:border-[var(--color-text)]"
                     }`}
                     style={!active ? { borderWidth: "0.5px" } : undefined}
                   >
-                    {m} хв
+                    {m} min
                   </button>
                 );
               })}
@@ -486,8 +499,7 @@ export default function AnketaCardEditable(props: Props) {
             {activeService.estimatedMinutes !== null &&
               ![30, 60, 90, 120].includes(activeService.estimatedMinutes) && (
                 <span className="text-[11px] text-[var(--color-text-muted)] italic mt-1">
-                  Поточне значення: {activeService.estimatedMinutes} хв.
-                  Оберіть нове щоб оновити.
+                  {activeService.estimatedMinutes} min
                 </span>
               )}
           </div>
@@ -495,17 +507,17 @@ export default function AnketaCardEditable(props: Props) {
             <button
               type="button"
               onClick={() => removeService(activeService.id)}
-              className="col-span-1 px-3 py-2.5 rounded-[8px] text-[13px] border border-[#A03030] text-[#A03030] bg-transparent hover:bg-[#A03030]/5 transition-colors"
+              className="col-span-1 px-3 py-2.5 rounded-[8px] text-[13px] border border-[var(--color-danger)] text-[var(--color-danger)] bg-transparent hover:bg-[var(--color-danger)]/5 transition-colors"
               style={{ borderWidth: "0.5px" }}
             >
-              Видалити
+              {t("removeService")}
             </button>
             <button
               type="button"
               onClick={() => setActiveServiceId(null)}
-              className="col-span-2 bg-[var(--color-text)] text-white px-4 py-2.5 rounded-[8px] text-[13px] font-medium hover:bg-transparent hover:text-[var(--color-text)] hover:border-[var(--color-text)] border border-transparent transition-colors"
+              className="col-span-2 bg-[var(--color-action-bg)] text-[var(--color-action-text)] px-4 py-2.5 rounded-[8px] text-[13px] font-medium hover:bg-transparent hover:text-[var(--color-text)] hover:border-[var(--color-text)] border border-transparent transition-colors"
             >
-              Зберегти
+              {t("save")}
             </button>
           </div>
         </FloatingPopup>
@@ -566,7 +578,7 @@ export default function AnketaCardEditable(props: Props) {
                     breakEndMinutes: null,
                   })
                 }
-                className="px-3 py-2 rounded-[8px] text-[12px] bg-[#F5F0E6] text-[var(--color-text)] hover:bg-[#EBE5D8] transition-colors border border-[var(--color-line)]"
+                className="px-3 py-2 rounded-[8px] text-[12px] bg-[var(--color-surface-2)] text-[var(--color-text)] hover:bg-[#EBE5D8] transition-colors border border-[var(--color-line)]"
               >
                 Прибрати перерву
               </button>
@@ -580,7 +592,7 @@ export default function AnketaCardEditable(props: Props) {
                   breakEndMinutes: 840,
                 })
               }
-              className="self-start border border-[var(--color-line)] bg-transparent text-[12px] px-4 py-2 rounded-[8px] hover:bg-[#F5F0E6] transition-colors"
+              className="self-start border border-[var(--color-line)] bg-transparent text-[12px] px-4 py-2 rounded-[8px] hover:bg-[var(--color-surface-2)] transition-colors"
             >
               + Перерва
             </button>
@@ -592,17 +604,17 @@ export default function AnketaCardEditable(props: Props) {
               updateDay(activeDayKey, { enabled: false });
               setActiveDayKey(null);
             }}
-            className="self-start px-3 py-2 rounded-[8px] text-[12px] bg-[#F9E8E3] text-[#A03030] hover:bg-[#F2D5CD] transition-colors border border-[#E5C8C0] mt-1"
+            className="self-start px-3 py-2 rounded-[8px] text-[12px] bg-[#F9E8E3] text-[var(--color-danger)] hover:bg-[#F2D5CD] transition-colors border border-[#E5C8C0] mt-1"
           >
-            Зробити вихідним
+            {t("dayClosed")}
           </button>
 
           <button
             type="button"
             onClick={() => setActiveDayKey(null)}
-            className="mt-4 w-full bg-[var(--color-text)] text-white px-4 py-2.5 rounded-[8px] text-[13px] font-medium hover:bg-transparent hover:text-[var(--color-text)] hover:border-[var(--color-text)] border border-transparent transition-colors"
+            className="mt-4 w-full bg-[var(--color-action-bg)] text-[var(--color-action-text)] px-4 py-2.5 rounded-[8px] text-[13px] font-medium hover:bg-transparent hover:text-[var(--color-text)] hover:border-[var(--color-text)] border border-transparent transition-colors"
           >
-            Зберегти
+            {t("save")}
           </button>
         </FloatingPopup>
       )}

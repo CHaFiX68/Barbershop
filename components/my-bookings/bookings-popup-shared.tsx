@@ -3,13 +3,14 @@
 import { useCallback, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
+import { useTranslations } from "next-intl";
 import { useModalStack } from "@/lib/modal-stack-context";
 import BookingCard, {
   type BookingItem,
 } from "@/components/bookings/booking-card";
 import CloseButton from "@/components/ui/close-button";
 
-type Tab = "active" | "history";
+type Tab = "active" | "pending" | "history";
 
 type Props = {
   open: boolean;
@@ -29,12 +30,14 @@ export default function BookingsPopupShared({
   const [mounted, setMounted] = useState(false);
   const [tab, setTab] = useState<Tab>("active");
   const [data, setData] = useState<{
-    upcoming: BookingItem[];
+    active: BookingItem[];
+    pending: BookingItem[];
     history: BookingItem[];
-  }>({ upcoming: [], history: [] });
+  }>({ active: [], pending: [], history: [] });
   const [loading, setLoading] = useState(false);
   const [hasLoaded, setHasLoaded] = useState(false);
   const { zIndex, isTop } = useModalStack(`bookings-${role}`, open, onClose);
+  const t = useTranslations("myBookings");
 
   useEffect(() => {
     setMounted(true);
@@ -46,11 +49,13 @@ export default function BookingsPopupShared({
       const res = await fetch(endpoint);
       if (!res.ok) throw new Error();
       const json = (await res.json()) as {
-        upcoming: BookingItem[];
-        history: BookingItem[];
+        active?: BookingItem[];
+        pending?: BookingItem[];
+        history?: BookingItem[];
       };
       setData({
-        upcoming: json.upcoming ?? [],
+        active: json.active ?? [],
+        pending: json.pending ?? [],
         history: json.history ?? [],
       });
       setHasLoaded(true);
@@ -68,7 +73,19 @@ export default function BookingsPopupShared({
 
   if (!mounted) return null;
 
-  const list = tab === "active" ? data.upcoming : data.history;
+  const list =
+    tab === "active"
+      ? data.active
+      : tab === "pending"
+        ? data.pending
+        : data.history;
+
+  const emptyLabel =
+    tab === "active"
+      ? t("noActive")
+      : tab === "pending"
+        ? t("noPending")
+        : t("noHistory");
 
   return createPortal(
     <AnimatePresence>
@@ -95,7 +112,7 @@ export default function BookingsPopupShared({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ duration: 0.2 }}
-            className="w-[calc(100vw-32px)] max-h-[90vh] md:w-160 md:h-140 md:max-h-[calc(100vh-32px)] bg-[#FAF7F1] border border-[var(--color-line)] rounded-[16px] shadow-[0_24px_48px_rgba(0,0,0,0.18)] overflow-hidden flex flex-col"
+            className="w-[calc(100vw-32px)] max-h-[90vh] md:w-160 md:h-140 md:max-h-[calc(100vh-32px)] bg-[var(--color-surface)] border border-[var(--color-line)] rounded-[16px] shadow-[0_24px_48px_rgba(0,0,0,0.18)] overflow-hidden flex flex-col"
           >
             <header className="shrink-0 px-6 md:px-8 pt-6 md:pt-8">
               <div className="flex items-start justify-between mb-4">
@@ -108,16 +125,24 @@ export default function BookingsPopupShared({
                 <CloseButton onClick={onClose} />
               </div>
 
-              <div className="flex gap-2 border-b-[0.5px] border-[#D5D0C8]">
+              <div className="flex gap-2 border-b-[0.5px] border-[var(--color-line)]">
                 <TabButton
                   active={tab === "active"}
-                  label="Активні"
-                  count={data.upcoming.length}
+                  label={t("tabActive")}
+                  count={data.active.length}
                   onClick={() => setTab("active")}
                 />
+                {role === "barber" && (
+                  <TabButton
+                    active={tab === "pending"}
+                    label={t("tabPending")}
+                    count={data.pending.length}
+                    onClick={() => setTab("pending")}
+                  />
+                )}
                 <TabButton
                   active={tab === "history"}
-                  label="Історія"
+                  label={t("tabHistory")}
                   count={data.history.length}
                   onClick={() => setTab("history")}
                 />
@@ -127,14 +152,12 @@ export default function BookingsPopupShared({
             <div className="flex-1 min-h-0 flex flex-col px-6 md:px-8 pt-4 pb-6 md:pb-8">
               {!hasLoaded && loading ? (
                 <div className="flex-1 flex items-center justify-center text-[var(--color-text-muted)] italic text-[13px]">
-                  Завантаження...
+                  …
                 </div>
               ) : list.length === 0 ? (
                 <div className="flex-1 flex items-center justify-center">
                   <p className="italic text-[var(--color-text-muted)] text-[13px] text-center">
-                    {tab === "active"
-                      ? "Активних записів немає."
-                      : "Історія порожня."}
+                    {emptyLabel}
                   </p>
                 </div>
               ) : (

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { HelpCircle } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { openSupport, type ChatListItem } from "@/lib/chat-client";
 
 type Props = {
@@ -13,9 +14,6 @@ type Props = {
   currentUserRole?: string | null;
 };
 
-function getSupportLabel(role: string | null | undefined): string {
-  return role === "barber" ? "Адміністратор" : "Підтримка";
-}
 
 const MONTH_SHORT = [
   "01",
@@ -32,7 +30,7 @@ const MONTH_SHORT = [
   "12",
 ];
 
-function formatLastMessageTime(iso: string | null): string {
+function formatLastMessageTime(iso: string | null, yesterdayLabel: string): string {
   if (!iso) return "";
   const d = new Date(iso);
   const now = new Date();
@@ -51,7 +49,7 @@ function formatLastMessageTime(iso: string | null): string {
     d.getFullYear() === yesterday.getFullYear() &&
     d.getMonth() === yesterday.getMonth() &&
     d.getDate() === yesterday.getDate();
-  if (isYesterday) return "Вчора";
+  if (isYesterday) return yesterdayLabel;
   return `${String(d.getDate()).padStart(2, "0")}.${MONTH_SHORT[d.getMonth()]}`;
 }
 
@@ -71,6 +69,10 @@ export default function ChatListPane({
 }: Props) {
   const [openingSupport, setOpeningSupport] = useState(false);
   const [supportError, setSupportError] = useState<string | null>(null);
+  const t = useTranslations("chat");
+
+  const getSupportLabel = (role: string | null | undefined): string =>
+    role === "barber" ? t("administrator") : t("supportLabel");
 
   const supportChat = chats.find((c) => c.type === "support") ?? null;
   const otherChats = chats.filter((c) => c.type !== "support");
@@ -108,31 +110,31 @@ export default function ChatListPane({
             type="button"
             onClick={handleOpenSupport}
             disabled={openingSupport}
-            className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-[#F0EDE8] transition-colors disabled:opacity-50"
+            className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-[var(--color-bg)] transition-colors disabled:opacity-50"
             style={{
               borderBottomWidth: "1px",
               borderBottomStyle: "solid",
-              borderBottomColor: "#D5D0C8",
+              borderBottomColor: "var(--color-line)",
             }}
           >
             <div
               className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
-              style={{ background: "#F5F0E6" }}
+              style={{ background: "var(--color-surface-2)" }}
             >
-              <HelpCircle size={18} className="text-[#C9B89A]" />
+              <HelpCircle size={18} className="text-[var(--color-bronze)]" />
             </div>
             <div className="flex-1 min-w-0">
               <p
                 className="truncate"
                 style={{ fontSize: "14px", fontWeight: 500, color: "var(--color-text)" }}
               >
-                Написати в підтримку
+                {t("openSupport")}
               </p>
               <p
                 className="truncate italic"
                 style={{ fontSize: "12px", color: "var(--color-text-muted)" }}
               >
-                {openingSupport ? "Відкриваємо..." : "Адміністратор відповість"}
+                {openingSupport ? "…" : t("administrator")}
               </p>
             </div>
           </button>
@@ -140,7 +142,7 @@ export default function ChatListPane({
 
         {supportError && (
           <p
-            className="px-4 py-2 text-[#A03030] italic"
+            className="px-4 py-2 text-[var(--color-danger)] italic"
             style={{ fontSize: "11px" }}
           >
             {supportError}
@@ -185,6 +187,9 @@ function ChatRow({
   onSelect: () => void;
   currentUserRole: string | null;
 }) {
+  const t = useTranslations("chat");
+  const getSupportLabel = (role: string | null | undefined): string =>
+    role === "barber" ? t("administrator") : t("supportLabel");
   const isArchived = chat.status === "archived";
   const isSupport = chat.type === "support";
   const name = isSupport
@@ -197,19 +202,19 @@ function ChatRow({
       type="button"
       onClick={onSelect}
       className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors ${
-        isSelected ? "bg-[#EDEAE5]" : "hover:bg-[#F0EDE8]"
+        isSelected ? "bg-[var(--color-bg)]" : "hover:bg-[var(--color-bg)]"
       } ${isArchived ? "opacity-60" : ""}`}
       style={{
         borderBottomWidth: "1px",
         borderBottomStyle: "solid",
-        borderBottomColor: "#D5D0C8",
+        borderBottomColor: "var(--color-line)",
       }}
     >
       <div
         className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 font-display"
         style={{
-          background: isSupport ? "#F5F0E6" : "#C9B89A",
-          color: isSupport ? "#C9B89A" : "white",
+          background: isSupport ? "var(--color-surface-2)" : "var(--color-bronze)",
+          color: isSupport ? "var(--color-bronze)" : "white",
           fontSize: "16px",
           fontWeight: 500,
         }}
@@ -229,7 +234,7 @@ function ChatRow({
               className="shrink-0 text-[var(--color-text-muted)]"
               style={{ fontSize: "10px" }}
             >
-              {formatLastMessageTime(chat.lastMessageAt)}
+              {formatLastMessageTime(chat.lastMessageAt, t("yesterday"))}
             </span>
           )}
         </div>
@@ -244,7 +249,7 @@ function ChatRow({
             <span
               className="shrink-0 inline-flex items-center justify-center rounded-full"
               style={{
-                background: "#C9B89A",
+                background: "var(--color-bronze)",
                 color: "white",
                 minWidth: "18px",
                 height: "18px",

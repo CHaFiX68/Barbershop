@@ -1,0 +1,1 @@
+ALTER TABLE "work_photo" ADD COLUMN "caption" text;

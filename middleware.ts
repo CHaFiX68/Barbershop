@@ -1,17 +1,29 @@
+import createMiddleware from "next-intl/middleware";
 import { NextResponse, type NextRequest } from "next/server";
 import { getSessionCookie } from "better-auth/cookies";
+import { routing } from "./i18n/routing";
 
-export function middleware(request: NextRequest) {
-  const sessionCookie = getSessionCookie(request);
+const intlMiddleware = createMiddleware(routing);
+
+export default function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
-  if (path.startsWith("/admin")) {
+
+  // Auth check для будь-яких /admin шляхів (з префіксом локалі або без)
+  const isAdminPath = /^\/(en|sv)?\/?admin/.test(path);
+  if (isAdminPath) {
+    const sessionCookie = getSessionCookie(request);
     if (!sessionCookie) {
-      return NextResponse.redirect(new URL("/?auth=login", request.url));
+      const locale = path.startsWith("/sv") ? "sv" : "en";
+      return NextResponse.redirect(
+        new URL(`/${locale}?auth=login`, request.url)
+      );
     }
   }
-  return NextResponse.next();
+
+  // Locale routing для всього іншого
+  return intlMiddleware(request);
 }
 
 export const config = {
-  matcher: ["/admin/:path*"],
+  matcher: ["/((?!api|_next|_vercel|.*\\..*).*)"],
 };

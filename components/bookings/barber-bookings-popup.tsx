@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import BookingsPopupShared from "@/components/my-bookings/bookings-popup-shared";
 
 type Props = {
@@ -8,11 +9,12 @@ type Props = {
 };
 
 export default function BarberBookingsPopup({ open, onClose }: Props) {
+  const t = useTranslations("profile.menu");
   return (
     <BookingsPopupShared
       open={open}
       onClose={onClose}
-      title="Записи"
+      title={t("bookings")}
       endpoint="/api/booking/barber/me"
       role="barber"
     />

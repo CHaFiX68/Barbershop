@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { useTranslations } from "next-intl";
 import Cropper, { type Area } from "react-easy-crop";
 import { getCroppedImg, type CropArea } from "@/lib/crop-utils";
 import { useModalStack } from "@/lib/modal-stack-context";
@@ -30,6 +31,7 @@ export default function HeroImageEditor({
   const [warning, setWarning] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const t = useTranslations("editors");
 
   useEffect(() => {
     setMounted(true);
@@ -59,7 +61,7 @@ export default function HeroImageEditor({
       probe.onload = () => {
         if (probe.naturalWidth < 2000) {
           setWarning(
-            `Низька роздільна здатність (${probe.naturalWidth}×${probe.naturalHeight}). Рекомендовано мін. 2400×1200 для чіткого відображення на retina-екранах.`
+            t("lowResWarning", { width: probe.naturalWidth, height: probe.naturalHeight, min: "2400×1200" })
           );
         }
         setImageSrc(src);
@@ -136,7 +138,7 @@ export default function HeroImageEditor({
       onSuccess();
     } catch (err) {
       console.error(err);
-      setError("Не вдалось зберегти. Спробуй ще раз.");
+      setError(t("saveError"));
     } finally {
       setIsUploading(false);
     }
@@ -148,7 +150,7 @@ export default function HeroImageEditor({
     <div
       role="dialog"
       aria-modal="true"
-      aria-label="Додати фото у hero"
+      aria-label={t("heroTitle")}
       className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
       style={{ zIndex }}
       onMouseDown={(e) => {
@@ -157,10 +159,10 @@ export default function HeroImageEditor({
         handleClose();
       }}
     >
-      <div className="bg-white rounded-[16px] p-6 w-full max-w-[880px] max-h-[90vh] overflow-y-auto">
+      <div className="bg-[var(--color-surface)] rounded-[16px] p-6 w-full max-w-[880px] max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-4">
           <h2 className="font-display text-[18px] font-medium">
-            Фото у hero-слайдері
+            {t("heroTitle")}
           </h2>
           <CloseButton onClick={handleClose} />
         </div>
@@ -168,14 +170,14 @@ export default function HeroImageEditor({
         {!imageSrc ? (
           <div className="border-2 border-dashed border-[var(--color-line)] rounded-[12px] p-8 text-center">
             <p className="text-[13px] text-[var(--color-text-muted)] mb-4">
-              Обери широкоформатне фото (рекомендовано 16:9, мін. 1600×900)
+              {t("selectFromDevice")}
             </p>
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="px-5 py-2.5 bg-[var(--color-text)] text-[var(--color-bg)] rounded-[8px] text-[13px] hover:opacity-90 transition-opacity"
+              className="px-5 py-2.5 bg-[var(--color-action-bg)] text-[var(--color-action-text)] rounded-[8px] text-[13px] hover:opacity-90 transition-opacity"
             >
-              Вибрати файл
+              {t("selectFile")}
             </button>
             <input
               ref={fileInputRef}
@@ -191,7 +193,7 @@ export default function HeroImageEditor({
         ) : (
           <>
             <div
-              className="relative w-full bg-[#1C1B19] rounded-[12px] overflow-hidden mb-4"
+              className="relative w-full bg-[var(--color-text)] rounded-[12px] overflow-hidden mb-4"
               style={{ height: "420px" }}
             >
               <Cropper
@@ -230,7 +232,7 @@ export default function HeroImageEditor({
               <button
                 type="button"
                 onClick={() => setRotation((r) => (r + 90) % 360)}
-                className="w-8 h-8 flex items-center justify-center border border-[var(--color-line)] rounded-[6px] text-[var(--color-text-muted)] hover:bg-[#F5F0E6]"
+                className="w-8 h-8 flex items-center justify-center border border-[var(--color-line)] rounded-[6px] text-[var(--color-text-muted)] hover:bg-[var(--color-surface-2)]"
                 title="Обернути"
               >
                 ↻
@@ -261,7 +263,7 @@ export default function HeroImageEditor({
                   type="button"
                   onClick={handleClose}
                   disabled={isUploading}
-                  className="px-4 py-2 text-[13px] hover:bg-[#F5F0E6] rounded-[6px] disabled:opacity-50"
+                  className="px-4 py-2 text-[13px] hover:bg-[var(--color-surface-2)] rounded-[6px] disabled:opacity-50"
                 >
                   Скасувати
                 </button>
@@ -269,7 +271,7 @@ export default function HeroImageEditor({
                   type="button"
                   onClick={handleSave}
                   disabled={isUploading || !imageSrc || !croppedAreaPixels}
-                  className="px-5 py-2 bg-[var(--color-text)] text-[var(--color-bg)] rounded-[6px] text-[13px] hover:opacity-90 disabled:opacity-50"
+                  className="px-5 py-2 bg-[var(--color-action-bg)] text-[var(--color-action-text)] rounded-[6px] text-[13px] hover:opacity-90 disabled:opacity-50"
                 >
                   {isUploading ? "Завантажую..." : "Зберегти"}
                 </button>

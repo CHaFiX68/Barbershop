@@ -1,17 +1,14 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
+import { useTranslations } from "next-intl";
 import {
-  fetchAdminBarbers,
-  openDirectChat,
-  type AdminBarberOption,
-  type AdminChatsList,
-  type AdminDirectChat,
-  type AdminSupportChat,
+  openChatWithBarber,
+  type AdminChatListItem,
 } from "@/lib/admin-chat-client";
 import { useModalStack } from "@/lib/modal-stack-context";
-import ChatThread from "./chat-thread";
+import ChatConversationPane from "./chat-conversation-pane";
 import CloseButton from "@/components/ui/close-button";
 
 const MONTH_SHORT = [
@@ -46,17 +43,12 @@ function formatLastTime(iso: string | null): string {
 }
 
 function getInitial(name: string): string {
-  const t = name.trim();
-  return t ? t[0].toUpperCase() : "?";
+  const trimmed = name.trim();
+  return trimmed ? trimmed[0].toUpperCase() : "?";
 }
 
-type SelectedView =
-  | { kind: "support"; chat: AdminSupportChat }
-  | { kind: "direct"; chat: AdminDirectChat }
-  | null;
-
 type Props = {
-  chats: AdminChatsList;
+  items: AdminChatListItem[];
   loading: boolean;
   selectedChatId: string | null;
   onSelectChat: (chatId: string | null) => void;
@@ -65,126 +57,69 @@ type Props = {
 };
 
 export default function AdminChatPopup({
-  chats,
+  items,
   loading,
   selectedChatId,
   onSelectChat,
   onChatsRefetch,
   onClose,
 }: Props) {
-  const [tab, setTab] = useState<"support" | "direct">("support");
-  const [isMobile, setIsMobile] = useState(false);
-  const [barbers, setBarbers] = useState<AdminBarberOption[]>([]);
-  const [openingDirectFor, setOpeningDirectFor] = useState<string | null>(null);
+  const [isMobile, setIsMobile] = useState(
+    () => typeof window !== "undefined" && window.innerWidth < 768
+  );
+  const [openingBarberId, setOpeningBarberId] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const { zIndex } = useModalStack("admin-chat-popup", true, onClose, {
     respectEsc: false,
   });
+  const t = useTranslations("chat");
+  const tSupport = useTranslations("support");
+  const tManagement = useTranslations("management");
+  const tCommon = useTranslations("common");
 
   useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth < 768);
-    check();
-    window.addEventListener("resize", check);
-    return () => window.removeEventListener("resize", check);
+    const mq = window.matchMedia("(max-width: 767px)");
+    setIsMobile(mq.matches);
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
   }, []);
 
-  // Load barbers once on mount
-  useEffect(() => {
-    let cancelled = false;
-    fetchAdminBarbers()
-      .then((b) => {
-        if (!cancelled) setBarbers(b);
-      })
-      .catch(() => {
-        // Non-fatal — barbers tab will show empty "new" section
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  // Split support chats by counterpart role: barbers' support tickets show
-  // up in the "Барбери" tab next to direct_admin chats, regular customers
-  // stay in "Підтримка". The role flag comes from the API (joined on user)
-  // so a counterpart promoted to barber after the chat existed will move
-  // tabs on the next refetch — no chat.type mutation needed.
-  const customerSupportChats = useMemo(
-    () => chats.support.filter((c) => c.otherParticipant.role !== "barber"),
-    [chats.support]
+  const barberItems = useMemo(
+    () => items.filter((i) => i.kind === "barber"),
+    [items]
   );
-  const barberSupportChats = useMemo(
-    () => chats.support.filter((c) => c.otherParticipant.role === "barber"),
-    [chats.support]
+  const supportItems = useMemo(
+    () => items.filter((i) => i.kind === "support"),
+    [items]
   );
 
-  const supportUnread = useMemo(
-    () => customerSupportChats.reduce((s, c) => s + c.unreadByAdmin, 0),
-    [customerSupportChats]
-  );
-  const directUnread = useMemo(
+  const selectedItem = useMemo(
     () =>
-      chats.direct.reduce((s, c) => s + c.unreadByAdmin, 0) +
-      barberSupportChats.reduce((s, c) => s + c.unreadByAdmin, 0),
-    [chats.direct, barberSupportChats]
+      selectedChatId
+        ? items.find((i) => i.chatId === selectedChatId) ?? null
+        : null,
+    [selectedChatId, items]
   );
 
-  const selected = useMemo<SelectedView>(() => {
-    if (!selectedChatId) return null;
-    const s = chats.support.find((c) => c.id === selectedChatId);
-    if (s) return { kind: "support", chat: s };
-    const d = chats.direct.find((c) => c.id === selectedChatId);
-    if (d) return { kind: "direct", chat: d };
-    return null;
-  }, [selectedChatId, chats]);
-
-  // Snap tab to the selected chat's bucket. A support-typed chat with a
-  // barber counterpart belongs to "Барбери", so check role too.
-  useEffect(() => {
-    if (!selected) return;
-    if (selected.kind === "direct") {
-      if (tab !== "direct") setTab("direct");
+  const handleSelectBarber = async (item: AdminChatListItem) => {
+    if (item.chatId) {
+      onSelectChat(item.chatId);
       return;
     }
-    const isBarberCounterpart =
-      selected.chat.otherParticipant.role === "barber";
-    const wantedTab = isBarberCounterpart ? "direct" : "support";
-    if (tab !== wantedTab) setTab(wantedTab);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selected?.chat.id]);
-
-  const directBarberIds = useMemo(
-    () =>
-      new Set([
-        ...chats.direct.map((c) => c.barber.userId),
-        ...barberSupportChats.map((c) => c.otherParticipant.userId),
-      ]),
-    [chats.direct, barberSupportChats]
-  );
-
-  const newBarbers = useMemo(
-    () => barbers.filter((b) => !directBarberIds.has(b.userId)),
-    [barbers, directBarberIds]
-  );
-
-  const handleOpenDirectByBarber = useCallback(
-    async (barberUserId: string) => {
-      if (openingDirectFor) return;
-      setOpeningDirectFor(barberUserId);
-      setActionError(null);
-      try {
-        const chatId = await openDirectChat(barberUserId);
-        onChatsRefetch();
-        onSelectChat(chatId);
-      } catch (err) {
-        setActionError(
-          err instanceof Error ? err.message : "Не вдалось відкрити чат"
-        );
-      } finally {
-        setOpeningDirectFor(null);
-      }
-    },
-    [openingDirectFor, onChatsRefetch, onSelectChat]
-  );
+    if (openingBarberId) return;
+    setOpeningBarberId(item.partnerId);
+    setActionError(null);
+    try {
+      const chatId = await openChatWithBarber(item.partnerId);
+      onChatsRefetch();
+      onSelectChat(chatId);
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : tCommon("error"));
+    } finally {
+      setOpeningBarberId(null);
+    }
+  };
 
   const showList = !isMobile || selectedChatId == null;
   const showConversation = !isMobile || selectedChatId != null;
@@ -195,13 +130,16 @@ export default function AdminChatPopup({
       animate={{ opacity: 1, scale: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95, y: 20 }}
       transition={{ duration: 0.2 }}
-      className="fixed bg-[#FAF7F1] rounded-[16px] shadow-2xl overflow-hidden flex flex-col"
+      className="fixed bg-[var(--color-surface)] shadow-2xl overflow-hidden flex flex-col"
       style={{
         zIndex,
-        bottom: "24px",
-        right: "24px",
-        width: "min(720px, calc(100vw - 48px))",
-        height: "min(560px, calc(100vh - 100px))",
+        bottom: isMobile ? "0" : "24px",
+        right: isMobile ? "0" : "24px",
+        left: isMobile ? "0" : "auto",
+        top: isMobile ? "0" : "auto",
+        width: isMobile ? "100vw" : "min(720px, calc(100vw - 48px))",
+        height: isMobile ? "100dvh" : "min(560px, calc(100vh - 100px))",
+        borderRadius: isMobile ? "0" : "16px",
       }}
     >
       <div
@@ -210,54 +148,34 @@ export default function AdminChatPopup({
           height: "56px",
           borderBottomWidth: "1px",
           borderBottomStyle: "solid",
-          borderBottomColor: "#D5D0C8",
+          borderBottomColor: "var(--color-line)",
         }}
       >
         <h3
           className="font-display"
-          style={{ fontSize: "18px", fontWeight: 500, color: "var(--color-text)" }}
+          style={{
+            fontSize: "18px",
+            fontWeight: 500,
+            color: "var(--color-text)",
+          }}
         >
-          Чат
+          {t("title")}
         </h3>
-        <CloseButton onClick={onClose} ariaLabel="Закрити чат" />
+        <CloseButton onClick={onClose} ariaLabel={t("title")} />
       </div>
 
       <div
-        className="flex-1 min-h-0"
+        className="flex-1 min-h-0 overflow-hidden"
         style={{
           display: "grid",
           gridTemplateColumns: isMobile ? "1fr" : "280px 1px 1fr",
         }}
       >
         {showList && (
-          <div className="flex flex-col h-full min-h-0">
-            <div
-              className="flex items-center gap-1 p-2"
-              style={{
-                borderBottomWidth: "1px",
-                borderBottomStyle: "solid",
-                borderBottomColor: "#D5D0C8",
-              }}
-            >
-              <TabButton
-                active={tab === "support"}
-                label="Підтримка"
-                count={customerSupportChats.length}
-                hasUnread={supportUnread > 0}
-                onClick={() => setTab("support")}
-              />
-              <TabButton
-                active={tab === "direct"}
-                label="Барбери"
-                count={chats.direct.length + barberSupportChats.length}
-                hasUnread={directUnread > 0}
-                onClick={() => setTab("direct")}
-              />
-            </div>
-
+          <div className="flex flex-col h-full min-h-0 min-w-0">
             {actionError && (
               <p
-                className="px-4 py-2 italic text-[#A03030]"
+                className="px-4 py-2 italic text-[var(--color-danger)]"
                 style={{ fontSize: "11px" }}
               >
                 {actionError}
@@ -265,42 +183,72 @@ export default function AdminChatPopup({
             )}
 
             <div className="flex-1 overflow-y-auto custom-scrollbar">
-              {tab === "support" && (
-                <SupportList
-                  chats={customerSupportChats}
-                  loading={loading}
-                  selectedChatId={selectedChatId}
-                  onSelectChat={onSelectChat}
-                />
+              {!loading && items.length === 0 && (
+                <p
+                  className="italic text-center px-4 py-8 text-[var(--color-text-muted)]"
+                  style={{ fontSize: "12px" }}
+                >
+                  {tSupport("noActiveTickets")}
+                </p>
               )}
-              {tab === "direct" && (
-                <DirectList
-                  existingChats={chats.direct}
-                  barberSupportChats={barberSupportChats}
-                  newBarbers={newBarbers}
-                  loading={loading}
-                  selectedChatId={selectedChatId}
-                  openingDirectFor={openingDirectFor}
-                  onSelectChat={onSelectChat}
-                  onOpenWithBarber={handleOpenDirectByBarber}
-                />
+
+              {barberItems.length > 0 && (
+                <>
+                  <SectionHeader
+                    label={tManagement("barbersHeader")}
+                    tooltip={t("barberChatNoDelete")}
+                  />
+                  {barberItems.map((item) => (
+                    <ChatRow
+                      key={`barber-${item.partnerId}`}
+                      item={item}
+                      selected={
+                        item.chatId != null && selectedChatId === item.chatId
+                      }
+                      onClick={() => handleSelectBarber(item)}
+                      isOpening={openingBarberId === item.partnerId}
+                    />
+                  ))}
+                </>
+              )}
+
+              {supportItems.length > 0 && (
+                <>
+                  <SectionHeader label={tSupport("title")} />
+                  {supportItems.map((item) => (
+                    <ChatRow
+                      key={`support-${item.chatId}`}
+                      item={item}
+                      selected={selectedChatId === item.chatId}
+                      onClick={() => item.chatId && onSelectChat(item.chatId)}
+                      isOpening={false}
+                    />
+                  ))}
+                </>
               )}
             </div>
           </div>
         )}
 
-        {!isMobile && <div style={{ background: "#D5D0C8" }} />}
+        {!isMobile && <div style={{ background: "var(--color-line)" }} />}
 
         {showConversation && (
-          <div className="flex flex-col h-full min-h-0">
-            {selected ? (
-              <SelectedThread
-                key={selected.chat.id}
-                selected={selected}
+          <div className="flex flex-col h-full min-h-0 min-w-0">
+            {selectedChatId && selectedItem ? (
+              <ChatConversationPane
+                key={selectedChatId}
+                chatId={selectedChatId}
+                isPopupOpen
                 onChatRefetch={onChatsRefetch}
                 onBackMobile={
                   isMobile ? () => onSelectChat(null) : undefined
                 }
+                onDeleted={() => {
+                  onSelectChat(null);
+                  onChatsRefetch();
+                }}
+                currentUserRole="admin"
+                canDeleteOverride={false}
               />
             ) : (
               <div className="flex items-center justify-center h-full px-6">
@@ -308,9 +256,7 @@ export default function AdminChatPopup({
                   className="italic text-[var(--color-text-muted)] text-center"
                   style={{ fontSize: "13px", lineHeight: 1.5 }}
                 >
-                  {tab === "support"
-                    ? "Оберіть тікет зліва"
-                    : "Оберіть барбера або відкрийте новий чат"}
+                  {tSupport("selectTicketPlaceholder")}
                 </p>
               </div>
             )}
@@ -321,477 +267,130 @@ export default function AdminChatPopup({
   );
 }
 
-function TabButton({
-  active,
+function SectionHeader({
   label,
-  count,
-  hasUnread,
-  onClick,
+  tooltip,
 }: {
-  active: boolean;
   label: string;
-  count: number;
-  hasUnread: boolean;
-  onClick: () => void;
+  tooltip?: string;
 }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`flex-1 px-3 py-1.5 rounded-[8px] text-[12px] transition-colors flex items-center justify-center gap-1.5 ${
-        active
-          ? "bg-[var(--color-text)] text-white"
-          : "text-[var(--color-text)] hover:bg-[#EDEAE5]"
-      }`}
-    >
-      <span>
-        {label} ({count})
-      </span>
-      {hasUnread && (
-        <span
-          className="inline-block rounded-full"
-          style={{
-            width: "6px",
-            height: "6px",
-            background: active ? "white" : "#A03030",
-          }}
-        />
-      )}
-    </button>
-  );
-}
-
-function SupportList({
-  chats,
-  loading,
-  selectedChatId,
-  onSelectChat,
-}: {
-  chats: AdminSupportChat[];
-  loading: boolean;
-  selectedChatId: string | null;
-  onSelectChat: (id: string) => void;
-}) {
-  if (!loading && chats.length === 0) {
-    return (
-      <p
-        className="italic text-center px-4 py-8 text-[var(--color-text-muted)]"
-        style={{ fontSize: "12px" }}
-      >
-        Немає активних тікетів
-      </p>
-    );
-  }
-  return (
-    <>
-      {chats.map((c) => (
-        <SupportRow
-          key={c.id}
-          chat={c}
-          isSelected={selectedChatId === c.id}
-          onSelect={() => onSelectChat(c.id)}
-        />
-      ))}
-    </>
-  );
-}
-
-function DirectList({
-  existingChats,
-  barberSupportChats,
-  newBarbers,
-  loading,
-  selectedChatId,
-  openingDirectFor,
-  onSelectChat,
-  onOpenWithBarber,
-}: {
-  existingChats: AdminDirectChat[];
-  barberSupportChats: AdminSupportChat[];
-  newBarbers: AdminBarberOption[];
-  loading: boolean;
-  selectedChatId: string | null;
-  openingDirectFor: string | null;
-  onSelectChat: (id: string) => void;
-  onOpenWithBarber: (barberUserId: string) => void;
-}) {
-  const hasExisting =
-    existingChats.length > 0 || barberSupportChats.length > 0;
-  if (!loading && !hasExisting && newBarbers.length === 0) {
-    return (
-      <p
-        className="italic text-center px-4 py-8 text-[var(--color-text-muted)]"
-        style={{ fontSize: "12px" }}
-      >
-        Барберів поки немає
-      </p>
-    );
-  }
-  return (
-    <>
-      {existingChats.map((c) => (
-        <DirectExistingRow
-          key={c.id}
-          chat={c}
-          isSelected={selectedChatId === c.id}
-          onSelect={() => onSelectChat(c.id)}
-        />
-      ))}
-      {barberSupportChats.map((c) => (
-        <SupportRow
-          key={c.id}
-          chat={c}
-          isSelected={selectedChatId === c.id}
-          onSelect={() => onSelectChat(c.id)}
-        />
-      ))}
-      {hasExisting && newBarbers.length > 0 && (
-        <SectionDivider label="Новий чат" />
-      )}
-      {newBarbers.map((b) => (
-        <DirectNewRow
-          key={b.userId}
-          barber={b}
-          opening={openingDirectFor === b.userId}
-          onOpen={() => onOpenWithBarber(b.userId)}
-        />
-      ))}
-    </>
-  );
-}
-
-function SectionDivider({ label }: { label: string }) {
   return (
     <div
-      className="px-4 py-2 text-[var(--color-text-muted)]"
+      className="px-4 py-2 sticky top-0 z-10"
       style={{
         fontSize: "10px",
         letterSpacing: "0.2em",
         textTransform: "uppercase",
         fontWeight: 500,
-        background: "#F0EDE8",
-        borderTopWidth: "1px",
-        borderTopStyle: "solid",
-        borderTopColor: "#D5D0C8",
+        color: "var(--color-text-muted)",
+        background: "var(--color-surface-2)",
         borderBottomWidth: "1px",
         borderBottomStyle: "solid",
-        borderBottomColor: "#D5D0C8",
+        borderBottomColor: "var(--color-line)",
       }}
+      title={tooltip}
     >
       {label}
     </div>
   );
 }
 
-function Avatar({
-  name,
-  image,
-  background = "#C9B89A",
-}: {
-  name: string;
-  image: string | null;
-  background?: string;
-}) {
-  if (image) {
-    return (
-      // eslint-disable-next-line @next/next/no-img-element
-      <img
-        src={image}
-        alt=""
-        className="w-10 h-10 rounded-full object-cover shrink-0"
-      />
-    );
-  }
-  return (
-    <div
-      className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 font-display"
-      style={{
-        background,
-        color: "white",
-        fontSize: "16px",
-        fontWeight: 500,
-      }}
-    >
-      {getInitial(name)}
-    </div>
-  );
-}
-
-function SupportRow({
-  chat,
-  isSelected,
-  onSelect,
-}: {
-  chat: AdminSupportChat;
-  isSelected: boolean;
-  onSelect: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onSelect}
-      className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors ${
-        isSelected ? "bg-[#EDEAE5]" : "hover:bg-[#F0EDE8]"
-      }`}
-      style={{
-        borderBottomWidth: "1px",
-        borderBottomStyle: "solid",
-        borderBottomColor: "#D5D0C8",
-      }}
-    >
-      <Avatar
-        name={chat.otherParticipant.name}
-        image={chat.otherParticipant.image}
-      />
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 mb-0.5">
-          <p
-            className="flex-1 min-w-0 truncate"
-            style={{
-              fontSize: "14px",
-              fontWeight: chat.unreadByAdmin > 0 ? 600 : 500,
-              color: "var(--color-text)",
-            }}
-          >
-            {chat.otherParticipant.name}
-          </p>
-          {chat.lastMessageAt && (
-            <span
-              className="shrink-0 text-[var(--color-text-muted)]"
-              style={{ fontSize: "10px" }}
-            >
-              {formatLastTime(chat.lastMessageAt)}
-            </span>
-          )}
-        </div>
-        <div className="flex items-center gap-2">
-          <p
-            className="flex-1 min-w-0 truncate italic"
-            style={{ fontSize: "12px", color: "var(--color-text-muted)" }}
-          >
-            {chat.lastMessagePreview ?? "—"}
-          </p>
-          {chat.unreadByAdmin > 0 && (
-            <span
-              className="shrink-0 inline-flex items-center justify-center rounded-full"
-              style={{
-                background: "#A03030",
-                color: "white",
-                minWidth: "18px",
-                height: "18px",
-                fontSize: "10px",
-                fontWeight: 500,
-                padding: "0 5px",
-              }}
-            >
-              {chat.unreadByAdmin > 99 ? "99+" : chat.unreadByAdmin}
-            </span>
-          )}
-        </div>
-      </div>
-    </button>
-  );
-}
-
-function DirectExistingRow({
-  chat,
-  isSelected,
-  onSelect,
-}: {
-  chat: AdminDirectChat;
-  isSelected: boolean;
-  onSelect: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onSelect}
-      className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors ${
-        isSelected ? "bg-[#EDEAE5]" : "hover:bg-[#F0EDE8]"
-      }`}
-      style={{
-        borderBottomWidth: "1px",
-        borderBottomStyle: "solid",
-        borderBottomColor: "#D5D0C8",
-      }}
-    >
-      <Avatar name={chat.barber.name} image={chat.barber.image} />
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 mb-0.5">
-          <p
-            className="flex-1 min-w-0 truncate"
-            style={{
-              fontSize: "14px",
-              fontWeight: chat.unreadByAdmin > 0 ? 600 : 500,
-              color: "var(--color-text)",
-            }}
-          >
-            {chat.barber.name}
-          </p>
-          {chat.lastMessageAt && (
-            <span
-              className="shrink-0 text-[var(--color-text-muted)]"
-              style={{ fontSize: "10px" }}
-            >
-              {formatLastTime(chat.lastMessageAt)}
-            </span>
-          )}
-        </div>
-        <div className="flex items-center gap-2">
-          <p
-            className="flex-1 min-w-0 truncate italic"
-            style={{ fontSize: "12px", color: "var(--color-text-muted)" }}
-          >
-            {chat.lastMessagePreview ?? "—"}
-          </p>
-          {chat.unreadByAdmin > 0 && (
-            <span
-              className="shrink-0 inline-flex items-center justify-center rounded-full"
-              style={{
-                background: "#C9B89A",
-                color: "white",
-                minWidth: "18px",
-                height: "18px",
-                fontSize: "10px",
-                fontWeight: 500,
-                padding: "0 5px",
-              }}
-            >
-              {chat.unreadByAdmin > 99 ? "99+" : chat.unreadByAdmin}
-            </span>
-          )}
-        </div>
-      </div>
-    </button>
-  );
-}
-
-function DirectNewRow({
-  barber,
-  opening,
-  onOpen,
-}: {
-  barber: AdminBarberOption;
-  opening: boolean;
-  onOpen: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onOpen}
-      disabled={opening}
-      className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-[#F0EDE8] transition-colors disabled:opacity-50"
-      style={{
-        borderBottomWidth: "1px",
-        borderBottomStyle: "solid",
-        borderBottomColor: "#D5D0C8",
-      }}
-    >
-      <Avatar
-        name={barber.name}
-        image={barber.image}
-        background={barber.isActive ? "#C9B89A" : "#A8A095"}
-      />
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 mb-0.5">
-          <p
-            className="flex-1 min-w-0 truncate"
-            style={{
-              fontSize: "14px",
-              fontWeight: 500,
-              color: "var(--color-text)",
-            }}
-          >
-            {barber.name}
-          </p>
-          {!barber.isActive && (
-            <span
-              className="shrink-0 text-[var(--color-text-muted)] italic"
-              style={{ fontSize: "10px" }}
-            >
-              Pending
-            </span>
-          )}
-        </div>
-        <p
-          className="truncate italic"
-          style={{ fontSize: "12px", color: "var(--color-text-muted)" }}
-        >
-          {opening ? "Відкриваємо..." : "Натисніть щоб написати"}
-        </p>
-      </div>
-    </button>
-  );
-}
-
-function SelectedThread({
+function ChatRow({
+  item,
   selected,
-  onChatRefetch,
-  onBackMobile,
+  onClick,
+  isOpening,
 }: {
-  selected: NonNullable<SelectedView>;
-  onChatRefetch: () => void;
-  onBackMobile?: () => void;
+  item: AdminChatListItem;
+  selected: boolean;
+  onClick: () => void;
+  isOpening: boolean;
 }) {
-  const headerName =
-    selected.kind === "support"
-      ? selected.chat.otherParticipant.name
-      : selected.chat.barber.name;
-  const headerSub =
-    selected.kind === "support"
-      ? selected.chat.otherParticipant.email
-      : "Прямий чат";
-  const headerImage =
-    selected.kind === "support"
-      ? selected.chat.otherParticipant.image
-      : selected.chat.barber.image;
+  const initial = getInitial(item.partnerName);
 
   return (
-    <>
-      <div
-        className="flex items-center gap-3 px-4 py-3 shrink-0"
-        style={{
-          height: "64px",
-          borderBottomWidth: "1px",
-          borderBottomStyle: "solid",
-          borderBottomColor: "#D5D0C8",
-        }}
-      >
-        {onBackMobile && (
-          <button
-            type="button"
-            onClick={onBackMobile}
-            aria-label="Назад до списку"
-            className="md:hidden flex items-center justify-center w-8 h-8 rounded-[8px] hover:bg-black/5 transition-colors text-[var(--color-text)]"
-          >
-            ←
-          </button>
-        )}
-        <Avatar name={headerName} image={headerImage} />
-        <div className="flex-1 min-w-0">
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={isOpening}
+      className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors disabled:opacity-50 ${
+        selected ? "bg-[var(--color-bg)]" : "hover:bg-[var(--color-bg)]"
+      }`}
+      style={{
+        borderBottomWidth: "1px",
+        borderBottomStyle: "solid",
+        borderBottomColor: "var(--color-line)",
+      }}
+    >
+      {item.partnerAvatar ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={item.partnerAvatar}
+          alt=""
+          className="w-10 h-10 rounded-full object-cover shrink-0"
+        />
+      ) : (
+        <div
+          className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 font-display"
+          style={{
+            background: "var(--color-bronze)",
+            color: "white",
+            fontSize: "16px",
+            fontWeight: 500,
+          }}
+        >
+          {initial}
+        </div>
+      )}
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 mb-0.5">
           <p
-            className="truncate"
+            className="flex-1 min-w-0 truncate"
             style={{
-              fontSize: "15px",
-              fontWeight: 500,
+              fontSize: "14px",
+              fontWeight: item.unreadCount > 0 ? 600 : 500,
               color: "var(--color-text)",
             }}
           >
-            {headerName}
+            {item.partnerName}
           </p>
+          {item.lastMessageAt && (
+            <span
+              className="shrink-0 text-[var(--color-text-muted)]"
+              style={{ fontSize: "10px" }}
+            >
+              {formatLastTime(item.lastMessageAt)}
+            </span>
+          )}
+        </div>
+        <div className="flex items-center gap-2">
           <p
-            className="truncate text-[var(--color-text-muted)]"
-            style={{ fontSize: "11px" }}
+            className="flex-1 min-w-0 truncate italic pr-12"
+            style={{ fontSize: "12px", color: "var(--color-text-muted)" }}
           >
-            {headerSub}
+            {item.lastMessageText ?? item.partnerEmail}
           </p>
+          {item.unreadCount > 0 && (
+            <span
+              className="shrink-0 inline-flex items-center justify-center rounded-full"
+              style={{
+                background:
+                  item.kind === "support"
+                    ? "var(--color-danger)"
+                    : "var(--color-bronze)",
+                color: "white",
+                minWidth: "18px",
+                height: "18px",
+                fontSize: "10px",
+                fontWeight: 500,
+                padding: "0 5px",
+              }}
+            >
+              {item.unreadCount > 99 ? "99+" : item.unreadCount}
+            </span>
+          )}
         </div>
       </div>
-      <ChatThread
-        chatId={selected.chat.id}
-        active
-        onMessagesChanged={onChatRefetch}
-      />
-    </>
+    </button>
   );
 }

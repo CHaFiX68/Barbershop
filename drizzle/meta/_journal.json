@@ -36,6 +36,20 @@
       "when": 1777765625292,
       "tag": "0004_nice_cassandra_nova",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1778264360502,
+      "tag": "0005_opposite_angel",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1778267218881,
+      "tag": "0006_amused_saracen",
+      "breakpoints": true
     }
   ]
 }

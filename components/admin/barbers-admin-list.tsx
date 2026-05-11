@@ -34,7 +34,7 @@ export default function BarbersAdminList({
       {barbers.map((b) => (
         <div
           key={b.userId}
-          className="flex items-center gap-3 px-2 py-2.5 rounded-[8px] hover:bg-[#F9F6F1] transition-colors border-b border-[var(--color-line)] last:border-b-0"
+          className="flex items-center gap-3 px-2 py-2.5 rounded-[8px] hover:bg-[var(--color-bg)] transition-colors border-b border-[var(--color-line)] last:border-b-0"
         >
           <div className="flex-shrink-0">
             {b.avatar ? (
@@ -48,8 +48,8 @@ export default function BarbersAdminList({
               />
             ) : (
               <div
-                className="w-9 h-9 rounded-full bg-[#F5F0E6] flex items-center justify-center font-display italic"
-                style={{ color: "#C9B89A", fontSize: "16px" }}
+                className="w-9 h-9 rounded-full bg-[var(--color-surface-2)] flex items-center justify-center font-display italic"
+                style={{ color: "var(--color-bronze)", fontSize: "16px" }}
               >
                 {b.name.charAt(0).toUpperCase()}
               </div>
@@ -67,7 +67,7 @@ export default function BarbersAdminList({
             type="button"
             onClick={() => onDelete(b.userId, b.name)}
             disabled={busyUserId === b.userId}
-            className="px-3 py-1.5 rounded-[8px] text-[12px] text-[#A03030] hover:bg-[rgba(160,48,48,0.06)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+            className="px-3 py-1.5 rounded-[8px] text-[12px] text-[var(--color-danger)] bg-[rgba(160,48,48,0.06)] border border-[rgba(160,48,48,0.25)] hover:bg-[rgba(160,48,48,0.12)] hover:border-[rgba(160,48,48,0.4)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
           >
             Видалити
           </button>

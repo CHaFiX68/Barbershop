@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 
 export default function BarberCannotBook() {
   return (
@@ -18,7 +18,7 @@ export default function BarberCannotBook() {
       </p>
       <Link
         href="/"
-        className="inline-flex items-center justify-center bg-[var(--color-text)] text-[var(--color-bg)] px-6 py-2.5 rounded-[8px] text-[14px] hover:opacity-90 transition-opacity"
+        className="inline-flex items-center justify-center bg-[var(--color-action-bg)] text-[var(--color-action-text)] px-6 py-2.5 rounded-[8px] text-[14px] hover:opacity-90 transition-opacity"
       >
         ← На головну
       </Link>

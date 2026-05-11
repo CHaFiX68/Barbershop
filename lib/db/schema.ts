@@ -167,6 +167,9 @@ export const booking = pgTable("booking", {
   status: text("status").notNull().default("active"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   cancelledAt: timestamp("cancelled_at"),
+  locale: text("locale").notNull().default("en"),
+  reminder24hSentAt: timestamp("reminder_24h_sent_at"),
+  reminder1hSentAt: timestamp("reminder_1h_sent_at"),
 });
 
 export type ChatType = "booking" | "support" | "direct_admin";
@@ -225,3 +228,12 @@ export const message = pgTable(
   },
   (t) => [index("message_chat_created_idx").on(t.chatId, t.createdAt)]
 );
+
+
+export const workPhoto = pgTable("work_photo", {
+  id: text("id").primaryKey(),
+  imageUrl: text("image_url").notNull(),
+  caption: text("caption"),
+  orderIndex: integer("order_index").notNull().default(0),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});

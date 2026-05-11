@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { Link } from "@/i18n/navigation";
+import { usePathname } from "@/i18n/navigation";
 
 const POLL_INTERVAL_MS = 30_000;
 
@@ -52,10 +52,10 @@ export default function AdminNav() {
     <nav
       className="flex items-center gap-1 px-4 sm:px-6 py-3"
       style={{
-        background: "#FAF7F1",
+        background: "var(--color-surface)",
         borderBottomWidth: "1px",
         borderBottomStyle: "solid",
-        borderBottomColor: "#D5D0C8",
+        borderBottomColor: "var(--color-line)",
       }}
     >
       {items.map((item) => {
@@ -66,8 +66,8 @@ export default function AdminNav() {
             href={item.href}
             className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-[8px] text-[13px] transition-colors ${
               isActive
-                ? "bg-[var(--color-text)] text-white"
-                : "text-[var(--color-text)] hover:bg-[#EDEAE5]"
+                ? "bg-[var(--color-action-bg)] text-[var(--color-action-text)]"
+                : "text-[var(--color-text)] hover:bg-[var(--color-bg)]"
             }`}
           >
             <span>{item.label}</span>
@@ -75,7 +75,7 @@ export default function AdminNav() {
               <span
                 className="inline-flex items-center justify-center rounded-full"
                 style={{
-                  background: isActive ? "white" : "#A03030",
+                  background: isActive ? "white" : "var(--color-danger)",
                   color: isActive ? "var(--color-text)" : "white",
                   minWidth: "18px",
                   height: "18px",

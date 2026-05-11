@@ -1,22 +1,8 @@
+import { getTranslations } from "next-intl/server";
 import { getContentMap } from "@/lib/content";
 import { SOCIALS } from "@/lib/data";
 import EditableText from "./editable-text";
 import SectionHeading from "./section-heading";
-
-const CONTACTS_DEFAULTS = {
-  "contacts.title": "Контакти",
-  "contacts.subhead.contact": "Зв'язатись",
-  "contacts.subhead.hours": "Графік роботи",
-  "contacts.address": "вул. Хрещатик, 22, Київ",
-  "contacts.phone": "+38 (000) 000 00 00",
-  "contacts.email": "hello@barberco.ua",
-  "contacts.hours.weekdays.day": "Пн — Пт",
-  "contacts.hours.weekdays.time": "10:00 — 21:00",
-  "contacts.hours.sat.day": "Сб",
-  "contacts.hours.sat.time": "10:00 — 20:00",
-  "contacts.hours.sun.day": "Нд",
-  "contacts.hours.sun.time": "Вихідний",
-};
 
 function ContactRow({
   label,
@@ -44,7 +30,20 @@ function ContactRow({
 }
 
 export default async function ContactsSection() {
-  const c = await getContentMap(CONTACTS_DEFAULTS);
+  const t = await getTranslations("sections.contacts");
+  const c = await getContentMap({
+    "contacts.subhead.contact": t("connectLabel"),
+    "contacts.subhead.hours": t("hoursTitle"),
+    "contacts.address": "вул. Хрещатик, 22, Київ",
+    "contacts.phone": "+38 (000) 000 00 00",
+    "contacts.email": "hello@barberco.ua",
+    "contacts.hours.weekdays.day": t("monFri"),
+    "contacts.hours.weekdays.time": "10:00 — 21:00",
+    "contacts.hours.sat.day": t("saturday"),
+    "contacts.hours.sat.time": "10:00 — 20:00",
+    "contacts.hours.sun.day": t("sunday"),
+    "contacts.hours.sun.time": t("weekend"),
+  });
 
   const phoneHref = `tel:+${c["contacts.phone"].replace(/\D/g, "")}`;
   const emailHref = `mailto:${c["contacts.email"]}`;
@@ -75,12 +74,10 @@ export default async function ContactsSection() {
       <div className="max-w-[1536px] mx-auto px-4 sm:px-6">
        <div className="max-w-6xl mx-auto">
         <SectionHeading
-          eyebrow="Знайти нас"
-          title={c["contacts.title"]}
+          eyebrow={t("eyebrow")}
+          title={t("title")}
           align="left"
-          number="03"
-          titleContentKey="contacts.title"
-          titleMaxLength={60}
+          number="04"
         />
 
         <div className="mt-12 grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16">
@@ -97,7 +94,7 @@ export default async function ContactsSection() {
               />
             </h3>
             <div className="mt-6">
-              <ContactRow label="Адреса">
+              <ContactRow label={t("addressLabel")}>
                 <EditableText
                   contentKey="contacts.address"
                   initialValue={c["contacts.address"]}
@@ -105,7 +102,7 @@ export default async function ContactsSection() {
                   maxLength={120}
                 />
               </ContactRow>
-              <ContactRow label="Телефон">
+              <ContactRow label={t("phoneLabel")}>
                 <a href={phoneHref} className="nav-link">
                   <EditableText
                     contentKey="contacts.phone"
@@ -115,7 +112,7 @@ export default async function ContactsSection() {
                   />
                 </a>
               </ContactRow>
-              <ContactRow label="Email">
+              <ContactRow label={t("emailLabel")}>
                 <a href={emailHref} className="nav-link">
                   <EditableText
                     contentKey="contacts.email"
@@ -125,7 +122,7 @@ export default async function ContactsSection() {
                   />
                 </a>
               </ContactRow>
-              <ContactRow label="Соцмережі">
+              <ContactRow label={t("socialLabel")}>
                 <span className="inline-flex items-center gap-3">
                   {SOCIALS.map((s, i) => (
                     <span
@@ -199,7 +196,7 @@ export default async function ContactsSection() {
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
               allowFullScreen={false}
-              title="BARBER&CO — місцезнаходження на карті"
+              title={t("mapTitle")}
             />
           </div>
         </div>

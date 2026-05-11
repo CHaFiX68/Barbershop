@@ -69,7 +69,7 @@ export default function EditableServiceRow({
         defaultValue={service.name}
         onBlur={handleNameBlur}
         placeholder="Назва послуги"
-        className="w-full bg-transparent outline-none focus:bg-[#F5F0E6] rounded px-1 text-[13px]"
+        className="w-full bg-transparent outline-none focus:bg-[var(--color-surface-2)] rounded px-1 text-[13px]"
       />
       <div
         style={{
@@ -86,12 +86,12 @@ export default function EditableServiceRow({
         defaultValue={service.price}
         onBlur={handlePriceBlur}
         placeholder="350 SEK"
-        className="w-full bg-transparent outline-none focus:bg-[#F5F0E6] rounded px-1 text-[13px] font-medium"
+        className="w-full bg-transparent outline-none focus:bg-[var(--color-surface-2)] rounded px-1 text-[13px] font-medium"
       />
       <button
         type="button"
         onClick={() => void onDelete()}
-        className="opacity-0 group-hover:opacity-100 text-[var(--color-text-muted)] hover:text-[#A03030] transition-all"
+        className="opacity-0 group-hover:opacity-100 text-[var(--color-text-muted)] hover:text-[var(--color-danger)] transition-all"
         title="Видалити"
         aria-label="Видалити послугу"
       >

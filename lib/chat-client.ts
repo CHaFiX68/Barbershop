@@ -109,3 +109,13 @@ export async function openSupport(): Promise<string> {
   }
   return json.chatId;
 }
+
+export async function deleteChat(chatId: string): Promise<void> {
+  const res = await fetch(`/api/chat/${chatId}`, { method: "DELETE" });
+  if (!res.ok) {
+    const json = (await res.json().catch(() => null)) as
+      | { error?: string }
+      | null;
+    throw new Error(json?.error || `deleteChat ${res.status}`);
+  }
+}

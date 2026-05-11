@@ -57,7 +57,7 @@ export default function EditablePhone({ phone, onChange }: Props) {
         onKeyDown={handleKeyDown}
         maxLength={MAX}
         placeholder="Номер телефону"
-        className="w-full text-[14px] font-medium text-center text-[var(--color-text)] bg-[#F5F0E6] border border-[var(--color-line)] rounded-[6px] px-2 py-1.5 outline-none focus:border-[var(--color-text)]"
+        className="w-full text-[14px] font-medium text-center text-[var(--color-text)] bg-[var(--color-surface-2)] border border-[var(--color-line)] rounded-[6px] px-2 py-1.5 outline-none focus:border-[var(--color-text)]"
       />
     );
   }
@@ -68,9 +68,9 @@ export default function EditablePhone({ phone, onChange }: Props) {
     <button
       type="button"
       onClick={() => setIsEditing(true)}
-      className={`w-full text-[14px] text-center transition-colors py-1.5 px-2 rounded-[6px] border border-dashed border-[#C9B89A] hover:border-solid hover:bg-[#F5F0E6] ${
+      className={`w-full text-[14px] text-center transition-colors py-1.5 px-2 rounded-[6px] border border-dashed border-[var(--color-bronze)] hover:border-solid hover:bg-[var(--color-surface-2)] ${
         isEmpty
-          ? "italic text-[#A03030] hover:text-[#1C1B19]"
+          ? "italic text-[var(--color-danger)] hover:text-[var(--color-text)]"
           : "font-medium text-[var(--color-text)]"
       }`}
       title="Клікни щоб редагувати"

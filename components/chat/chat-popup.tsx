@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import { useTranslations } from "next-intl";
 import type { ChatListItem } from "@/lib/chat-client";
 import { useModalStack } from "@/lib/modal-stack-context";
 import CloseButton from "@/components/ui/close-button";
@@ -31,6 +32,7 @@ export default function ChatPopup({
   const { zIndex } = useModalStack("chat-popup", true, onClose, {
     respectEsc: false,
   });
+  const t = useTranslations("chat");
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768);
@@ -48,13 +50,16 @@ export default function ChatPopup({
       animate={{ opacity: 1, scale: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95, y: 20 }}
       transition={{ duration: 0.2 }}
-      className="fixed bg-[#FAF7F1] rounded-[16px] shadow-2xl overflow-hidden flex flex-col"
+      className="fixed bg-[var(--color-surface)] shadow-2xl overflow-hidden flex flex-col"
       style={{
         zIndex,
-        bottom: "24px",
-        right: "24px",
-        width: "min(700px, calc(100vw - 48px))",
-        height: "min(500px, calc(100vh - 100px))",
+        bottom: isMobile ? "0" : "24px",
+        right: isMobile ? "0" : "24px",
+        left: isMobile ? "0" : "auto",
+        top: isMobile ? "0" : "auto",
+        width: isMobile ? "100vw" : "min(700px, calc(100vw - 48px))",
+        height: isMobile ? "100dvh" : "min(500px, calc(100vh - 100px))",
+        borderRadius: isMobile ? "0" : "16px",
       }}
     >
       <div
@@ -63,16 +68,16 @@ export default function ChatPopup({
           height: "56px",
           borderBottomWidth: "1px",
           borderBottomStyle: "solid",
-          borderBottomColor: "#D5D0C8",
+          borderBottomColor: "var(--color-line)",
         }}
       >
         <h3
           className="font-display"
           style={{ fontSize: "18px", fontWeight: 500, color: "var(--color-text)" }}
         >
-          Чат
+          {t("title")}
         </h3>
-        <CloseButton onClick={onClose} ariaLabel="Закрити чат" />
+        <CloseButton onClick={onClose} ariaLabel={t("title")} />
       </div>
 
       <div
@@ -93,7 +98,7 @@ export default function ChatPopup({
           />
         )}
         {!isMobile && (
-          <div style={{ background: "#D5D0C8" }} />
+          <div style={{ background: "var(--color-line)" }} />
         )}
         {showConversation && (
           <>
@@ -106,6 +111,10 @@ export default function ChatPopup({
                 onBackMobile={
                   isMobile ? () => onSelectChat(null) : undefined
                 }
+                onDeleted={() => {
+                  onSelectChat(null);
+                  onChatsRefetch();
+                }}
                 currentUserRole={currentUserRole}
               />
             ) : (

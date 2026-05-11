@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import RegisterForm from "@/components/auth/register-form";
 
-export const metadata = { title: "Реєстрація — BARBER&CO" };
+export const metadata = { title: "Реєстрація — TWOBarbers" };
 
 export default function RegisterPage() {
   return (

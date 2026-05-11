@@ -19,13 +19,15 @@ export default function ActiveToggle({ isActive, onChange, disabled }: Props) {
         {isActive ? "Активний" : "Неактивний"}
       </span>
       <div
-        className={`w-9 h-5 rounded-full transition-colors ${
-          isActive ? "bg-[#1C1B19]" : "bg-[var(--color-line)]"
+        className={`relative w-9 h-5 rounded-full border-2 border-[#1C1B19] transition-colors ${
+          isActive ? "bg-[var(--color-action-bg)]" : "bg-[var(--color-line)]"
         }`}
       >
         <div
-          className={`w-4 h-4 rounded-full bg-white shadow-sm transition-transform mt-0.5 ${
-            isActive ? "translate-x-[18px]" : "translate-x-0.5"
+          className={`absolute top-1/2 -translate-y-1/2 w-3.5 h-3.5 rounded-full transition-[left] ${
+            isActive
+              ? "bg-[var(--color-action-text)] left-[14px]"
+              : "bg-[var(--color-surface)] left-0"
           }`}
         />
       </div>

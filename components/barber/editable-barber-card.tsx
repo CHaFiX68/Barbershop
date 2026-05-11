@@ -184,7 +184,7 @@ export default function EditableBarberCard({
   };
 
   return (
-    <article className="relative bg-white border border-[var(--color-line)] rounded-[16px] p-5 sm:p-7 grid grid-cols-12 gap-5 sm:gap-7">
+    <article className="relative bg-[var(--color-surface)] border border-[var(--color-line)] rounded-[16px] p-5 sm:p-7 grid grid-cols-12 gap-5 sm:gap-7">
       <ActiveToggle
         isActive={isActive}
         onChange={toggleActive}
@@ -214,7 +214,7 @@ export default function EditableBarberCard({
             />
           ) : (
             <span
-              className="absolute inset-0 flex items-center justify-center font-display italic text-[#C9B89A] leading-none"
+              className="absolute inset-0 flex items-center justify-center font-display italic text-[var(--color-bronze)] leading-none"
               style={{ fontSize: "clamp(48px, 5vw, 88px)" }}
             >
               {initials}
@@ -286,7 +286,7 @@ export default function EditableBarberCard({
             type="button"
             onClick={addService}
             disabled={services.length >= TOTAL_ROWS || isSubmitting}
-            className="border border-[var(--color-line)] bg-transparent text-[14px] text-[var(--color-text)] px-6 py-2.5 rounded-[8px] hover:bg-[#F5F0E6] transition-colors disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+            className="border border-[var(--color-line)] bg-transparent text-[14px] text-[var(--color-text)] px-6 py-2.5 rounded-[8px] hover:bg-[var(--color-surface-2)] transition-colors disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent"
           >
             + Додати послугу
           </button>
@@ -296,7 +296,7 @@ export default function EditableBarberCard({
               <span className="text-[12px] text-green-700">✓ Збережено</span>
             )}
             {submitError && (
-              <span className="text-[12px] text-[#A03030]">{submitError}</span>
+              <span className="text-[12px] text-[var(--color-danger)]">{submitError}</span>
             )}
             <button
               type="button"

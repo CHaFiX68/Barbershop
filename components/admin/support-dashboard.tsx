@@ -2,7 +2,9 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { HelpCircle } from "lucide-react";
+import { useTranslations } from "next-intl";
 import ChatThread from "@/components/chat/chat-thread";
+import { useConfirm } from "@/lib/confirm-context";
 
 const POLL_LIST_INTERVAL_MS = 15_000;
 
@@ -89,6 +91,9 @@ export default function SupportDashboard({ initial }: Props) {
   const [archiving, setArchiving] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
   const [isMobile, setIsMobile] = useState(false);
+  const confirm = useConfirm();
+  const t = useTranslations("support");
+  const tChat = useTranslations("chat");
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768);
@@ -133,9 +138,12 @@ export default function SupportDashboard({ initial }: Props) {
 
   const handleArchive = async () => {
     if (!selected || archiving) return;
-    if (!confirm("Архівувати цей тікет? Користувач зможе відкрити новий чат.")) {
-      return;
-    }
+    const ok = await confirm({
+      title: tChat("archiveTicketConfirmTitle"),
+      message: tChat("archiveTicketConfirmMessage"),
+      confirmLabel: tChat("archiveTicketConfirmLabel"),
+    });
+    if (!ok) return;
     setArchiving(true);
     setActionError(null);
     try {
@@ -170,10 +178,10 @@ export default function SupportDashboard({ initial }: Props) {
           className="font-display text-[var(--color-text)] mb-1"
           style={{ fontWeight: 600, fontSize: "clamp(24px, 4vw, 32px)" }}
         >
-          Підтримка
+          {t("title")}
         </h1>
         <p className="text-[var(--color-text-muted)] text-[12px]">
-          Активних: {totalActive} · Архівних: {totalArchived}
+          {t("ticketActive")}: {totalActive} · {t("ticketArchived")}: {totalArchived}
         </p>
       </div>
 
@@ -191,16 +199,16 @@ export default function SupportDashboard({ initial }: Props) {
               style={{
                 borderBottomWidth: "1px",
                 borderBottomStyle: "solid",
-                borderBottomColor: "#D5D0C8",
+                borderBottomColor: "var(--color-line)",
               }}
             >
               {(
                 [
-                  { key: "active", label: "Активні", n: totalActive },
-                  { key: "archived", label: "Архівні", n: totalArchived },
+                  { key: "active", label: t("ticketActive"), n: totalActive },
+                  { key: "archived", label: t("ticketArchived"), n: totalArchived },
                   {
                     key: "all",
-                    label: "Всі",
+                    label: t("ticketActive") + " + " + t("ticketArchived"),
                     n: totalActive + totalArchived,
                   },
                 ] as const
@@ -211,8 +219,8 @@ export default function SupportDashboard({ initial }: Props) {
                   onClick={() => setFilter(tab.key as StatusFilter)}
                   className={`flex-1 px-3 py-1.5 rounded-[8px] text-[12px] transition-colors ${
                     filter === tab.key
-                      ? "bg-[var(--color-text)] text-white"
-                      : "text-[var(--color-text)] hover:bg-[#EDEAE5]"
+                      ? "bg-[var(--color-action-bg)] text-[var(--color-action-text)]"
+                      : "text-[var(--color-text)] hover:bg-[var(--color-bg)]"
                   }`}
                 >
                   {tab.label} ({tab.n})
@@ -242,7 +250,7 @@ export default function SupportDashboard({ initial }: Props) {
           </div>
         )}
 
-        {!isMobile && <div style={{ background: "#D5D0C8" }} />}
+        {!isMobile && <div style={{ background: "var(--color-line)" }} />}
 
         {showThread && (
           <div className="flex flex-col h-full min-h-0">
@@ -254,8 +262,8 @@ export default function SupportDashboard({ initial }: Props) {
                     height: "72px",
                     borderBottomWidth: "1px",
                     borderBottomStyle: "solid",
-                    borderBottomColor: "#D5D0C8",
-                    background: "#FAF7F1",
+                    borderBottomColor: "var(--color-line)",
+                    background: "var(--color-surface)",
                   }}
                 >
                   {isMobile && (
@@ -271,7 +279,7 @@ export default function SupportDashboard({ initial }: Props) {
                   <div
                     className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
                     style={{
-                      background: "#C9B89A",
+                      background: "var(--color-bronze)",
                       color: "white",
                       fontSize: "16px",
                       fontWeight: 500,
@@ -303,9 +311,9 @@ export default function SupportDashboard({ initial }: Props) {
                       type="button"
                       onClick={handleArchive}
                       disabled={archiving}
-                      className="px-3 py-1.5 rounded-[8px] text-[12px] border border-[var(--color-line)] hover:bg-[#EDEAE5] transition-colors disabled:opacity-50"
+                      className="px-3 py-1.5 rounded-[8px] text-[12px] border border-[var(--color-line)] hover:bg-[var(--color-bg)] transition-colors disabled:opacity-50"
                     >
-                      {archiving ? "Архівую..." : "Архівувати"}
+                      {t("archiveButton")}
                     </button>
                   ) : (
                     <span
@@ -326,7 +334,7 @@ export default function SupportDashboard({ initial }: Props) {
 
                 {actionError && (
                   <p
-                    className="px-4 py-2 italic text-[#A03030]"
+                    className="px-4 py-2 italic text-[var(--color-danger)]"
                     style={{ fontSize: "11px" }}
                   >
                     {actionError}
@@ -347,7 +355,7 @@ export default function SupportDashboard({ initial }: Props) {
                   className="italic text-[var(--color-text-muted)] text-center"
                   style={{ fontSize: "13px" }}
                 >
-                  Виберіть тікет зі списку зліва
+                  {t("openTicket")}
                 </p>
               </div>
             )}
@@ -373,18 +381,18 @@ function SupportListRow({
       type="button"
       onClick={onSelect}
       className={`w-full flex items-start gap-3 px-3 py-3 text-left transition-colors ${
-        isSelected ? "bg-[#EDEAE5]" : "hover:bg-[#F0EDE8]"
+        isSelected ? "bg-[var(--color-bg)]" : "hover:bg-[#F0EDE8]"
       } ${isArchived ? "opacity-60" : ""}`}
       style={{
         borderBottomWidth: "1px",
         borderBottomStyle: "solid",
-        borderBottomColor: "#D5D0C8",
+        borderBottomColor: "var(--color-line)",
       }}
     >
       <div
         className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 mt-0.5"
         style={{
-          background: "#C9B89A",
+          background: "var(--color-bronze)",
           color: "white",
           fontSize: "14px",
           fontWeight: 500,
@@ -430,7 +438,7 @@ function SupportListRow({
             <span
               className="shrink-0 inline-flex items-center justify-center rounded-full"
               style={{
-                background: "#A03030",
+                background: "var(--color-danger)",
                 color: "white",
                 minWidth: "18px",
                 height: "18px",
@@ -456,7 +464,7 @@ function SupportListRow({
       {!isArchived && (
         <HelpCircle
           size={14}
-          className="shrink-0 mt-1 text-[#C9B89A]"
+          className="shrink-0 mt-1 text-[var(--color-bronze)]"
           aria-hidden="true"
         />
       )}

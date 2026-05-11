@@ -1,15 +1,17 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
+import { useTranslations } from "next-intl";
 import { useBooking } from "@/lib/booking-context";
 import { useModalStack } from "@/lib/modal-stack-context";
 import HeaderAuth from "./header-auth";
 import CloseButton from "@/components/ui/close-button";
-import EditableText from "./editable-text";
+import ThemeToggle from "@/components/ui/theme-toggle";
+import LocaleSwitcher from "@/components/ui/locale-switcher";
+import AuthModalTrigger from "./auth/auth-modal-trigger";
 import type { InitialSession } from "./profile-dropdown";
 
 const HIDE_HEADER_PATHS = new Set(["/login", "/register"]);
@@ -25,12 +27,27 @@ type Props = {
   initialSession?: InitialSession;
 };
 
+const NAV_KEY_MAP: Record<string, string> = {
+  "#barbers": "team",
+  "#works": "works",
+  "#about": "about",
+  "#contacts": "contacts",
+  "#booking": "booking",
+};
+
 export default function Header({ navItems, initialSession = null }: Props) {
+  const t = useTranslations("header");
+  const tAuth = useTranslations("auth");
   const pathname = usePathname();
   const router = useRouter();
   const booking = useBooking();
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+
+  const resolveLabel = (href: string, fallback: string) => {
+    const key = NAV_KEY_MAP[href];
+    return key ? t(`nav.${key}`) : fallback;
+  };
 
   const hidden = HIDE_HEADER_PATHS.has(pathname ?? "");
 
@@ -72,17 +89,22 @@ export default function Header({ navItems, initialSession = null }: Props) {
 
   return (
     <>
-      <header className="sticky top-0 z-40 bg-[#EDEAE5]/85 backdrop-blur-[8px] border-b border-[var(--color-line)]">
+      <header className="sticky top-0 z-40 bg-[var(--color-bg)]/85 backdrop-blur-[8px] border-b border-[var(--color-line)]">
         <div className="max-w-[1536px] mx-auto px-4 sm:px-6">
          <div className="max-w-6xl mx-auto h-16 md:h-20 flex items-center justify-between">
           <Link
             href="/"
-            aria-label="BARBER&CO — на головну"
+            aria-label={t("logoAriaLabel")}
             className="font-display text-xl md:text-2xl tracking-tight"
             style={{ fontWeight: 600 }}
+            onClick={(e) => {
+              if (pathname === "/") {
+                e.preventDefault();
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }
+            }}
           >
-            BARBER<span className="font-display font-normal mx-[1px]">&amp;</span>
-            CO
+            TWOBarbers
           </Link>
 
           <nav className="hidden md:flex items-center gap-8">
@@ -92,37 +114,39 @@ export default function Header({ navItems, initialSession = null }: Props) {
                   key={item.href}
                   type="button"
                   onClick={() => booking.open()}
-                  className="nav-link text-sm tracking-wide bg-transparent border-0 p-0 cursor-pointer"
+                  className="nav-link text-[15px] tracking-wide font-medium bg-transparent border-0 p-0 cursor-pointer"
                 >
-                  <EditableText
-                    contentKey={item.contentKey}
-                    initialValue={item.label}
-                    as="span"
-                    maxLength={30}
-                  />
+                  {resolveLabel(item.href, item.label)}
                 </button>
               ) : (
                 <Link
                   key={item.href}
                   href={`/${item.href}`}
-                  className="nav-link text-sm tracking-wide"
+                  className="nav-link text-[15px] tracking-wide font-medium"
                 >
-                  <EditableText
-                    contentKey={item.contentKey}
-                    initialValue={item.label}
-                    as="span"
-                    maxLength={30}
-                  />
+                  {resolveLabel(item.href, item.label)}
                 </Link>
               )
             )}
           </nav>
 
           <div className="flex items-center gap-2">
+            <div className="hidden md:flex items-center gap-2">
+              <LocaleSwitcher />
+              <ThemeToggle />
+            </div>
             <HeaderAuth initialSession={initialSession} />
+            {!initialSession?.user && (
+              <AuthModalTrigger
+                mode="register"
+                className="md:hidden text-sm bg-[var(--color-action-bg)] text-[var(--color-action-text)] rounded-[8px] px-3 py-1.5"
+              >
+                {tAuth("signUp")}
+              </AuthModalTrigger>
+            )}
             <button
               type="button"
-              aria-label="Відкрити меню"
+              aria-label={t("menuOpen")}
               aria-expanded={open}
               onClick={() => setOpen(true)}
               className="md:hidden inline-flex flex-col gap-[5px] p-2 rounded-[8px] hover:bg-black/5 transition-colors"
@@ -161,7 +185,7 @@ export default function Header({ navItems, initialSession = null }: Props) {
                   animate={{ x: 0 }}
                   exit={{ x: "100%" }}
                   transition={{ duration: 0.3, ease: [0.32, 0.72, 0, 1] }}
-                  className="fixed top-0 right-0 bottom-0 w-[280px] max-w-[85vw] bg-[#EDEAE5] shadow-2xl md:hidden flex flex-col"
+                  className="fixed top-0 right-0 bottom-0 w-[280px] max-w-[85vw] bg-[var(--color-bg)] shadow-2xl md:hidden flex flex-col"
                   style={{ zIndex: drawerZ }}
                 >
                   <div className="flex items-center justify-between p-5 border-b border-[var(--color-line)]">
@@ -169,13 +193,12 @@ export default function Header({ navItems, initialSession = null }: Props) {
                       className="font-display text-xl tracking-tight"
                       style={{ fontWeight: 600 }}
                     >
-                      BARBER
-                      <span className="font-normal mx-[1px]">&amp;</span>CO
+                      TWOBarbers
                     </span>
-                    <CloseButton onClick={close} ariaLabel="Закрити меню" />
+                    <CloseButton onClick={close} ariaLabel={t("menuClose")} />
                   </div>
 
-                  <nav className="flex flex-col border-t-[0.5px] border-[#D5D0C8]">
+                  <nav className="flex flex-col border-t-[0.5px] border-[var(--color-line)]">
                     {navItems.map((item) =>
                       item.href === "#booking" ? (
                         <button
@@ -185,14 +208,9 @@ export default function Header({ navItems, initialSession = null }: Props) {
                             close();
                             booking.open();
                           }}
-                          className="block py-4 px-5 text-lg text-[#1C1B19] hover:text-[#7A736A] transition-colors border-b-[0.5px] border-[#D5D0C8] text-left bg-transparent w-full cursor-pointer border-x-0 border-t-0"
+                          className="block py-4 px-5 text-lg text-[var(--color-text)] hover:text-[var(--color-text-muted)] transition-colors border-b-[0.5px] border-[var(--color-line)] text-left bg-transparent w-full cursor-pointer border-x-0 border-t-0"
                         >
-                          <EditableText
-                            contentKey={item.contentKey}
-                            initialValue={item.label}
-                            as="span"
-                            maxLength={30}
-                          />
+                          {resolveLabel(item.href, item.label)}
                         </button>
                       ) : (
                         <Link
@@ -201,18 +219,38 @@ export default function Header({ navItems, initialSession = null }: Props) {
                           onClick={(e) =>
                             handleAnchorClick(e, item.href.replace("#", ""))
                           }
-                          className="block py-4 px-5 text-lg text-[#1C1B19] hover:text-[#7A736A] transition-colors border-b-[0.5px] border-[#D5D0C8]"
+                          className="block py-4 px-5 text-lg text-[var(--color-text)] hover:text-[var(--color-text-muted)] transition-colors border-b-[0.5px] border-[var(--color-line)]"
                         >
-                          <EditableText
-                            contentKey={item.contentKey}
-                            initialValue={item.label}
-                            as="span"
-                            maxLength={30}
-                          />
+                          {resolveLabel(item.href, item.label)}
                         </Link>
                       )
                     )}
                   </nav>
+
+                  <div className="border-t border-[var(--color-line)] p-5 flex flex-col gap-4 mt-auto">
+                    <div className="flex items-center justify-between">
+                      <LocaleSwitcher />
+                      <ThemeToggle />
+                    </div>
+                    {!initialSession?.user && (
+                      <div className="flex flex-col gap-2">
+                        <AuthModalTrigger
+                          mode="login"
+                          onClick={close}
+                          className="w-full text-center text-sm text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors py-3 rounded-[8px] border border-[var(--color-line)]"
+                        >
+                          {t("signIn")}
+                        </AuthModalTrigger>
+                        <AuthModalTrigger
+                          mode="register"
+                          onClick={close}
+                          className="w-full text-center text-sm bg-[var(--color-action-bg)] text-[var(--color-action-text)] rounded-[8px] py-3 hover:opacity-85 transition-opacity"
+                        >
+                          {tAuth("signUp")}
+                        </AuthModalTrigger>
+                      </div>
+                    )}
+                  </div>
                 </motion.div>
               </>
             )}

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { HERO_CONTENT } from "@/lib/data";
+import { useTranslations } from "next-intl";
 import { useBooking } from "@/lib/booking-context";
 import type { HeroSlideData } from "@/lib/hero-slides";
 import {
@@ -24,16 +24,16 @@ type Props = {
   initialOpenStatus: OpenStatus;
 };
 
-function statusText(status: OpenStatus): string {
+function statusText(status: OpenStatus, openLabel: string, closedLabel: string): string {
   switch (status.state) {
     case "open":
-      return `Зараз відчинено · ${status.todayLabel}`;
+      return `${openLabel} · ${status.todayLabel}`;
     case "closed_today":
-      return `Зараз зачинено · ${status.todayLabel}`;
+      return `${closedLabel} · ${status.todayLabel}`;
     case "day_off":
-      return "Сьогодні вихідний";
+      return closedLabel;
     default:
-      return "Графік не задано";
+      return closedLabel;
   }
 }
 
@@ -46,6 +46,7 @@ export default function HeroSlider({
   scheduleEntries,
   initialOpenStatus,
 }: Props) {
+  const t = useTranslations("hero");
   const booking = useBooking();
   const [current, setCurrent] = useState(0);
   const [openStatus, setOpenStatus] = useState<OpenStatus>(initialOpenStatus);
@@ -85,7 +86,7 @@ export default function HeroSlider({
       <div className="max-w-[1536px] mx-auto px-4 sm:px-6 py-6">
        <div className="max-w-6xl mx-auto">
         <div className="relative">
-        <div className="relative aspect-[16/8] min-h-[180px] bg-[#1C1B19] overflow-hidden rounded-[24px]">
+        <div className="hero-slide-wrapper relative aspect-[16/8] min-h-[180px] bg-[var(--color-text)] overflow-hidden rounded-[24px] isolate transform-gpu">
           {total > 0 && (
             <div
               className="absolute inset-0 z-0 flex h-full w-full"
@@ -137,7 +138,7 @@ export default function HeroSlider({
               }}
               aria-hidden="true"
             />
-            {statusText(openStatus)}
+            {statusText(openStatus, t("openNow"), t("closedNow"))}
           </div>
           {total > 0 && (
             <>
@@ -207,10 +208,10 @@ export default function HeroSlider({
             <button
               type="button"
               onClick={() => booking.open()}
-              className="hidden md:inline-flex mt-8 pointer-events-auto items-center justify-center bg-[#EDEAE5] text-[#1C1B19] border border-[#EDEAE5] px-5 py-2.5 transition-colors hover:bg-transparent hover:text-[#EDEAE5] rounded-[8px] cursor-pointer"
+              className="hidden md:inline-flex mt-16 pointer-events-auto items-center justify-center bg-[#EDEAE5] text-[#1C1B19] border border-[#EDEAE5] px-5 py-2.5 transition-opacity hover:opacity-85 rounded-[8px] cursor-pointer"
               style={{ fontSize: "14px", fontWeight: 500 }}
             >
-              {HERO_CONTENT.ctaLabel}
+              {t("ctaBook")}
             </button>
           </div>
 
@@ -219,7 +220,7 @@ export default function HeroSlider({
               <button
                 type="button"
                 onClick={goPrev}
-                aria-label="Попередній слайд"
+                aria-label={t("slidePrev")}
                 className="absolute top-1/2 -translate-y-1/2 left-5 sm:left-8 z-30 pointer-events-auto w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center bg-transparent text-white border border-white/40 hover:bg-white hover:text-black hover:border-white transition-colors cursor-pointer"
                 style={{ borderRadius: "9999px" }}
               >
@@ -241,7 +242,7 @@ export default function HeroSlider({
               <button
                 type="button"
                 onClick={goNext}
-                aria-label="Наступний слайд"
+                aria-label={t("slideNext")}
                 className="absolute top-1/2 -translate-y-1/2 right-5 sm:right-8 z-30 pointer-events-auto w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center bg-transparent text-white border border-white/40 hover:bg-white hover:text-black hover:border-white transition-colors cursor-pointer"
                 style={{ borderRadius: "9999px" }}
               >
@@ -297,9 +298,9 @@ export default function HeroSlider({
           <button
             type="button"
             onClick={() => booking.open()}
-            className="inline-flex items-center justify-center bg-white border border-[var(--color-line)] text-[var(--color-text)] px-6 py-3 rounded-[8px] text-[14px] font-medium hover:bg-[#F5F0E6] transition-colors cursor-pointer"
+            className="inline-flex items-center justify-center bg-[#EDEAE5] text-[#1C1B19] border border-[#EDEAE5] px-6 py-3 rounded-[8px] text-[14px] font-medium hover:opacity-85 transition-opacity cursor-pointer"
           >
-            {HERO_CONTENT.ctaLabel}
+            {t("ctaBook")}
           </button>
         </div>
         </div>

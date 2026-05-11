@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import AuthButton from "./auth-button";
 
 type Props = {
@@ -11,6 +12,7 @@ type Props = {
 const LENGTH = 6;
 
 export default function OtpForm({ email, onVerified }: Props) {
+  const t = useTranslations("auth");
   const [digits, setDigits] = useState<string[]>(() =>
     Array.from({ length: LENGTH }, () => "")
   );
@@ -94,13 +96,13 @@ export default function OtpForm({ email, onVerified }: Props) {
         const data = (await res.json().catch(() => ({}))) as {
           error?: string;
         };
-        setError(data.error ?? "Невірний код");
+        setError(data.error ?? t("errorOtpInvalid"));
         setIsSubmitting(false);
         return;
       }
       onVerified();
     } catch {
-      setError("Помилка з'єднання. Спробуй ще раз");
+      setError(t("errorGeneric"));
       setIsSubmitting(false);
     }
   };
@@ -116,14 +118,14 @@ export default function OtpForm({ email, onVerified }: Props) {
         body: JSON.stringify({ email }),
       });
       if (!res.ok) {
-        setError("Не вдалось надіслати код. Спробуй ще раз");
+        setError(t("errorGeneric"));
         return;
       }
       setResendTimer(60);
       setDigits(Array.from({ length: LENGTH }, () => ""));
       refs.current[0]?.focus();
     } catch {
-      setError("Помилка з'єднання");
+      setError(t("errorGeneric"));
     } finally {
       setIsResending(false);
     }
@@ -137,13 +139,13 @@ export default function OtpForm({ email, onVerified }: Props) {
         className="font-display mb-2"
         style={{ fontWeight: 600, fontSize: "32px" }}
       >
-        Підтвердження email
+        {t("otpTitle")}
       </h1>
       <p
         className="mb-8 text-[var(--color-text-muted)]"
         style={{ fontSize: "14px", lineHeight: 1.6 }}
       >
-        Ми надіслали 6-значний код на{" "}
+        {t("otpSubtitle")}{" "}
         <span className="text-[var(--color-text)]">{email}</span>
       </p>
 
@@ -162,7 +164,7 @@ export default function OtpForm({ email, onVerified }: Props) {
               value={d}
               onChange={(e) => handleChange(i, e)}
               onKeyDown={(e) => handleKeyDown(i, e)}
-              className="w-12 h-14 text-center font-medium border border-[var(--color-line)] bg-white rounded-[8px] outline-none transition-colors focus:border-black"
+              className="w-12 h-14 text-center font-medium border border-[var(--color-line)] bg-[var(--color-surface)] rounded-[8px] outline-none transition-colors focus:border-black"
               style={{ fontSize: "24px" }}
             />
           ))}
@@ -177,7 +179,7 @@ export default function OtpForm({ email, onVerified }: Props) {
           loading={isSubmitting}
           disabled={code.length < LENGTH}
         >
-          Підтвердити
+          {t("submitOtp")}
         </AuthButton>
       </form>
 
@@ -185,7 +187,6 @@ export default function OtpForm({ email, onVerified }: Props) {
         className="mt-6 text-center text-[var(--color-text-muted)]"
         style={{ fontSize: "13px" }}
       >
-        Не отримав код?{" "}
         <button
           type="button"
           onClick={handleResend}
@@ -196,7 +197,7 @@ export default function OtpForm({ email, onVerified }: Props) {
               : "underline hover:text-[var(--color-text)]"
           }
         >
-          Надіслати ще раз{resendTimer > 0 ? ` (${resendTimer}с)` : ""}
+          {resendTimer > 0 ? t("otpResendIn", { seconds: resendTimer }) : t("otpResend")}
         </button>
       </p>
     </div>

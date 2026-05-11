@@ -2,20 +2,45 @@
 
 :root {
   --color-bg: #edeae5;
+  --color-surface: #faf7f1;
+  --color-surface-2: #f5f0e6;
   --color-text: #1c1b19;
   --color-text-muted: #7a736a;
   --color-line: #d5d0c8;
+  --color-bronze: #c9b89a;
+  --color-danger: #a03030;
+  --color-action-bg: #1c1b19;
+  --color-action-text: #ffffff;
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
   --radius-xl: 24px;
 }
 
+[data-theme="dark"] {
+  --color-bg: #1a1816;
+  --color-surface: #252220;
+  --color-surface-2: #2e2a27;
+  --color-text: #edeae5;
+  --color-text-muted: #a39c92;
+  --color-line: #3a3633;
+  --color-bronze: #d4c4a4;
+  --color-danger: #d05a5a;
+  --color-action-bg: #edeae5;
+  --color-action-text: #1c1b19;
+}
+
 @theme inline {
   --color-bg: var(--color-bg);
+  --color-surface: var(--color-surface);
+  --color-surface-2: var(--color-surface-2);
   --color-text: var(--color-text);
   --color-text-muted: var(--color-text-muted);
   --color-line: var(--color-line);
+  --color-bronze: var(--color-bronze);
+  --color-danger: var(--color-danger);
+  --color-action-bg: var(--color-action-bg);
+  --color-action-text: var(--color-action-text);
   --font-display: var(--font-display);
   --font-body: var(--font-body);
   --radius-sm: var(--radius-sm);
@@ -77,6 +102,24 @@ body {
     caret-color: var(--color-text) !important;
     transition: background-color 5000s ease-in-out 0s;
   }
+
+  /* Auth inputs are hardcoded white+black on both themes — autofill must
+     paint typed/suggested chars in black, not the theme-aware --color-text
+     (which is light on dark theme and would disappear on the white bg). */
+  input.auth-static-input:-webkit-autofill,
+  input.auth-static-input:-webkit-autofill:hover,
+  input.auth-static-input:-webkit-autofill:focus,
+  input.auth-static-input:-webkit-autofill:active {
+    -webkit-text-fill-color: #1C1B19 !important;
+    -webkit-box-shadow: 0 0 0 30px #fff inset !important;
+    caret-color: #1C1B19 !important;
+  }
+}
+
+/* Fix corner artifacts on rounded slide containers in Webkit/Chromium —
+   forces hardware-accelerated mask clipping over rounded-corner overflow. */
+.hero-slide-wrapper {
+  -webkit-mask-image: -webkit-radial-gradient(white, black);
 }
 
 .font-display {
@@ -192,7 +235,7 @@ body {
 @media (min-width: 1024px) {
   html {
     scrollbar-width: thin;
-    scrollbar-color: #c9b89a #edeae5;
+    scrollbar-color: var(--color-bronze) var(--color-bg);
   }
 
   html::-webkit-scrollbar {
@@ -201,13 +244,13 @@ body {
   }
 
   html::-webkit-scrollbar-track {
-    background: #edeae5;
+    background: var(--color-bg);
   }
 
   html::-webkit-scrollbar-thumb {
-    background: #c9b89a;
+    background: var(--color-bronze);
     border-radius: 5px;
-    border: 2px solid #edeae5;
+    border: 2px solid var(--color-bg);
   }
 
   html::-webkit-scrollbar-thumb:hover {
@@ -215,14 +258,14 @@ body {
   }
 
   html::-webkit-scrollbar-corner {
-    background: #edeae5;
+    background: var(--color-bg);
   }
 }
 
 /* Scoped scrollbar for modal/panel containers — thinner, transparent track */
 .custom-scrollbar {
   scrollbar-width: thin;
-  scrollbar-color: #c9b89a transparent;
+  scrollbar-color: var(--color-bronze) transparent;
 }
 
 .custom-scrollbar::-webkit-scrollbar {
@@ -234,7 +277,7 @@ body {
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #c9b89a;
+  background: var(--color-bronze);
   border-radius: 8px;
   border: 2px solid transparent;
   background-clip: padding-box;
@@ -248,4 +291,27 @@ body {
 
 .custom-scrollbar::-webkit-scrollbar-button {
   display: none;
+}
+
+/* === Tactile press feedback === */
+button,
+[role="button"] {
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 160ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+button:active:not([disabled]):not([data-no-tactile]),
+[role="button"]:active:not([data-no-tactile]) {
+  transform: scale(0.985);
+}
+
+button:focus-visible,
+[role="button"]:focus-visible {
+  outline: 2px solid var(--color-text);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  button, [role="button"] { transition: none; }
+  button:active, [role="button"]:active { transform: none; }
 }

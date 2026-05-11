@@ -5,16 +5,14 @@ import { AnimatePresence, motion } from "framer-motion";
 import { MessageCircle } from "lucide-react";
 import { fetchChats, openSupport, type ChatListItem } from "@/lib/chat-client";
 import {
-  fetchAdminChats,
-  type AdminChatsList,
+  fetchAdminChatList,
+  type AdminChatListItem,
 } from "@/lib/admin-chat-client";
 import { useChatActions } from "@/lib/chat-context";
 import AdminChatPopup from "./admin-chat-popup";
 import ChatPopup from "./chat-popup";
 
 const POLL_INTERVAL_MS = 5000;
-
-const EMPTY_ADMIN_CHATS: AdminChatsList = { support: [], direct: [] };
 
 type Props = {
   initialRole?: string | null;
@@ -32,8 +30,7 @@ export default function ChatBubble({ initialRole = null }: Props) {
   } = useChatActions();
 
   const [chats, setChats] = useState<ChatListItem[]>([]);
-  const [adminChats, setAdminChats] =
-    useState<AdminChatsList>(EMPTY_ADMIN_CHATS);
+  const [adminItems, setAdminItems] = useState<AdminChatListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedChatId, setSelectedChatId] = useState<string | null>(
     ctxSelectedId
@@ -49,15 +46,14 @@ export default function ChatBubble({ initialRole = null }: Props) {
   }, [ctxSelectedId]);
 
   const totalUnread = isAdmin
-    ? adminChats.support.reduce((s, c) => s + c.unreadByAdmin, 0) +
-      adminChats.direct.reduce((s, c) => s + c.unreadByAdmin, 0)
+    ? adminItems.reduce((s, c) => s + c.unreadCount, 0)
     : chats.reduce((sum, c) => sum + c.unreadCount, 0);
 
   const refetchChats = useCallback(async () => {
     try {
       if (isAdmin) {
-        const data = await fetchAdminChats();
-        setAdminChats(data);
+        const items = await fetchAdminChatList();
+        setAdminItems(items);
       } else {
         const list = await fetchChats();
         setChats(list);
@@ -132,7 +128,7 @@ export default function ChatBubble({ initialRole = null }: Props) {
               <span
                 className="absolute -top-1 -right-1 inline-flex items-center justify-center rounded-full"
                 style={{
-                  background: "#A03030",
+                  background: "var(--color-danger)",
                   color: "white",
                   minWidth: "20px",
                   height: "20px",
@@ -153,7 +149,7 @@ export default function ChatBubble({ initialRole = null }: Props) {
           isAdmin ? (
             <AdminChatPopup
               key="admin-popup"
-              chats={adminChats}
+              items={adminItems}
               loading={loading}
               selectedChatId={selectedChatId}
               onSelectChat={setSelectedChatId}

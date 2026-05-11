@@ -1,32 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useLocale, useTranslations } from "next-intl";
 import type { WeekSchedule } from "@/lib/db/schema";
+import { useTheme } from "@/lib/theme-context";
 import BookingCalendar from "./booking-calendar";
-
-const WEEKDAY_FULL = [
-  "Неділя",
-  "Понеділок",
-  "Вівторок",
-  "Середа",
-  "Четвер",
-  "П'ятниця",
-  "Субота",
-];
-const MONTH_GENITIVE = [
-  "січня",
-  "лютого",
-  "березня",
-  "квітня",
-  "травня",
-  "червня",
-  "липня",
-  "серпня",
-  "вересня",
-  "жовтня",
-  "листопада",
-  "грудня",
-];
 
 function formatYMD(d: Date): string {
   const y = d.getFullYear();
@@ -35,8 +13,12 @@ function formatYMD(d: Date): string {
   return `${y}-${m}-${day}`;
 }
 
-function formatDayLong(d: Date): string {
-  return `${WEEKDAY_FULL[d.getDay()]}, ${d.getDate()} ${MONTH_GENITIVE[d.getMonth()]}`;
+function formatDayLong(d: Date, locale: string): string {
+  return new Intl.DateTimeFormat(locale, {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+  }).format(d);
 }
 
 type Slot = { time: string; available: boolean };
@@ -69,6 +51,9 @@ export default function Step3Time({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [refetchTick, setRefetchTick] = useState(0);
+  const { theme } = useTheme();
+  const t = useTranslations("booking");
+  const locale = useLocale();
 
   useEffect(() => {
     if (!selectedDate) {
@@ -85,7 +70,7 @@ export default function Step3Time({
       .then(async (res) => {
         const json = await res.json().catch(() => null);
         if (!res.ok) {
-          throw new Error(json?.error || "Не вдалось завантажити слоти");
+          throw new Error(json?.error || t("errorGeneric"));
         }
         return json as { slots: Slot[] };
       })
@@ -143,7 +128,7 @@ export default function Step3Time({
           "[BOOKING-SUBMIT] failed",
           { status: res.status, body: json }
         );
-        throw new Error(json?.error || "Не вдалось зберегти запис");
+        throw new Error(json?.error || t("errorGeneric"));
       }
       onSuccess(json.id, selectedDate, selectedTime);
     } catch (err) {
@@ -154,7 +139,7 @@ export default function Step3Time({
       } else {
         console.error("[BOOKING-SUBMIT] exception:", err);
         setError(
-          err instanceof Error ? err.message : "Не вдалось зберегти запис"
+          err instanceof Error ? err.message : t("errorGeneric")
         );
       }
     } finally {
@@ -174,9 +159,9 @@ export default function Step3Time({
         <button
           type="button"
           onClick={onBack}
-          className="mt-4 text-[#C9B89A] hover:text-[var(--color-text)] text-[13px] hover:underline transition-colors"
+          className="mt-4 text-[var(--color-bronze)] hover:text-[var(--color-text)] text-[13px] hover:underline transition-colors"
         >
-          ← Назад до вибору послуги
+          ← {t("back")}
         </button>
       </div>
 
@@ -198,14 +183,14 @@ export default function Step3Time({
               className="font-display italic text-[var(--color-text)]"
               style={{ fontSize: "16px" }}
             >
-              {formatDayLong(selectedDate)}
+              {formatDayLong(selectedDate, locale)}
             </p>
           )}
         </div>
 
         {!selectedDate && (
           <p className="italic text-[var(--color-text-muted)] text-[13px]">
-            Спочатку оберіть дату.
+            {t("selectTime")}
           </p>
         )}
 
@@ -214,7 +199,7 @@ export default function Step3Time({
             {Array.from({ length: 8 }).map((_, i) => (
               <div
                 key={i}
-                className="h-10 rounded-[8px] bg-[#FAF7F1] animate-pulse"
+                className="h-10 rounded-[8px] bg-[var(--color-surface)] animate-pulse"
               />
             ))}
           </div>
@@ -222,11 +207,11 @@ export default function Step3Time({
 
         {!loadingSlots && error && (
           <div className="flex flex-col gap-2">
-            <p className="text-[#A03030] text-[13px]">{error}</p>
+            <p className="text-[var(--color-danger)] text-[13px]">{error}</p>
             <button
               type="button"
               onClick={() => setRefetchTick((v) => v + 1)}
-              className="self-start text-[#C9B89A] hover:text-[var(--color-text)] text-[13px] hover:underline transition-colors"
+              className="self-start text-[var(--color-bronze)] hover:text-[var(--color-text)] text-[13px] hover:underline transition-colors"
             >
               Спробувати знову
             </button>
@@ -239,7 +224,7 @@ export default function Step3Time({
           slots.length === 0 &&
           selectedDate && (
             <p className="italic text-[var(--color-text-muted)] text-[13px]">
-              Немає доступних слотів на цей день.
+              {t("noSlots")}
             </p>
           )}
 
@@ -253,7 +238,7 @@ export default function Step3Time({
                     key={s.time}
                     type="button"
                     disabled
-                    className="py-2.5 px-3 rounded-[8px] text-[14px] bg-[#F0EDE8] text-[#B5AEA4] cursor-not-allowed"
+                    className={`py-2.5 px-3 rounded-[8px] text-[14px] bg-[#F0EDE8] text-[#B5AEA4] cursor-not-allowed ${theme === "dark" ? "line-through decoration-[var(--color-text)] decoration-2" : ""}`}
                   >
                     {s.time}
                   </button>
@@ -266,13 +251,13 @@ export default function Step3Time({
                   onClick={() => setSelectedTime(s.time)}
                   className={`py-2.5 px-3 rounded-[8px] text-[14px] transition-colors cursor-pointer ${
                     isSelected
-                      ? "bg-[var(--color-text)] text-white"
-                      : "bg-[#FAF7F1] text-[var(--color-text)] hover:bg-[#EDEAE5]"
+                      ? "bg-[var(--color-action-bg)] text-[var(--color-action-text)]"
+                      : "bg-[var(--color-surface)] text-[var(--color-text)] hover:bg-[var(--color-bg)]"
                   }`}
                   style={{
                     borderWidth: isSelected ? "1px" : "0.5px",
                     borderStyle: "solid",
-                    borderColor: isSelected ? "#1C1B19" : "#D5D0C8",
+                    borderColor: isSelected ? "var(--color-text)" : "var(--color-line)",
                   }}
                 >
                   {s.time}
@@ -284,11 +269,11 @@ export default function Step3Time({
 
         {selectedDate && selectedTime && (
           <div
-            className="bg-[#FAF7F1] rounded-[12px] p-4 mt-2 flex flex-col gap-2"
+            className="bg-[var(--color-surface)] rounded-[12px] p-4 mt-2 flex flex-col gap-2"
             style={{
               borderWidth: "0.5px",
               borderStyle: "solid",
-              borderColor: "#D5D0C8",
+              borderColor: "var(--color-line)",
             }}
           >
             <div
@@ -313,7 +298,7 @@ export default function Step3Time({
               </dd>
               <dt className="text-[var(--color-text-muted)]">Дата:</dt>
               <dd className="text-[var(--color-text)]">
-                {formatDayLong(selectedDate)}
+                {formatDayLong(selectedDate, locale)}
               </dd>
               <dt className="text-[var(--color-text-muted)]">Час:</dt>
               <dd className="text-[var(--color-text)]">{selectedTime}</dd>
@@ -322,9 +307,9 @@ export default function Step3Time({
               type="button"
               onClick={handleConfirm}
               disabled={submitting}
-              className="mt-3 w-full bg-[var(--color-text)] text-white px-4 py-3 rounded-[8px] text-[14px] font-medium hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+              className="mt-3 w-full bg-[var(--color-action-bg)] text-[var(--color-action-text)] px-4 py-3 rounded-[8px] text-[14px] font-medium hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {submitting ? "Зберігаємо..." : "Підтвердити запис"}
+              {submitting ? t("loading") : t("confirm")}
             </button>
           </div>
         )}

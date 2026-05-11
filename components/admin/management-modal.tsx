@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 import type { WeekSchedule } from "@/lib/db/schema";
 import { normalizeWeekSchedule } from "@/lib/schedule";
 import { useModalStack } from "@/lib/modal-stack-context";
@@ -10,6 +12,7 @@ import BarberPreview from "./barber-preview";
 import BarbersAdminList from "./barbers-admin-list";
 import BookingsAdminList from "./bookings-admin-list";
 import CloseButton from "@/components/ui/close-button";
+import { useConfirm } from "@/lib/confirm-context";
 
 type Tab = "barbers" | "bookings";
 
@@ -52,10 +55,11 @@ function BarberRow({
   onReject,
   onToggleActive,
 }: BarberRowProps) {
+  const t = useTranslations("management");
+  const tAnketa = useTranslations("anketa");
   return (
     <div
-      className="border border-[var(--color-line)] rounded-[12px] overflow-hidden"
-      style={{ background: "white" }}
+      className="bg-[var(--color-surface)] border border-[var(--color-line)] rounded-[12px] overflow-hidden"
     >
       <div className="flex items-center gap-4 p-3">
         <div className="flex-shrink-0">
@@ -70,8 +74,8 @@ function BarberRow({
             />
           ) : (
             <div
-              className="w-12 h-12 rounded-[8px] bg-[#F5F0E6] flex items-center justify-center font-display italic"
-              style={{ color: "#C9B89A", fontSize: "20px" }}
+              className="w-12 h-12 rounded-[8px] bg-[var(--color-surface-2)] flex items-center justify-center font-display italic"
+              style={{ color: "var(--color-bronze)", fontSize: "20px" }}
             >
               {barber.name.charAt(0).toUpperCase()}
             </div>
@@ -100,7 +104,7 @@ function BarberRow({
                 className="inline-flex items-center px-2 py-0.5 text-[10px] uppercase rounded-[4px]"
                 style={{
                   background: "#EAEAEA",
-                  color: "#7A736A",
+                  color: "var(--color-text-muted)",
                   letterSpacing: "0.15em",
                 }}
               >
@@ -122,16 +126,18 @@ function BarberRow({
             title={barber.isActive ? "Прийняти зі списку публічних" : "Зробити публічним"}
           >
             <span className="text-[10px] uppercase tracking-wider text-[var(--color-text-muted)]">
-              {barber.isActive ? "Активний" : "Прихований"}
+              {barber.isActive ? tAnketa("active") : tAnketa("hidden")}
             </span>
             <div
-              className={`w-9 h-5 rounded-full transition-colors ${
-                barber.isActive ? "bg-[#1C1B19]" : "bg-[var(--color-line)]"
+              className={`relative w-9 h-5 rounded-full border-2 border-[#1C1B19] transition-colors ${
+                barber.isActive ? "bg-[var(--color-action-bg)]" : "bg-[var(--color-line)]"
               }`}
             >
               <div
-                className={`w-4 h-4 rounded-full bg-white shadow-sm transition-transform mt-0.5 ${
-                  barber.isActive ? "translate-x-[18px]" : "translate-x-0.5"
+                className={`absolute top-1/2 -translate-y-1/2 w-3.5 h-3.5 rounded-full transition-[left] ${
+                  barber.isActive
+                    ? "bg-[var(--color-action-text)] left-[14px]"
+                    : "bg-[var(--color-surface)] left-0"
                 }`}
               />
             </div>
@@ -139,7 +145,7 @@ function BarberRow({
         </div>
       </div>
 
-      <div className="border-t border-[var(--color-line)] bg-[#F9F6F1] p-4">
+      <div className="border-t border-[var(--color-line)] p-4">
           <BarberPreview
             name={barber.name}
             phone={barber.phone}
@@ -154,7 +160,7 @@ function BarberRow({
             return (
               <div className="flex items-center gap-3 mt-4 justify-end">
                 {pendingPhoneMissing && (
-                  <span className="italic text-[11px] text-[#A03030]">
+                  <span className="italic text-[11px] text-[var(--color-danger)]">
                     Барбер не вказав телефон
                   </span>
                 )}
@@ -162,9 +168,9 @@ function BarberRow({
                   type="button"
                   onClick={onReject}
                   disabled={busy}
-                  className="px-4 py-2 rounded-[8px] text-[12px] border border-[var(--color-line)] bg-white hover:bg-[#F5F0E6] transition-colors disabled:opacity-50"
+                  className="px-4 py-2 rounded-[8px] text-[12px] border border-[var(--color-line)] bg-[var(--color-surface)] hover:bg-[var(--color-surface-2)] transition-colors disabled:opacity-50"
                 >
-                  Відхилити
+                  {t("reject")}
                 </button>
                 <button
                   type="button"
@@ -177,7 +183,7 @@ function BarberRow({
                   }
                   className="px-4 py-2 rounded-[8px] text-[12px] bg-green-700 text-white hover:bg-green-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Затвердити
+                  {t("approve")}
                 </button>
               </div>
             );
@@ -189,7 +195,6 @@ function BarberRow({
 
 export default function ManagementModal({ isOpen, onClose }: Props) {
   const [mounted, setMounted] = useState(false);
-  const [animateIn, setAnimateIn] = useState(false);
   const [barbers, setBarbers] = useState<Barber[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -200,6 +205,8 @@ export default function ManagementModal({ isOpen, onClose }: Props) {
   const [actionBusyUserId, setActionBusyUserId] = useState<string | null>(null);
   const [toggleBusyUserId, setToggleBusyUserId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<Tab>("barbers");
+  const confirm = useConfirm();
+  const t = useTranslations("management");
 
   useEffect(() => {
     setMounted(true);
@@ -234,15 +241,6 @@ export default function ManagementModal({ isOpen, onClose }: Props) {
       return;
     }
     fetchBarbers();
-  }, [isOpen]);
-
-  useEffect(() => {
-    if (isOpen) {
-      const t = setTimeout(() => setAnimateIn(true), 16);
-      return () => clearTimeout(t);
-    } else {
-      setAnimateIn(false);
-    }
   }, [isOpen]);
 
   const { zIndex, isTop } = useModalStack("management-modal", isOpen, onClose);
@@ -344,37 +342,42 @@ export default function ManagementModal({ isOpen, onClose }: Props) {
     }
   };
 
-  if (!mounted || !isOpen) return null;
+  if (!mounted) return null;
 
   return createPortal(
-    <div
-      className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4"
-      style={{ zIndex }}
-      onMouseDown={(e) => {
-        if (e.target !== e.currentTarget) return;
-        if (!isTop) return;
-        onClose();
-      }}
-    >
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-label="Менеджмент"
-        data-management-modal
-        className="w-full max-w-[calc(100vw-32px)] max-h-[90vh] md:w-[800px] md:max-w-[90vw] md:h-[600px] md:max-h-[85vh] overflow-hidden bg-white border border-[var(--color-line)] rounded-3xl shadow-[0_24px_48px_rgba(0,0,0,0.18)] flex flex-col"
-        style={{
-          opacity: animateIn ? 1 : 0,
-          transform: animateIn ? "translateY(0)" : "translateY(8px)",
-          transition:
-            "opacity 200ms cubic-bezier(0.22, 1, 0.36, 1), transform 200ms cubic-bezier(0.22, 1, 0.36, 1)",
-        }}
-      >
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          key="management-overlay"
+          className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4"
+          style={{ zIndex }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+          onMouseDown={(e) => {
+            if (e.target !== e.currentTarget) return;
+            if (!isTop) return;
+            onClose();
+          }}
+        >
+          <motion.div
+            role="dialog"
+            aria-modal="true"
+            aria-label={t("title")}
+            data-management-modal
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            transition={{ duration: 0.2 }}
+            className="w-full max-w-[calc(100vw-32px)] max-h-[90vh] md:w-[800px] md:max-w-[90vw] md:h-[600px] md:max-h-[85vh] overflow-hidden bg-[var(--color-surface)] border border-[var(--color-line)] rounded-3xl shadow-[0_24px_48px_rgba(0,0,0,0.18)] flex flex-col"
+          >
         <div className="flex items-center justify-between px-4 md:px-6 pt-3 md:pt-4 pb-2 shrink-0">
           <h2
             className="font-display"
             style={{ fontSize: "20px", fontWeight: 600 }}
           >
-            Менеджмент
+            {t("title")}
           </h2>
           <CloseButton onClick={onClose} />
         </div>
@@ -389,7 +392,7 @@ export default function ManagementModal({ isOpen, onClose }: Props) {
                 : "text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
             }`}
           >
-            Барбери
+            {t("tabBarbers")}
           </button>
           <button
             type="button"
@@ -400,7 +403,7 @@ export default function ManagementModal({ isOpen, onClose }: Props) {
                 : "text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
             }`}
           >
-            Заброньовані
+            {t("tabBookings")}
           </button>
         </div>
 
@@ -409,7 +412,7 @@ export default function ManagementModal({ isOpen, onClose }: Props) {
         <>
         <div
           style={{
-            background: "#F5F0E6",
+            background: "var(--color-surface-2)",
             borderRadius: "12px",
             padding: "16px",
             marginBottom: "20px",
@@ -419,28 +422,28 @@ export default function ManagementModal({ isOpen, onClose }: Props) {
             className="text-[13px] font-medium mb-3"
             style={{ color: "var(--color-text)" }}
           >
-            Додати барбера за email
+            {t("promoteTitle")}
           </div>
           <div className="flex gap-2 items-stretch">
             <input
               type="email"
               value={promoteEmail}
               onChange={(e) => setPromoteEmail(e.target.value)}
-              placeholder="email@example.com"
+              placeholder={t("promoteEmail")}
               disabled={promoteBusy}
-              className="flex-1 bg-white border border-[var(--color-line)] rounded-[8px] px-3 py-2 outline-none focus:border-[var(--color-text)] text-[13px] disabled:opacity-50"
+              className="flex-1 bg-[var(--color-surface)] border border-[var(--color-line)] rounded-[8px] px-3 py-2 outline-none focus:border-[var(--color-text)] text-[13px] disabled:opacity-50"
             />
             <button
               type="button"
               onClick={handlePromote}
               disabled={promoteBusy || !promoteEmail.trim()}
-              className="bg-black text-white border border-transparent px-5 py-2 rounded-[8px] text-[13px] transition-colors hover:bg-transparent hover:text-black hover:border-black disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-black disabled:hover:text-white disabled:hover:border-transparent"
+              className="bg-[var(--color-action-bg)] text-[var(--color-action-text)] border border-transparent px-5 py-2 rounded-[8px] text-[13px] transition-colors hover:bg-transparent hover:text-[var(--color-action-bg)] hover:border-[var(--color-action-bg)] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[var(--color-action-bg)] disabled:hover:text-[var(--color-action-text)] disabled:hover:border-transparent"
             >
-              {promoteBusy ? "Додаю..." : "Додати"}
+              {t("promoteSubmit")}
             </button>
           </div>
           {promoteError && (
-            <div className="mt-2 text-[12px] text-[#A03030]">
+            <div className="mt-2 text-[12px] text-[var(--color-danger)]">
               {promoteError}
             </div>
           )}
@@ -454,7 +457,7 @@ export default function ManagementModal({ isOpen, onClose }: Props) {
         {!loading && !error && barbers && barbers.length > 0 && (
           <div className="mb-6">
             <div className="text-[10px] uppercase tracking-[0.2em] text-[var(--color-text-muted)] mb-2">
-              Барбери
+              {t("barbersHeader")}
             </div>
             <BarbersAdminList
               barbers={barbers.map((b) => ({
@@ -465,14 +468,15 @@ export default function ManagementModal({ isOpen, onClose }: Props) {
                 isActive: b.isActive,
               }))}
               busyUserId={actionBusyUserId}
-              onDelete={(userId, name) => {
-                if (
-                  confirm(
-                    `Видалити ${name} з барберів? Анкета лишиться в БД, але стане неактивною.`
-                  )
-                ) {
-                  handleAction("demote", userId);
-                }
+              onDelete={async (userId, name) => {
+                const ok = await confirm({
+                  title: t("deleteBarberConfirmTitle"),
+                  message: t("deleteBarberConfirmMessage", { name }),
+                  confirmLabel: t("deleteBarberConfirmLabel"),
+                  danger: true,
+                });
+                if (!ok) return;
+                handleAction("demote", userId);
               }}
             />
           </div>
@@ -480,7 +484,7 @@ export default function ManagementModal({ isOpen, onClose }: Props) {
 
         <div>
           <div className="text-[10px] uppercase tracking-[0.2em] text-[var(--color-text-muted)] mb-3">
-            Анкети
+            {t("anketasHeader")}
           </div>
 
           {loading && (
@@ -491,7 +495,7 @@ export default function ManagementModal({ isOpen, onClose }: Props) {
 
           {error && (
             <div className="text-center py-8">
-              <div className="text-[#A03030] text-[13px] mb-2">{error}</div>
+              <div className="text-[var(--color-danger)] text-[13px] mb-2">{error}</div>
               <button
                 onClick={fetchBarbers}
                 className="text-[12px] underline"
@@ -503,7 +507,7 @@ export default function ManagementModal({ isOpen, onClose }: Props) {
 
           {!loading && !error && barbers && barbers.length === 0 && (
             <div className="text-center py-8 text-[var(--color-text-muted)] text-[13px]">
-              Поки що немає барберів. Додайте першого через форму вище.
+              {t("noBarbers")}
             </div>
           )}
 
@@ -528,8 +532,10 @@ export default function ManagementModal({ isOpen, onClose }: Props) {
 
         {activeTab === "bookings" && <BookingsAdminList />}
         </div>
-      </div>
-    </div>,
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>,
     document.body
   );
 }

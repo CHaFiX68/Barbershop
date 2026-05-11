@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { useTranslations } from "next-intl";
 import type { BarberPublic } from "@/lib/barbers";
 import Step1Barbers from "./step1-barbers";
 import Step2Services from "./step2-services";
@@ -41,10 +42,11 @@ export type BookingServiceItem = {
 
 type BarberDataResp = { barber: BarberInfo; services: BookingServiceItem[] };
 
-const STEPS: { num: 1 | 2 | 3; label: string }[] = [
-  { num: 1, label: "Барбер" },
-  { num: 2, label: "Послуга" },
-  { num: 3, label: "Час" },
+type StepLabelKey = "step1Label" | "step2Label" | "step3Label";
+const STEPS: { num: 1 | 2 | 3; labelKey: StepLabelKey }[] = [
+  { num: 1, labelKey: "step1Label" },
+  { num: 2, labelKey: "step2Label" },
+  { num: 3, labelKey: "step3Label" },
 ];
 
 type Props = {
@@ -60,6 +62,7 @@ export default function BookingFlow({
   initialServiceId,
   onSuccess,
 }: Props) {
+  const t = useTranslations("booking");
   const reducedMotion = useReducedMotion();
   const [direction, setDirection] = useState<Direction>("forward");
 
@@ -113,7 +116,7 @@ export default function BookingFlow({
       .then(async (res) => {
         const json = await res.json().catch(() => null);
         if (!res.ok) {
-          throw new Error(json?.error || "Не вдалось завантажити барбера");
+          throw new Error(json?.error || t("errorGeneric"));
         }
         return json as BarberDataResp;
       })
@@ -224,10 +227,7 @@ export default function BookingFlow({
     return (
       <div className="text-center py-16">
         <p className="text-[var(--color-text-muted)] italic text-[14px] mb-2">
-          Зараз немає доступних барберів.
-        </p>
-        <p className="text-[var(--color-text-muted)] italic text-[12px]">
-          Зайдіть пізніше або скористайтесь чатом підтримки.
+          {t("noBarbers")}
         </p>
       </div>
     );
@@ -252,11 +252,11 @@ export default function BookingFlow({
               onClick={
                 step === 3 ? handleBackToServices : handleBackToBarbers
               }
-              aria-label="Назад"
-              className="inline-flex items-center gap-1.5 px-2 py-2 -ml-2 mb-3 text-sm text-[#7A736A] hover:text-[var(--color-text)] transition-colors"
+              aria-label={t("back")}
+              className="inline-flex items-center gap-1.5 px-2 py-2 -ml-2 mb-3 text-sm text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors"
             >
               <span className="text-base leading-none">←</span>
-              <span>Назад</span>
+              <span>{t("back")}</span>
             </button>
           )}
           <ol className="flex items-center gap-2 sm:gap-4 flex-wrap">
@@ -276,13 +276,13 @@ export default function BookingFlow({
                       isCurrent
                         ? "font-semibold text-[var(--color-text)]"
                         : isPast
-                          ? "text-[#C9B89A] hover:text-[var(--color-text)] cursor-pointer"
+                          ? "text-[var(--color-bronze)] hover:text-[var(--color-text)] cursor-pointer"
                           : "text-[var(--color-text-muted)] cursor-default"
                     }`}
                     style={{ letterSpacing: "0.15em" }}
                     aria-current={isCurrent ? "step" : undefined}
                   >
-                    {displayNumber}. {s.label}
+                    {displayNumber}. {t(s.labelKey)}
                   </button>
                   {idx < visibleSteps.length - 1 && (
                     <span
@@ -290,7 +290,7 @@ export default function BookingFlow({
                       className={`text-[11px] ${
                         isFuture
                           ? "text-[var(--color-text-muted)]"
-                          : "text-[#C9B89A]"
+                          : "text-[var(--color-bronze)]"
                       }`}
                     >
                       →
@@ -306,11 +306,11 @@ export default function BookingFlow({
       {(step === 2 || step === 3) && selectedBarberPublic && (
         <div className="flex items-center justify-center mb-2">
           <div
-            className="flex items-center gap-3 pl-2 pr-5 py-2 bg-white rounded-full"
+            className="flex items-center gap-3 pl-2 pr-5 py-2 bg-[var(--color-surface)] rounded-full"
             style={{
               borderWidth: "0.5px",
               borderStyle: "solid",
-              borderColor: "#D5D0C8",
+              borderColor: "var(--color-line)",
             }}
           >
             {selectedBarberPublic.landingImage ? (
@@ -322,7 +322,7 @@ export default function BookingFlow({
                 className="w-10 h-10 rounded-full object-cover shrink-0"
               />
             ) : (
-              <div className="w-10 h-10 rounded-full bg-[#F5F0E6] flex items-center justify-center text-[14px] font-display italic text-[var(--color-text-muted)] shrink-0">
+              <div className="w-10 h-10 rounded-full bg-[var(--color-surface-2)] flex items-center justify-center text-[14px] font-display italic text-[var(--color-text-muted)] shrink-0">
                 {selectedBarberPublic.initials}
               </div>
             )}
@@ -333,9 +333,9 @@ export default function BookingFlow({
               <button
                 type="button"
                 onClick={handleBackToBarbers}
-                className="ml-2 text-xs text-[#7A736A] hover:text-[var(--color-text)] transition-colors"
+                className="ml-2 text-xs text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors"
               >
-                ↻ Змінити
+                ↻ {t("change")}
               </button>
             )}
           </div>
@@ -387,7 +387,7 @@ export default function BookingFlow({
                   onSuccess={handleSuccess}
                 />
               ) : (
-                <div className="bg-[#FAF7F1] border border-[var(--color-line)] rounded-[12px] p-8 animate-pulse h-[300px]" />
+                <div className="bg-[var(--color-surface)] border border-[var(--color-line)] rounded-[12px] p-8 animate-pulse h-[300px]" />
               ))}
 
             {flow.kind === "success" && (

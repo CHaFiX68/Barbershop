@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { useTranslations } from "next-intl";
 import type { WeekSchedule } from "@/lib/db/schema";
 import { normalizeWeekSchedule } from "@/lib/schedule";
 import { useModalStack } from "@/lib/modal-stack-context";
@@ -33,6 +34,7 @@ type Props = {
 };
 
 export default function AnketaModal({ isOpen, onClose }: Props) {
+  const t = useTranslations("anketa");
   const [data, setData] = useState<AnketaData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -119,9 +121,9 @@ export default function AnketaModal({ isOpen, onClose }: Props) {
         ref={containerRef}
         role="dialog"
         aria-modal="true"
-        aria-label="Анкета"
+        aria-label={t("title")}
         data-anketa-modal
-        className="w-full max-w-[calc(100vw-32px)] md:w-280 md:max-w-[calc(100vw-32px)] max-h-[90vh] bg-white border border-[var(--color-line)] rounded-[16px] shadow-[0_24px_48px_rgba(0,0,0,0.18)] flex flex-col overflow-hidden pr-2"
+        className="w-full max-w-[calc(100vw-32px)] md:w-280 md:max-w-[calc(100vw-32px)] max-h-[90vh] bg-[var(--color-surface)] border border-[var(--color-line)] rounded-[16px] shadow-[0_24px_48px_rgba(0,0,0,0.18)] flex flex-col overflow-hidden pr-2"
         style={{
           opacity: animateIn ? 1 : 0,
           transform: animateIn ? "translateY(0)" : "translateY(8px)",
@@ -144,7 +146,7 @@ export default function AnketaModal({ isOpen, onClose }: Props) {
                 className="font-display"
                 style={{ fontWeight: 600, fontSize: "20px" }}
               >
-                Анкета
+                {t("title")}
               </h2>
               {data?.hasPendingChanges && (
                 <span
@@ -164,9 +166,9 @@ export default function AnketaModal({ isOpen, onClose }: Props) {
 
           {loading && !data && (
             <div className="flex flex-col gap-3">
-              <div className="bg-[#F5F0E6] rounded-[8px] animate-pulse h-[64px]" />
-              <div className="bg-[#F5F0E6] rounded-[8px] animate-pulse h-[200px]" />
-              <div className="bg-[#F5F0E6] rounded-[8px] animate-pulse h-[100px]" />
+              <div className="bg-[var(--color-surface-2)] rounded-[8px] animate-pulse h-[64px]" />
+              <div className="bg-[var(--color-surface-2)] rounded-[8px] animate-pulse h-[200px]" />
+              <div className="bg-[var(--color-surface-2)] rounded-[8px] animate-pulse h-[100px]" />
             </div>
           )}
 
@@ -178,7 +180,7 @@ export default function AnketaModal({ isOpen, onClose }: Props) {
               <button
                 type="button"
                 onClick={handleRetry}
-                className="px-4 py-2 bg-[var(--color-text)] text-[var(--color-bg)] rounded-[8px] text-[13px] hover:opacity-90 transition-opacity"
+                className="px-4 py-2 bg-[var(--color-action-bg)] text-[var(--color-action-text)] rounded-[8px] text-[13px] hover:opacity-90 transition-opacity"
               >
                 Спробувати ще раз
               </button>

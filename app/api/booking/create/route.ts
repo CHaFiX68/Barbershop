@@ -1,17 +1,31 @@
 import crypto from "crypto";
 import { NextResponse } from "next/server";
-import { headers } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { and, eq, gte, lt, or } from "drizzle-orm";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { barberProfile, booking, chat, service } from "@/lib/db/schema";
+import {
+  barberProfile,
+  booking,
+  chat,
+  message,
+  service,
+  user,
+} from "@/lib/db/schema";
 import { normalizeWeekSchedule } from "@/lib/schedule";
 import {
   isSlotAvailable,
   localToUTC,
   slotsForService,
 } from "@/lib/booking-slots";
+import {
+  sendBookingConfirmation,
+  sendBookingNotificationToBarber,
+} from "@/lib/email";
+import { buildPreview } from "@/lib/chat-utils";
+import enMessages from "@/messages/en.json";
+import svMessages from "@/messages/sv.json";
 
 export const dynamic = "force-dynamic";
 
@@ -24,6 +38,11 @@ const createSchema = z.object({
 
 export async function POST(request: Request) {
   try {
+    const cookieStore = await cookies();
+    const localeRaw = cookieStore.get("NEXT_LOCALE")?.value;
+    const locale: "en" | "sv" = localeRaw === "sv" ? "sv" : "en";
+    const messages = locale === "sv" ? svMessages : enMessages;
+
     const session = await auth.api.getSession({ headers: await headers() });
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -117,6 +136,7 @@ export async function POST(request: Request) {
       startsAt,
       endsAt,
       status: "active",
+      locale,
     });
 
     // Booking chat is per (customer, barber) pair — reuse the existing active
@@ -162,6 +182,101 @@ export async function POST(request: Request) {
         chatErr
       );
     }
+
+    // === Email notifications + system message in booking chat ===
+    try {
+      const [customerData] = await db
+        .select({ email: user.email, name: user.name })
+        .from(user)
+        .where(eq(user.id, customerUserId));
+
+      const [barberData] = await db
+        .select({ email: user.email, name: user.name })
+        .from(user)
+        .where(eq(user.id, barberId));
+
+      const dateTimeFormatted = new Intl.DateTimeFormat(locale, {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+        hour: "2-digit",
+        minute: "2-digit",
+      }).format(startsAt);
+
+      const formattedDate = new Intl.DateTimeFormat(locale, {
+        day: "numeric",
+        month: "long",
+      }).format(startsAt);
+
+      if (customerData?.email) {
+        sendBookingConfirmation(
+          customerData.email,
+          customerData.name || "",
+          barberData?.name || "",
+          svc.name || "",
+          dateTimeFormatted,
+          locale
+        ).catch((e) =>
+          console.error("[BOOKING-CREATE] customer email failed:", e)
+        );
+      }
+
+      if (barberData?.email) {
+        sendBookingNotificationToBarber(
+          barberData.email,
+          barberData.name || "",
+          customerData?.name || "",
+          svc.name || "",
+          dateTimeFormatted,
+          locale
+        ).catch((e) =>
+          console.error("[BOOKING-CREATE] barber email failed:", e)
+        );
+      }
+
+      const [bookingChat] = await db
+        .select({ id: chat.id })
+        .from(chat)
+        .where(and(eq(chat.type, "booking"), eq(chat.bookingId, id)))
+        .limit(1);
+
+      if (bookingChat) {
+        const template =
+          (messages.chat as Record<string, string>).systemBookingCreated ||
+          "Booking created: {service}, {date} at {time}";
+        const systemText =
+          "📅 " +
+          template
+            .replace("{service}", svc.name || "")
+            .replace("{date}", formattedDate)
+            .replace("{time}", time);
+
+        const now = new Date();
+        await db.insert(message).values({
+          id: crypto.randomUUID(),
+          chatId: bookingChat.id,
+          senderUserId: customerUserId,
+          body: systemText,
+          createdAt: now,
+          readByA: true,
+          readByB: true,
+        });
+
+        await db
+          .update(chat)
+          .set({
+            lastMessageAt: now,
+            lastMessagePreview: buildPreview(systemText),
+          })
+          .where(eq(chat.id, bookingChat.id));
+      }
+    } catch (notifyErr) {
+      console.error(
+        "[BOOKING-CREATE] notifications failed (non-fatal):",
+        notifyErr
+      );
+    }
+    // === end notifications ===
 
     return NextResponse.json({
       id,

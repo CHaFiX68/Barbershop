@@ -10,9 +10,11 @@ import {
 } from "@/lib/schedule";
 import HeroSlider from "@/components/hero-slider";
 import BarbersSection from "@/components/barbers-section";
+import WorksSection from "@/components/works-section";
 import AboutSection from "@/components/about-section";
 import ContactsSection from "@/components/contacts-section";
 import Footer from "@/components/footer";
+import RevealOnScroll from "@/components/reveal-on-scroll";
 
 const SCHEDULE_DEFAULTS: Record<string, string> = {
   "contacts.hours.weekdays.day": "Пн — Пт",
@@ -67,9 +69,18 @@ export default async function Home() {
           scheduleEntries={scheduleEntries}
           initialOpenStatus={initialOpenStatus}
         />
-        <BarbersSection />
-        <AboutSection />
-        <ContactsSection />
+        <RevealOnScroll>
+          <BarbersSection />
+        </RevealOnScroll>
+        <RevealOnScroll>
+          <WorksSection />
+        </RevealOnScroll>
+        <RevealOnScroll>
+          <AboutSection />
+        </RevealOnScroll>
+        <RevealOnScroll>
+          <ContactsSection />
+        </RevealOnScroll>
       </main>
       <Footer />
     </>

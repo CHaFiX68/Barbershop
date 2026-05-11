@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { useRouter, usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { useRouter, usePathname } from "@/i18n/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import type { BarberPublic } from "@/lib/barbers";
 import { useSession } from "@/lib/auth-client";
@@ -17,6 +18,8 @@ type Props = {
 };
 
 export default function BookingPopup({ open, onClose, initialBarberId }: Props) {
+  const t = useTranslations("booking");
+  const tHeader = useTranslations("header");
   const [mounted, setMounted] = useState(false);
   const [barbers, setBarbers] = useState<BarberPublic[] | null>(null);
   const [loading, setLoading] = useState(false);
@@ -83,44 +86,44 @@ export default function BookingPopup({ open, onClose, initialBarberId }: Props) 
           <motion.div
             role="dialog"
             aria-modal="true"
-            aria-label="Запис на стрижку"
+            aria-label={t("title")}
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ duration: 0.2 }}
-            className="w-[calc(100vw-32px)] md:w-262.5 md:max-w-[calc(100vw-64px)] h-[calc(100vh-64px)] md:h-auto md:min-h-160 md:max-h-[calc(100vh-32px)] bg-[#FAF7F1] border border-[var(--color-line)] rounded-[16px] shadow-[0_24px_48px_rgba(0,0,0,0.18)] overflow-hidden flex flex-col"
+            className="w-[calc(100vw-32px)] md:w-262.5 md:max-w-[calc(100vw-64px)] h-[calc(100vh-64px)] md:h-auto md:min-h-160 md:max-h-[calc(100vh-32px)] bg-[var(--color-surface)] border border-[var(--color-line)] rounded-[16px] shadow-[0_24px_48px_rgba(0,0,0,0.18)] overflow-hidden flex flex-col"
           >
-            <header className="shrink-0 flex items-start justify-between px-6 md:px-8 pt-6 md:pt-8 pb-4 border-b-[0.5px] border-[#D5D0C8]">
+            <header className="shrink-0 flex items-start justify-between px-6 md:px-8 pt-6 md:pt-8 pb-4 border-b-[0.5px] border-[var(--color-line)]">
               <h2
                 className="font-display text-[var(--color-text)]"
                 style={{ fontWeight: 600, fontSize: "clamp(22px, 4vw, 30px)" }}
               >
-                Запис на стрижку
+                {t("title")}
               </h2>
-              <CloseButton onClick={onClose} />
+              <CloseButton onClick={onClose} ariaLabel={t("closeAria")} />
             </header>
 
             <div className="flex-1 overflow-y-auto px-6 md:px-8 pt-6 pb-6 md:pb-8 flex flex-col">
               {!isAuthed ? (
                 <div className="text-center py-12">
                   <p className="italic text-[var(--color-text-muted)] text-[14px] mb-6">
-                    Увійдіть щоб записатись.
+                    {t("errorAuthRequired")}
                   </p>
                   <button
                     type="button"
                     onClick={goToLogin}
-                    className="inline-flex items-center justify-center bg-[var(--color-text)] text-white px-6 py-2.5 rounded-[8px] text-[14px] hover:opacity-90 transition-opacity"
+                    className="inline-flex items-center justify-center bg-[var(--color-action-bg)] text-[var(--color-action-text)] px-6 py-2.5 rounded-[8px] text-[14px] hover:opacity-90 transition-opacity"
                   >
-                    Увійти
+                    {tHeader("signIn")}
                   </button>
                 </div>
               ) : isBarber ? (
                 <div className="text-center py-12 italic text-[var(--color-text-muted)] text-[14px]">
-                  Барбери не можуть створювати бронювання.
+                  {t("noBarbers")}
                 </div>
               ) : loading || barbers === null ? (
                 <div className="text-center text-[var(--color-text-muted)] italic py-12 text-[14px]">
-                  Завантаження...
+                  {t("loading")}
                 </div>
               ) : (
                 <BookingFlow

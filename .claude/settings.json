@@ -138,12 +138,40 @@
       "PowerShell(Stop-Process -Id 3768 -Force)",
       "Bash(npx tsx *)",
       "Bash(git checkout *)",
-      "Bash(grep -rn \"contacts.phone\\\\|contacts\\\\\\\\.phone\\\\|footer.phone\\\\|getContent\" lib/ components/)"
+      "Bash(grep -rn \"contacts.phone\\\\|contacts\\\\\\\\.phone\\\\|footer.phone\\\\|getContent\" lib/ components/)",
+      "Bash(npx drizzle-kit *)",
+      "Bash(xargs -0 sed -i -e 's/#FAF7F1/var\\(--color-surface\\)/g' -e 's/#faf7f1/var\\(--color-surface\\)/g' -e 's/#F5F0E6/var\\(--color-surface-2\\)/g' -e 's/#f5f0e6/var\\(--color-surface-2\\)/g' -e 's/#EDEAE5/var\\(--color-bg\\)/g' -e 's/#edeae5/var\\(--color-bg\\)/g' -e 's/#1C1B19/var\\(--color-text\\)/g' -e 's/#1c1b19/var\\(--color-text\\)/g' -e 's/#7A736A/var\\(--color-text-muted\\)/g' -e 's/#7a736a/var\\(--color-text-muted\\)/g' -e 's/#D5D0C8/var\\(--color-line\\)/g' -e 's/#d5d0c8/var\\(--color-line\\)/g' -e 's/#A03030/var\\(--color-danger\\)/g' -e 's/#a03030/var\\(--color-danger\\)/g' -e 's/#C9B89A/var\\(--color-bronze\\)/g' -e 's/#c9b89a/var\\(--color-bronze\\)/g')",
+      "Bash(xargs -0 sed -i -e 's/bg-\\\\[var\\(--color-text\\)\\\\] text-white/bg-[var\\(--color-action-bg\\)] text-[var\\(--color-action-text\\)]/g' -e 's/text-white bg-\\\\[var\\(--color-text\\)\\\\]/text-[var\\(--color-action-text\\)] bg-[var\\(--color-action-bg\\)]/g')",
+      "Bash(xargs -0 sed -i -e 's/hover:bg-\\\\[var\\(--color-text\\)\\\\] hover:text-white/hover:bg-[var\\(--color-action-bg\\)] hover:text-[var\\(--color-action-text\\)]/g')",
+      "Bash(xargs -0 sed -i -e 's/\\\\\\([^:]\\\\\\)bg-white\\\\\\([ \"}]\\\\\\)/\\\\1bg-[var\\(--color-surface\\)]\\\\2/g')",
+      "Bash(xargs -0 sed -i -e 's/w-4 h-4 rounded-full bg-\\\\[var\\(--color-surface\\)\\\\] shadow-sm/w-4 h-4 rounded-full bg-white shadow-sm/g')",
+      "Bash(xargs -0 sed -i -e 's/BARBER&CO/TWOBarbers/g' -e 's/BARBER&amp;CO/TWOBarbers/g')",
+      "Bash(mkdir -p \"app/[locale]\")",
+      "Bash(mv app/page.tsx \"app/[locale]/page.tsx\")",
+      "Bash(mv app/login \"app/[locale]/login\")",
+      "Bash(mv app/register \"app/[locale]/register\")",
+      "Bash(mv app/anketa \"app/[locale]/anketa\")",
+      "Bash(xargs -0 sed -i -e 's|import Link from \"next/link\";|import { Link } from \"@/i18n/navigation\";|g')",
+      "Bash(xargs -0 sed -i -e 's|import { useRouter } from \"next/navigation\";|import { useRouter } from \"@/i18n/navigation\";|g' -e 's|import { usePathname } from \"next/navigation\";|import { usePathname } from \"@/i18n/navigation\";|g' -e 's|import { useRouter, usePathname } from \"next/navigation\";|import { useRouter, usePathname } from \"@/i18n/navigation\";|g')",
+      "Bash(curl -s http://localhost:3000/api/auth/get-session -i)",
+      "Bash(curl -s http://localhost:3000/api/admin/chats/list -i)",
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}\\\\n\" http://localhost:3000/en)",
+      "Bash(curl -s http://localhost:3000/en)",
+      "Bash(PORT=3100 npm run dev)",
+      "Bash(echo \"started on 3100 pid=$!\")",
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}\\\\n\" http://localhost:3100/en)",
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}\\\\n\" http://localhost:3100/api/auth/get-session)",
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}\\\\n\" http://localhost:3100/api/admin/chats/list)",
+      "Bash(awk '{print $5}')",
+      "Bash(xargs -r -I {} taskkill /F /PID {})",
+      "PowerShell($pids = \\(Get-NetTCPConnection -LocalPort 3100 -ErrorAction SilentlyContinue | Where-Object { $_.State -eq \"Listen\" }\\).OwningProcess; if \\($pids\\) { foreach \\($p in $pids\\) { Stop-Process -Id $p -Force -ErrorAction SilentlyContinue; Write-Output \"killed $p\" } } else { Write-Output \"no listener on 3100\" })",
+      "Bash(grep -rn \"price.*UAH\\\\|price.*kr\\\\|\\\\${.*price.*}.*грн\\\\|\\\\${.*price.*}.*UAH\" components/ app/)"
     ],
     "additionalDirectories": [
       "C:\\Projects\\Barbershop",
       "\\tmp",
-      "c:\\Projects\\Barbershop\\app\\api\\admin\\barber\\[userId]"
+      "c:\\Projects\\Barbershop\\app\\api\\admin\\barber\\[userId]",
+      "C:\\Projects\\Barbershop\\app\\api\\admin\\works"
     ]
   }
 }

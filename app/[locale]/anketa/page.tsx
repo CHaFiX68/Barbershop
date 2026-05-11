@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { asc, eq } from "drizzle-orm";
@@ -9,7 +9,7 @@ import { normalizeWeekSchedule } from "@/lib/schedule";
 import AnketaEditor from "@/components/barber/anketa-editor";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Моя анкета — BARBER&CO" };
+export const metadata = { title: "Моя анкета — TWOBarbers" };
 
 function computeInitials(name: string): string {
   const parts = name.trim().split(/\s+/);

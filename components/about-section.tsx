@@ -1,16 +1,14 @@
+import { getTranslations } from "next-intl/server";
 import { getContentMap } from "@/lib/content";
 import EditableText from "./editable-text";
 
-const ABOUT_DEFAULTS = {
-  "about.title": "Наша історія",
-  "about.quote":
-    "«Ми не просто стрижемо — ми створюємо ритуал, у якому кожен клієнт почувається на своєму місці.»",
-  "about.body":
-    "BARBER&CO — це місце, де класичне ремесло барберів зустрічає сучасний підхід. Ми відкрились у 2015 році, і відтоді стрижка тут — це не поспіх, а 45 хвилин уваги до кожної деталі.",
-};
-
 export default async function AboutSection() {
-  const content = await getContentMap(ABOUT_DEFAULTS);
+  const t = await getTranslations("sections.about");
+  const title = t("title");
+  const content = await getContentMap({
+    "about.quote": t("tagline"),
+    "about.body": t("body"),
+  });
 
   return (
     <section
@@ -24,7 +22,7 @@ export default async function AboutSection() {
               className="hidden lg:block font-display text-[11px] tracking-[0.2em] text-[var(--color-text-muted)] mb-3"
               aria-hidden="true"
             >
-              — 02
+              — 03
             </div>
             <span
               className="text-[var(--color-text-muted)]"
@@ -34,18 +32,13 @@ export default async function AboutSection() {
                 textTransform: "uppercase",
               }}
             >
-              Про нас
+              {t("eyebrow")}
             </span>
             <h2
               className="font-display mt-4 leading-[1.1]"
               style={{ fontWeight: 600, fontSize: "clamp(29px, 4.25vw, 46px)" }}
             >
-              <EditableText
-                contentKey="about.title"
-                initialValue={content["about.title"]}
-                as="span"
-                maxLength={80}
-              />
+              {title}
             </h2>
             <span
               className="block mt-6 h-px bg-[var(--color-text)]"

@@ -37,14 +37,19 @@ export const auth = betterAuth({
   },
   plugins: [
     customSession(async ({ user, session }) => {
-      const [u] = await db
-        .select({ role: schema.user.role })
-        .from(schema.user)
-        .where(eq(schema.user.id, user.id));
-      return {
-        session,
-        user: { ...user, role: u?.role ?? "user" },
-      };
+      try {
+        const [u] = await db
+          .select({ role: schema.user.role })
+          .from(schema.user)
+          .where(eq(schema.user.id, user.id));
+        return {
+          session,
+          user: { ...user, role: u?.role ?? "user" },
+        };
+      } catch (err) {
+        console.error("[customSession ERROR]", err);
+        throw err;
+      }
     }),
   ],
 });

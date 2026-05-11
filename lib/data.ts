@@ -31,6 +31,7 @@ export type ContactRow = {
 
 export const NAV_ITEMS: NavItem[] = [
   { label: "Барбери", href: "#barbers" },
+  { label: "Роботи", href: "#works" },
   { label: "Про нас", href: "#about" },
   { label: "Контакти", href: "#contacts" },
   { label: "Букінг", href: "#booking" },

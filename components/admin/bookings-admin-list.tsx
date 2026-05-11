@@ -32,7 +32,7 @@ export default function BookingsAdminList() {
 
   if (error) {
     return (
-      <div className="text-center py-8 text-[#A03030] text-[13px]">
+      <div className="text-center py-8 text-[var(--color-danger)] text-[13px]">
         {error}
       </div>
     );

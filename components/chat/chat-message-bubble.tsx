@@ -27,12 +27,12 @@ export default function ChatMessageBubble({
       <div
         className={`max-w-[75%] min-w-0 py-2 px-3 wrap-anywhere ${
           isOwn
-            ? "bg-[#1C1B19] text-white rounded-[12px] rounded-br-sm"
-            : "bg-white text-[var(--color-text)] rounded-[12px] rounded-bl-sm"
+            ? "bg-[var(--color-action-bg)] text-[var(--color-action-text)] rounded-[12px] rounded-br-sm"
+            : "bg-[var(--color-surface-2)] text-[var(--color-text)] rounded-[12px] rounded-bl-sm"
         }`}
         style={
           !isOwn
-            ? { borderWidth: "0.5px", borderStyle: "solid", borderColor: "#D5D0C8" }
+            ? { borderWidth: "0.5px", borderStyle: "solid", borderColor: "var(--color-line)" }
             : undefined
         }
       >
@@ -43,7 +43,7 @@ export default function ChatMessageBubble({
           {body}
         </p>
         <span
-          className={`block text-right ${isOwn ? "text-white/60" : "text-[var(--color-text-muted)]"}`}
+          className={`block text-right ${isOwn ? "opacity-60" : "text-[var(--color-text-muted)]"}`}
           style={{ fontSize: "10px", marginTop: "2px" }}
         >
           {formatTime(createdAt)}

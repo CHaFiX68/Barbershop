@@ -1,19 +1,10 @@
 "use client";
 
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 import type { DaySchedule, WeekSchedule } from "@/lib/db/schema";
 import { DAY_KEYS } from "@/lib/schedule";
 import { useBooking } from "@/lib/booking-context";
-
-const DAY_LABELS: Record<keyof WeekSchedule, string> = {
-  mon: "Пн",
-  tue: "Вт",
-  wed: "Ср",
-  thu: "Чт",
-  fri: "Пт",
-  sat: "Сб",
-  sun: "Нд",
-};
 
 const EMPTY_DAY: DaySchedule = {
   enabled: false,
@@ -111,17 +102,17 @@ function CompactLayout({
 }) {
   const booking = useBooking();
   const photo = (
-    <div className="relative w-36.25 h-36.25 md:w-62.5 md:h-62.5 mx-auto bg-[#F5F0E6] rounded-[8px] md:rounded-[10px] overflow-hidden flex items-center justify-center">
+    <div className="relative w-40 h-40 md:w-62.5 md:h-62.5 mx-auto bg-[var(--color-surface-2)] rounded-[8px] md:rounded-[10px] overflow-hidden flex items-center justify-center">
       {landingImage ? (
         <Image
           src={landingImage}
           alt={name}
           fill
-          sizes="(min-width: 768px) 250px, 145px"
+          sizes="(min-width: 768px) 250px, 160px"
           className="object-cover"
         />
       ) : (
-        <span className="font-display italic text-[var(--color-text-muted)] text-[55px] md:text-[83px]">
+        <span className="font-display italic text-[var(--color-text-muted)] text-[60px] md:text-[83px]">
           {initials}
         </span>
       )}
@@ -131,21 +122,21 @@ function CompactLayout({
   const body = (
     <>
       {photo}
-      <h3 className="font-display text-sm md:text-[22px] text-center mt-2 md:mt-3 text-[#1C1B19]">
+      <h3 className="font-display text-base md:text-[22px] text-center mt-2.5 md:mt-3 text-[var(--color-text)]">
         {name}
       </h3>
     </>
   );
 
   const baseClass =
-    "block bg-[#FAF7F1] rounded-[10px] md:rounded-[12px] p-2.5 md:p-4 max-w-41.25 md:max-w-70 mx-auto";
+    "block bg-[var(--color-surface)] border-[0.5px] border-[var(--color-line)] rounded-[10px] md:rounded-[12px] p-3 md:p-4 max-w-45 md:max-w-70 mx-auto";
 
   if (barberId) {
     return (
       <button
         type="button"
         onClick={() => booking.open(barberId)}
-        className={`${baseClass} text-left transition-all duration-300 hover:scale-105 hover:ring-2 hover:ring-[#1C1B19] hover:shadow-[0_8px_30px_rgba(28,27,25,0.25)]`}
+        className={`${baseClass} text-left transition-all duration-300 hover:scale-105 hover:ring-2 hover:ring-[var(--color-text)] hover:shadow-[0_8px_30px_rgba(28,27,25,0.25)]`}
       >
         {body}
       </button>
@@ -171,6 +162,7 @@ function PreviewLayout({
   services: ServicePublic[];
   schedule: WeekSchedule;
 }) {
+  const tAnketa = useTranslations("anketa");
   const slots: (ServicePublic | null)[] = Array.from(
     { length: SERVICE_SLOTS },
     (_, i) => services[i] ?? null
@@ -207,12 +199,12 @@ function PreviewLayout({
         key={dayKey}
         className={`aspect-square rounded-[6px] flex flex-col items-center justify-center ${
           enabled
-            ? "bg-[var(--color-text)] text-white"
-            : "bg-[#EDEAE5] text-[var(--color-text-muted)]"
+            ? "bg-[var(--color-action-bg)] text-[var(--color-action-text)]"
+            : "bg-[var(--color-bg)] text-[var(--color-text-muted)]"
         }`}
       >
         <div className={`text-[10px] ${enabled ? "font-medium" : ""}`}>
-          {DAY_LABELS[dayKey]}
+          {tAnketa(`weekdaysShort.${dayKey}`)}
         </div>
         <div
           className={`text-[8px] md:text-[12px] ${enabled ? "opacity-70" : ""}`}
@@ -227,7 +219,7 @@ function PreviewLayout({
   };
 
   const photoBlock = (sizes: string) => (
-    <div className="relative aspect-[4/5] bg-[#F5F0E6] rounded-[12px] overflow-hidden flex items-center justify-center">
+    <div className="relative aspect-[4/5] bg-[var(--color-surface-2)] rounded-[12px] overflow-hidden flex items-center justify-center">
       {landingImage ? (
         <Image
           src={landingImage}
@@ -248,7 +240,7 @@ function PreviewLayout({
   );
 
   return (
-    <article className="bg-[#FAF7F1] border border-[var(--color-line)] rounded-[16px] p-4 sm:p-5 md:p-7">
+    <article className="bg-[var(--color-surface)] border border-[var(--color-line)] rounded-[16px] p-4 sm:p-5 md:p-7">
       {/* Mobile layout (default, до md) */}
       <div className="md:hidden flex flex-col gap-5">
         <div className="grid grid-cols-[120px_1fr] gap-4 items-start">
@@ -271,7 +263,7 @@ function PreviewLayout({
 
           <div className="flex flex-col">
             <div className="text-[10px] font-medium uppercase tracking-[0.18em] text-[var(--color-text)] mb-2 text-center">
-              Послуги
+              {tAnketa("servicesTitle")}
             </div>
             <div
               className="grid text-[12px]"
@@ -287,7 +279,7 @@ function PreviewLayout({
 
         <div className="flex flex-col">
           <div className="text-[10px] font-medium uppercase tracking-[0.18em] text-[var(--color-text)] mb-2 text-center">
-            Графік
+            {tAnketa("scheduleTitle")}
           </div>
           <div className="grid grid-cols-7 gap-1.5">
             {DAY_KEYS.map((dayKey) => renderDayTile(dayKey))}
@@ -316,7 +308,7 @@ function PreviewLayout({
 
         <div className="flex flex-col border-r border-[var(--color-line)] pr-8">
           <div className="text-[10px] font-medium uppercase tracking-[0.18em] text-[var(--color-text)] mb-3 pb-2 text-center border-b border-[var(--color-line)]">
-            Послуги
+            {tAnketa("servicesTitle")}
           </div>
           <div
             className="grid text-[13px]"
@@ -332,7 +324,7 @@ function PreviewLayout({
 
         <div className="flex flex-col">
           <div className="text-[9px] font-medium uppercase tracking-[0.15em] text-[var(--color-text)] mb-2.5 text-center">
-            Графік
+            {tAnketa("scheduleTitle")}
           </div>
           <div className="flex flex-col gap-1">
             {DAY_KEYS.map((dayKey) => renderDayTile(dayKey))}

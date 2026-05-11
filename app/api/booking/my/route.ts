@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { headers } from "next/headers";
-import { and, desc, eq, gt } from "drizzle-orm";
+import { and, desc, eq, gt, lt, ne, or } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { booking, user } from "@/lib/db/schema";
@@ -14,60 +14,57 @@ export async function GET() {
   }
 
   const now = new Date();
+  const customerId = session.user.id;
 
-  const [upcoming, history] = await Promise.all([
+  const cols = {
+    id: booking.id,
+    barberUserId: booking.barberUserId,
+    barberName: user.name,
+    serviceName: booking.serviceName,
+    servicePrice: booking.servicePrice,
+    estimatedMinutes: booking.estimatedMinutes,
+    startsAt: booking.startsAt,
+    endsAt: booking.endsAt,
+    status: booking.status,
+  };
+
+  const [active, history] = await Promise.all([
     db
-      .select({
-        id: booking.id,
-        barberUserId: booking.barberUserId,
-        barberName: user.name,
-        serviceName: booking.serviceName,
-        servicePrice: booking.servicePrice,
-        estimatedMinutes: booking.estimatedMinutes,
-        startsAt: booking.startsAt,
-        endsAt: booking.endsAt,
-        status: booking.status,
-      })
+      .select(cols)
       .from(booking)
       .innerJoin(user, eq(user.id, booking.barberUserId))
       .where(
         and(
-          eq(booking.customerUserId, session.user.id),
+          eq(booking.customerUserId, customerId),
           eq(booking.status, "active"),
-          gt(booking.startsAt, now)
+          gt(booking.endsAt, now)
         )
       )
       .orderBy(booking.startsAt),
     db
-      .select({
-        id: booking.id,
-        barberUserId: booking.barberUserId,
-        barberName: user.name,
-        serviceName: booking.serviceName,
-        servicePrice: booking.servicePrice,
-        estimatedMinutes: booking.estimatedMinutes,
-        startsAt: booking.startsAt,
-        endsAt: booking.endsAt,
-        status: booking.status,
-      })
+      .select(cols)
       .from(booking)
       .innerJoin(user, eq(user.id, booking.barberUserId))
-      .where(eq(booking.customerUserId, session.user.id))
+      .where(
+        and(
+          eq(booking.customerUserId, customerId),
+          or(
+            ne(booking.status, "active"),
+            lt(booking.endsAt, now)
+          )
+        )
+      )
       .orderBy(desc(booking.startsAt)),
   ]);
 
-  // History = all rows except those already in upcoming
-  const upcomingIds = new Set(upcoming.map((r) => r.id));
-  const historyFiltered = history.filter((r) => !upcomingIds.has(r.id));
-
-  const serialize = (r: (typeof upcoming)[number]) => ({
+  const serialize = (r: (typeof active)[number]) => ({
     ...r,
     startsAt: r.startsAt.toISOString(),
     endsAt: r.endsAt.toISOString(),
   });
 
   return NextResponse.json({
-    upcoming: upcoming.map(serialize),
-    history: historyFiltered.map(serialize),
+    active: active.map(serialize),
+    history: history.map(serialize),
   });
 }

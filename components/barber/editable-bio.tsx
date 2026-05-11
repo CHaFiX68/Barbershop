@@ -52,7 +52,7 @@ export default function EditableBio({ bio, onChange }: Props) {
           onKeyDown={handleKeyDown}
           maxLength={MAX}
           rows={3}
-          className="w-full font-display italic text-[14px] text-[var(--color-text-muted)] bg-[#F5F0E6] border border-[var(--color-line)] rounded-[6px] p-2 pr-12 resize-none outline-none focus:border-[var(--color-text)]"
+          className="w-full font-display italic text-[14px] text-[var(--color-text-muted)] bg-[var(--color-surface-2)] border border-[var(--color-line)] rounded-[6px] p-2 pr-12 resize-none outline-none focus:border-[var(--color-text)]"
         />
         <span className="absolute bottom-2 right-2 text-[10px] text-[var(--color-text-muted)]">
           {value.length}/{MAX}
@@ -65,7 +65,7 @@ export default function EditableBio({ bio, onChange }: Props) {
     <button
       type="button"
       onClick={() => setIsEditing(true)}
-      className="w-full font-display italic text-[14px] text-[var(--color-text-muted)] text-center min-h-[40px] py-1.5 px-2 rounded-[6px] border border-dashed border-[#C9B89A] hover:border-solid hover:bg-[#F5F0E6] hover:text-[var(--color-text)] transition-colors"
+      className="w-full font-display italic text-[14px] text-[var(--color-text-muted)] text-center min-h-[40px] py-1.5 px-2 rounded-[6px] border border-dashed border-[var(--color-bronze)] hover:border-solid hover:bg-[var(--color-surface-2)] hover:text-[var(--color-text)] transition-colors"
       title="Клікни щоб редагувати"
     >
       {bio || "Клікни щоб додати опис..."}
