@@ -35,7 +35,7 @@ export default async function WorksSection() {
               </div>
             )}
           </div>
-          <div className="mt-12 md:mt-16 w-[80%] sm:w-full max-w-[920px] mx-auto px-2">
+          <div className="mt-12 md:mt-16 w-[60%] sm:w-full max-w-[920px] mx-auto px-2">
             <WorksCarousel works={works} isAdmin={isAdmin} />
           </div>
         </div>
