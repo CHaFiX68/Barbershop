@@ -131,7 +131,8 @@ export default function LandingImageEditorModal({
         handleClose();
       }}
     >
-      <div className="bg-[var(--color-surface)] rounded-[16px] p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
+      <div className="bg-[var(--color-surface)] rounded-[16px] w-full max-w-md max-h-[90vh] overflow-hidden flex flex-col">
+        <div className="overflow-y-auto custom-scrollbar p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="font-display text-[18px] font-medium">
             {tAnketa("editPhoto")}
@@ -242,6 +243,7 @@ export default function LandingImageEditorModal({
             </div>
           </>
         )}
+        </div>
       </div>
     </div>,
     document.body

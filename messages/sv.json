@@ -243,7 +243,8 @@
     "deleteBarberConfirmMessage": "{name}: profilen finns kvar i databasen men blir inaktiv.",
     "deleteBarberConfirmLabel": "Avregistrera",
     "noBarbers": "Inga barberare ännu",
-    "noBookings": "Inga bokningar"
+    "noBookings": "Inga bokningar",
+    "loading": "Laddar…"
   },
   "chat": {
     "title": "Chatt",

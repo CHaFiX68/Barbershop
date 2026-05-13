@@ -489,7 +489,7 @@ export default function ManagementModal({ isOpen, onClose }: Props) {
 
           {loading && (
             <div className="text-center py-8 text-[var(--color-text-muted)] text-[13px]">
-              Завантаження...
+              {t("loading")}
             </div>
           )}
 

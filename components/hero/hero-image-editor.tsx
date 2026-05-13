@@ -159,7 +159,8 @@ export default function HeroImageEditor({
         handleClose();
       }}
     >
-      <div className="bg-[var(--color-surface)] rounded-[16px] p-6 w-full max-w-[880px] max-h-[90vh] overflow-y-auto">
+      <div className="bg-[var(--color-surface)] rounded-[16px] w-full max-w-[880px] max-h-[90vh] overflow-hidden flex flex-col">
+        <div className="overflow-y-auto custom-scrollbar p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="font-display text-[18px] font-medium">
             {t("heroTitle")}
@@ -207,6 +208,7 @@ export default function HeroImageEditor({
                 onCropChange={setCrop}
                 onZoomChange={setZoom}
                 onCropComplete={onCropComplete}
+                zoomWithScroll={false}
                 restrictPosition={true}
                 style={{
                   cropAreaStyle: {
@@ -279,6 +281,7 @@ export default function HeroImageEditor({
             </div>
           </>
         )}
+        </div>
       </div>
     </div>,
     document.body

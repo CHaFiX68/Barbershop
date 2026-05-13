@@ -243,7 +243,8 @@
     "deleteBarberConfirmMessage": "{name}: profile remains in the database but becomes inactive.",
     "deleteBarberConfirmLabel": "Demote",
     "noBarbers": "No barbers yet",
-    "noBookings": "No bookings"
+    "noBookings": "No bookings",
+    "loading": "Loading…"
   },
   "chat": {
     "title": "Chat",

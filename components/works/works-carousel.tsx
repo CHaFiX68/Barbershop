@@ -18,6 +18,7 @@ export default function WorksCarousel({ works, isAdmin }: Props) {
   const [busyId, setBusyId] = useState<string | null>(null);
   const [index, setIndex] = useState(3);
   const [animate, setAnimate] = useState(true);
+  const [isAnimating, setIsAnimating] = useState(false);
   const router = useRouter();
   const reducedMotion = useReducedMotion();
   const confirm = useConfirm();
@@ -113,10 +114,14 @@ export default function WorksCarousel({ works, isAdmin }: Props) {
   }
 
   const goPrev = () => {
+    if (isAnimating) return;
+    setIsAnimating(true);
     setAnimate(true);
     setIndex((i) => i - 1);
   };
   const goNext = () => {
+    if (isAnimating) return;
+    setIsAnimating(true);
     setAnimate(true);
     setIndex((i) => i + 1);
   };
@@ -129,6 +134,7 @@ export default function WorksCarousel({ works, isAdmin }: Props) {
       setAnimate(false);
       setIndex(index + total);
     }
+    setIsAnimating(false);
   };
 
   // Кожна плитка — width = 100 / extended.length % від motion.div
@@ -172,8 +178,9 @@ export default function WorksCarousel({ works, isAdmin }: Props) {
       <button
         type="button"
         onClick={goPrev}
+        disabled={isAnimating}
         aria-label={t("prevAria")}
-        className="absolute top-1/2 -translate-y-1/2 -left-3 md:-left-5 w-10 h-10 md:w-12 md:h-12 flex items-center justify-center bg-[var(--color-surface)] border border-[var(--color-line)] hover:bg-[var(--color-action-bg)] hover:text-[var(--color-action-text)] hover:border-[var(--color-text)] transition-colors rounded-full shadow-md cursor-pointer z-10"
+        className="absolute top-1/2 -translate-y-1/2 -left-3 md:-left-5 w-10 h-10 md:w-12 md:h-12 flex items-center justify-center bg-[var(--color-surface)] border border-[var(--color-line)] hover:bg-[var(--color-action-bg)] hover:text-[var(--color-action-text)] hover:border-[var(--color-text)] transition-colors rounded-full shadow-md cursor-pointer z-10 disabled:opacity-60 disabled:cursor-not-allowed"
       >
         <svg
           width="14"
@@ -193,8 +200,9 @@ export default function WorksCarousel({ works, isAdmin }: Props) {
       <button
         type="button"
         onClick={goNext}
+        disabled={isAnimating}
         aria-label={t("nextAria")}
-        className="absolute top-1/2 -translate-y-1/2 -right-3 md:-right-5 w-10 h-10 md:w-12 md:h-12 flex items-center justify-center bg-[var(--color-surface)] border border-[var(--color-line)] hover:bg-[var(--color-action-bg)] hover:text-[var(--color-action-text)] hover:border-[var(--color-text)] transition-colors rounded-full shadow-md cursor-pointer z-10"
+        className="absolute top-1/2 -translate-y-1/2 -right-3 md:-right-5 w-10 h-10 md:w-12 md:h-12 flex items-center justify-center bg-[var(--color-surface)] border border-[var(--color-line)] hover:bg-[var(--color-action-bg)] hover:text-[var(--color-action-text)] hover:border-[var(--color-text)] transition-colors rounded-full shadow-md cursor-pointer z-10 disabled:opacity-60 disabled:cursor-not-allowed"
       >
         <svg
           width="14"

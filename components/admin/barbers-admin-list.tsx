@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 
 type BarberSummary = {
   userId: string;
@@ -21,6 +22,7 @@ export default function BarbersAdminList({
   busyUserId,
   onDelete,
 }: Props) {
+  const t = useTranslations("management");
   if (barbers.length === 0) {
     return (
       <div className="text-center py-6 text-[var(--color-text-muted)] text-[13px]">
@@ -69,7 +71,7 @@ export default function BarbersAdminList({
             disabled={busyUserId === b.userId}
             className="px-3 py-1.5 rounded-[8px] text-[12px] text-[var(--color-danger)] bg-[rgba(160,48,48,0.06)] border border-[rgba(160,48,48,0.25)] hover:bg-[rgba(160,48,48,0.12)] hover:border-[rgba(160,48,48,0.4)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
           >
-            Видалити
+            {t("deleteBarber")}
           </button>
         </div>
       ))}
