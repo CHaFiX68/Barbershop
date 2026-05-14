@@ -346,11 +346,11 @@ html, body {
   transition: background 600ms ease, opacity 600ms ease;
 }
 
-.lava-b1, .lava-b3, .lava-b5 {
+.lava-b1, .lava-b3, .lava-b5, .lava-b7, .lava-b9, .lava-b11, .lava-b13, .lava-b15 {
   background: #c9b89a;
   opacity: 0.30;
 }
-.lava-b2, .lava-b4, .lava-b6 {
+.lava-b2, .lava-b4, .lava-b6, .lava-b8, .lava-b10, .lava-b12, .lava-b14 {
   background: #A03030;
   opacity: 0.32;
 }
@@ -369,6 +369,15 @@ html.light .lava-blob {
 .lava-bg[data-pattern="1"] .lava-b4 { width: 170px; height: 170px; top: 25%; left: 50%; animation: lava-float4 24s ease-in-out infinite; }
 .lava-bg[data-pattern="1"] .lava-b5 { width: 150px; height: 150px; top: 15%; right: 25%; animation: lava-float5 21s ease-in-out infinite; }
 .lava-bg[data-pattern="1"] .lava-b6 { width: 140px; height: 140px; bottom: 25%; left: 10%; animation: lava-float6 26s ease-in-out infinite; }
+.lava-bg[data-pattern="1"] .lava-b7 { width: 160px; height: 160px; top: 65%; left: 60%; animation: lava-float2 25s ease-in-out infinite; }
+.lava-bg[data-pattern="1"] .lava-b8 { width: 130px; height: 130px; top: 35%; left: 5%; animation: lava-float3 28s ease-in-out infinite; }
+.lava-bg[data-pattern="1"] .lava-b9 { width: 150px; height: 150px; top: 80%; left: 45%; animation: lava-float4 27s ease-in-out infinite; }
+.lava-bg[data-pattern="1"] .lava-b10 { width: 120px; height: 120px; top: 5%; right: 40%; animation: lava-float5 30s ease-in-out infinite; }
+.lava-bg[data-pattern="1"] .lava-b11 { width: 140px; height: 140px; top: 45%; left: 75%; animation: lava-float1 23s ease-in-out infinite; }
+.lava-bg[data-pattern="1"] .lava-b12 { width: 110px; height: 110px; top: 90%; left: 20%; animation: lava-float6 26s ease-in-out infinite; }
+.lava-bg[data-pattern="1"] .lava-b13 { width: 130px; height: 130px; top: 50%; left: 25%; animation: lava-float2 29s ease-in-out infinite; }
+.lava-bg[data-pattern="1"] .lava-b14 { width: 100px; height: 100px; top: 20%; left: 80%; animation: lava-float3 24s ease-in-out infinite; }
+.lava-bg[data-pattern="1"] .lava-b15 { width: 120px; height: 120px; top: 70%; left: 80%; animation: lava-float4 31s ease-in-out infinite; }
 
 /* === Pattern 2 — Corners === */
 .lava-bg[data-pattern="2"] .lava-b1 { width: 220px; height: 220px; top: -50px; right: -40px; animation: lava-float2 20s ease-in-out infinite; }
@@ -377,6 +386,15 @@ html.light .lava-blob {
 .lava-bg[data-pattern="2"] .lava-b4 { width: 160px; height: 160px; bottom: 0; right: 30%; animation: lava-float1 26s ease-in-out infinite; }
 .lava-bg[data-pattern="2"] .lava-b5 { width: 130px; height: 130px; top: 40%; left: 20%; animation: lava-float5 19s ease-in-out infinite; }
 .lava-bg[data-pattern="2"] .lava-b6 { width: 130px; height: 130px; top: 45%; right: 20%; animation: lava-float6 23s ease-in-out infinite; }
+.lava-bg[data-pattern="2"] .lava-b7 { width: 150px; height: 150px; top: 70%; right: 40%; animation: lava-float5 25s ease-in-out infinite; }
+.lava-bg[data-pattern="2"] .lava-b8 { width: 140px; height: 140px; top: 15%; right: 45%; animation: lava-float3 27s ease-in-out infinite; }
+.lava-bg[data-pattern="2"] .lava-b9 { width: 140px; height: 140px; top: 25%; left: 8%; animation: lava-float4 26s ease-in-out infinite; }
+.lava-bg[data-pattern="2"] .lava-b10 { width: 120px; height: 120px; bottom: 30%; right: 8%; animation: lava-float2 29s ease-in-out infinite; }
+.lava-bg[data-pattern="2"] .lava-b11 { width: 130px; height: 130px; top: 60%; right: 5%; animation: lava-float1 24s ease-in-out infinite; }
+.lava-bg[data-pattern="2"] .lava-b12 { width: 110px; height: 110px; top: 10%; left: 12%; animation: lava-float5 27s ease-in-out infinite; }
+.lava-bg[data-pattern="2"] .lava-b13 { width: 140px; height: 140px; bottom: 15%; left: 50%; animation: lava-float3 31s ease-in-out infinite; }
+.lava-bg[data-pattern="2"] .lava-b14 { width: 100px; height: 100px; top: 80%; right: 15%; animation: lava-float6 25s ease-in-out infinite; }
+.lava-bg[data-pattern="2"] .lava-b15 { width: 120px; height: 120px; top: 5%; right: 12%; animation: lava-float2 28s ease-in-out infinite; }
 
 /* === Pattern 3 — Center === */
 .lava-bg[data-pattern="3"] .lava-b1 { width: 260px; height: 260px; top: 20%; left: 35%; animation: lava-float4 22s ease-in-out infinite; }
@@ -385,6 +403,15 @@ html.light .lava-blob {
 .lava-bg[data-pattern="3"] .lava-b4 { width: 160px; height: 160px; bottom: 15%; left: 30%; animation: lava-float5 20s ease-in-out infinite; }
 .lava-bg[data-pattern="3"] .lava-b5 { width: 140px; height: 140px; top: 30%; right: 35%; animation: lava-float6 26s ease-in-out infinite; }
 .lava-bg[data-pattern="3"] .lava-b6 { width: 130px; height: 130px; bottom: 25%; right: 40%; animation: lava-float2 23s ease-in-out infinite; }
+.lava-bg[data-pattern="3"] .lava-b7 { width: 150px; height: 150px; top: 5%; right: 8%; animation: lava-float3 27s ease-in-out infinite; }
+.lava-bg[data-pattern="3"] .lava-b8 { width: 140px; height: 140px; bottom: 5%; left: 10%; animation: lava-float4 24s ease-in-out infinite; }
+.lava-bg[data-pattern="3"] .lava-b9 { width: 150px; height: 150px; bottom: 30%; left: 50%; animation: lava-float2 28s ease-in-out infinite; }
+.lava-bg[data-pattern="3"] .lava-b10 { width: 120px; height: 120px; top: 60%; left: 5%; animation: lava-float5 25s ease-in-out infinite; }
+.lava-bg[data-pattern="3"] .lava-b11 { width: 140px; height: 140px; top: 35%; right: 5%; animation: lava-float1 27s ease-in-out infinite; }
+.lava-bg[data-pattern="3"] .lava-b12 { width: 110px; height: 110px; top: 75%; right: 25%; animation: lava-float3 24s ease-in-out infinite; }
+.lava-bg[data-pattern="3"] .lava-b13 { width: 130px; height: 130px; top: 15%; left: 55%; animation: lava-float4 29s ease-in-out infinite; }
+.lava-bg[data-pattern="3"] .lava-b14 { width: 100px; height: 100px; top: 80%; right: 60%; animation: lava-float6 26s ease-in-out infinite; }
+.lava-bg[data-pattern="3"] .lava-b15 { width: 120px; height: 120px; top: 50%; left: 60%; animation: lava-float5 32s ease-in-out infinite; }
 
 /* === Pattern 4 — Edge === */
 .lava-bg[data-pattern="4"] .lava-b1 { width: 210px; height: 210px; top: -30px; left: 20%; animation: lava-float3 21s ease-in-out infinite; }
@@ -393,6 +420,15 @@ html.light .lava-blob {
 .lava-bg[data-pattern="4"] .lava-b4 { width: 170px; height: 170px; top: 50%; right: -40px; animation: lava-float4 22s ease-in-out infinite; }
 .lava-bg[data-pattern="4"] .lava-b5 { width: 140px; height: 140px; top: 5%; right: 5%; animation: lava-float5 26s ease-in-out infinite; }
 .lava-bg[data-pattern="4"] .lava-b6 { width: 130px; height: 130px; bottom: 10%; left: 8%; animation: lava-float6 23s ease-in-out infinite; }
+.lava-bg[data-pattern="4"] .lava-b7 { width: 150px; height: 150px; top: 60%; left: 35%; animation: lava-float5 25s ease-in-out infinite; }
+.lava-bg[data-pattern="4"] .lava-b8 { width: 140px; height: 140px; top: 15%; left: 45%; animation: lava-float6 28s ease-in-out infinite; }
+.lava-bg[data-pattern="4"] .lava-b9 { width: 150px; height: 150px; bottom: 40%; right: 10%; animation: lava-float3 26s ease-in-out infinite; }
+.lava-bg[data-pattern="4"] .lava-b10 { width: 130px; height: 130px; top: 80%; left: 60%; animation: lava-float1 29s ease-in-out infinite; }
+.lava-bg[data-pattern="4"] .lava-b11 { width: 140px; height: 140px; top: 30%; left: 75%; animation: lava-float2 25s ease-in-out infinite; }
+.lava-bg[data-pattern="4"] .lava-b12 { width: 110px; height: 110px; top: 25%; left: 25%; animation: lava-float4 28s ease-in-out infinite; }
+.lava-bg[data-pattern="4"] .lava-b13 { width: 130px; height: 130px; bottom: 20%; right: 35%; animation: lava-float5 31s ease-in-out infinite; }
+.lava-bg[data-pattern="4"] .lava-b14 { width: 100px; height: 100px; top: 70%; left: 18%; animation: lava-float3 27s ease-in-out infinite; }
+.lava-bg[data-pattern="4"] .lava-b15 { width: 120px; height: 120px; top: 45%; left: 55%; animation: lava-float6 24s ease-in-out infinite; }
 
 @keyframes lava-float1 {
   0%, 100% { transform: translate(0, 0) scale(1); }
@@ -424,4 +460,32 @@ html.light .lava-blob {
 
 @media (prefers-reduced-motion: reduce) {
   .lava-blob { animation: none; }
+}
+
+/* === Mobile lava-bg — fewer + smaller blobs, less overlap === */
+@media (max-width: 767px) {
+  /* Hide later additions on mobile to reduce overlap */
+  .lava-bg .lava-b8,
+  .lava-bg .lava-b9,
+  .lava-bg .lava-b10,
+  .lava-bg .lava-b11,
+  .lava-bg .lava-b12,
+  .lava-bg .lava-b13,
+  .lava-bg .lava-b14,
+  .lava-bg .lava-b15 {
+    display: none;
+  }
+
+  /* Shrink remaining blobs uniformly so they fit and breathe */
+  .lava-blob {
+    width: 80px !important;
+    height: 80px !important;
+    filter: blur(18px) !important;
+  }
+
+  /* Light theme on mobile keeps reduced blur too */
+  [data-theme="light"] .lava-blob,
+  html.light .lava-blob {
+    filter: blur(14px) !important;
+  }
 }

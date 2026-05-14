@@ -14,7 +14,7 @@ import BookingsAdminList from "./bookings-admin-list";
 import CloseButton from "@/components/ui/close-button";
 import { useConfirm } from "@/lib/confirm-context";
 
-type Tab = "barbers" | "bookings";
+type Tab = "barbers" | "today" | "upcoming" | "history";
 
 type Barber = {
   userId: string;
@@ -382,29 +382,31 @@ export default function ManagementModal({ isOpen, onClose }: Props) {
           <CloseButton onClick={onClose} />
         </div>
 
-        <div className="flex border-b border-[var(--color-line)] px-4 md:px-6 shrink-0">
-          <button
-            type="button"
-            onClick={() => setActiveTab("barbers")}
-            className={`py-3 px-4 text-[13px] font-medium tracking-wide transition-colors ${
-              activeTab === "barbers"
-                ? "border-b-2 border-[var(--color-text)] text-[var(--color-text)] -mb-px"
-                : "text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
-            }`}
-          >
-            {t("tabBarbers")}
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab("bookings")}
-            className={`py-3 px-4 text-[13px] font-medium tracking-wide transition-colors ${
-              activeTab === "bookings"
-                ? "border-b-2 border-[var(--color-text)] text-[var(--color-text)] -mb-px"
-                : "text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
-            }`}
-          >
-            {t("tabBookings")}
-          </button>
+        <div
+          className="flex border-b border-[var(--color-line)] px-4 md:px-6 shrink-0 overflow-x-auto"
+          style={{ scrollbarWidth: "none" }}
+        >
+          {(
+            [
+              { id: "barbers", label: t("tabBarbers") },
+              { id: "today", label: t("tabToday") },
+              { id: "upcoming", label: t("tabUpcoming") },
+              { id: "history", label: t("tabHistory") },
+            ] as const
+          ).map((tab) => (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setActiveTab(tab.id)}
+              className={`py-3 px-4 text-[13px] font-medium tracking-wide transition-colors whitespace-nowrap ${
+                activeTab === tab.id
+                  ? "border-b-2 border-[var(--color-text)] text-[var(--color-text)] -mb-px"
+                  : "text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
         </div>
 
         <div className="custom-scrollbar overflow-y-auto flex-1 px-4 md:px-6 py-3 md:py-4">
@@ -530,7 +532,9 @@ export default function ManagementModal({ isOpen, onClose }: Props) {
         </>
         )}
 
-        {activeTab === "bookings" && <BookingsAdminList />}
+        {activeTab === "today" && <BookingsAdminList mode="today" />}
+        {activeTab === "upcoming" && <BookingsAdminList mode="upcoming" />}
+        {activeTab === "history" && <BookingsAdminList mode="history" />}
         </div>
           </motion.div>
         </motion.div>

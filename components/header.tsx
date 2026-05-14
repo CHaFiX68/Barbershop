@@ -131,8 +131,8 @@ export default function Header({ navItems, initialSession = null }: Props) {
           </nav>
 
           <div className="flex items-center gap-2">
-            <div className="hidden md:flex items-center gap-2">
-              <LocaleSwitcher />
+            <LocaleSwitcher />
+            <div className="hidden md:block">
               <ThemeToggle />
             </div>
             <HeaderAuth initialSession={initialSession} />
@@ -228,8 +228,7 @@ export default function Header({ navItems, initialSession = null }: Props) {
                   </nav>
 
                   <div className="border-t border-[var(--color-line)] p-5 flex flex-col gap-4 mt-auto">
-                    <div className="flex items-center justify-between">
-                      <LocaleSwitcher />
+                    <div className="flex items-center justify-end">
                       <ThemeToggle />
                     </div>
                     {!initialSession?.user && (
