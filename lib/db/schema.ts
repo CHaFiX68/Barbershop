@@ -220,6 +220,8 @@ export const message = pgTable(
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
     body: text("body").notNull(),
+    attachmentUrl: text("attachment_url"),
+    attachmentType: text("attachment_type"),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),

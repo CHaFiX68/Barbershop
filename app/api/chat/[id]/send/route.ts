@@ -10,9 +10,17 @@ import { buildPreview, MAX_MESSAGE_LEN, trimMessageBody } from "@/lib/chat-utils
 
 export const dynamic = "force-dynamic";
 
-const sendSchema = z.object({
-  body: z.string().min(1).max(MAX_MESSAGE_LEN),
-});
+const sendSchema = z
+  .object({
+    body: z.string().max(MAX_MESSAGE_LEN),
+    attachmentUrl: z.string().url().optional(),
+    attachmentType: z
+      .enum(["image/jpeg", "image/png", "image/webp"])
+      .optional(),
+  })
+  .refine((d) => d.body.trim().length > 0 || !!d.attachmentUrl, {
+    message: "Body or attachment required",
+  });
 
 export async function POST(
   request: Request,
@@ -33,7 +41,9 @@ export async function POST(
     }
 
     const trimmed = trimMessageBody(parsed.data.body);
-    if (trimmed.length === 0) {
+    const attachmentUrl = parsed.data.attachmentUrl ?? null;
+    const attachmentType = parsed.data.attachmentType ?? null;
+    if (trimmed.length === 0 && !attachmentUrl) {
       return NextResponse.json(
         { error: "Empty message" },
         { status: 400 }
@@ -75,6 +85,8 @@ export async function POST(
       chatId,
       senderUserId: me,
       body: trimmed,
+      attachmentUrl,
+      attachmentType,
       createdAt: now,
       // Sender's own message is "read" by themselves (so it doesn't show
       // as unread in their own unread count).
@@ -86,13 +98,20 @@ export async function POST(
       .update(chat)
       .set({
         lastMessageAt: now,
-        lastMessagePreview: buildPreview(trimmed),
+        lastMessagePreview:
+          trimmed.length > 0
+            ? buildPreview(trimmed)
+            : attachmentUrl
+              ? "📷 Photo"
+              : "",
       })
       .where(eq(chat.id, chatId));
 
     return NextResponse.json({
       id,
       body: trimmed,
+      attachmentUrl,
+      attachmentType,
       createdAt: now.toISOString(),
     });
   } catch (err) {

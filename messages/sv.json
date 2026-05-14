@@ -278,6 +278,10 @@
     "today": "Idag",
     "yesterday": "Igår",
     "errorSend": "Kunde inte skicka",
+    "attachPhoto": "Bifoga foto",
+    "attachRemove": "Ta bort",
+    "attachInvalidType": "Endast JPG, PNG, WebP stöds",
+    "attachTooLarge": "Filen är för stor (max 10MB)",
     "loadingMessages": "Laddar meddelanden…",
     "barberChatNoDelete": "Barberchattar tas bort endast när du tar bort barberaren via hantering",
     "systemBookingCreated": "Bokning skapad: {service}, {date} kl {time}"

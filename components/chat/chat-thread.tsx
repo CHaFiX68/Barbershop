@@ -1,13 +1,14 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Send } from "lucide-react";
+import { Send, Paperclip, X as XIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import {
   fetchMessages,
   markRead,
   pollMessages,
   sendMessage,
+  uploadAttachment,
   type ChatDetail,
   type ChatMessage,
 } from "@/lib/chat-client";
@@ -40,10 +41,40 @@ export default function ChatThread({
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [pendingPreview, setPendingPreview] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
   const lastPollRef = useRef<string>(new Date(0).toISOString());
   const t = useTranslations("chat");
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    if (!pendingFile) {
+      setPendingPreview(null);
+      return;
+    }
+    const url = URL.createObjectURL(pendingFile);
+    setPendingPreview(url);
+    return () => URL.revokeObjectURL(url);
+  }, [pendingFile]);
+
+  const handleFilePick = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0];
+    e.target.value = "";
+    if (!f) return;
+    if (!["image/jpeg", "image/png", "image/webp"].includes(f.type)) {
+      setError(t("attachInvalidType"));
+      return;
+    }
+    if (f.size > 10 * 1024 * 1024) {
+      setError(t("attachTooLarge"));
+      return;
+    }
+    setError(null);
+    setPendingFile(f);
+  };
 
   // Initial load
   useEffect(() => {
@@ -136,7 +167,8 @@ export default function ChatThread({
 
   const handleSend = async () => {
     const trimmed = inputValue.trim();
-    if (!trimmed || sending || isArchived) return;
+    if (sending || uploading || isArchived) return;
+    if (!trimmed && !pendingFile) return;
     setSending(true);
     setError(null);
     const optimisticId = `optimistic-${Date.now()}`;
@@ -144,13 +176,24 @@ export default function ChatThread({
       id: optimisticId,
       senderUserId: "self",
       body: trimmed,
+      attachmentUrl: pendingPreview,
+      attachmentType: pendingFile?.type ?? null,
       createdAt: new Date().toISOString(),
       isOwn: true,
     };
     setMessages((prev) => [...prev, optimistic]);
+    const sentBody = trimmed;
+    const sentFile = pendingFile;
     setInputValue("");
+    setPendingFile(null);
     try {
-      const real = await sendMessage(chatId, trimmed);
+      let attachment: { url: string; type: string } | undefined;
+      if (sentFile) {
+        setUploading(true);
+        attachment = await uploadAttachment(chatId, sentFile);
+        setUploading(false);
+      }
+      const real = await sendMessage(chatId, sentBody, attachment);
       setMessages((prev) =>
         prev.map((m) =>
           m.id === optimisticId ? { ...real, isOwn: true } : m
@@ -160,9 +203,11 @@ export default function ChatThread({
     } catch (err) {
       setError(err instanceof Error ? err.message : t("errorSend"));
       setMessages((prev) => prev.filter((m) => m.id !== optimisticId));
-      setInputValue(trimmed);
+      setInputValue(sentBody);
+      setPendingFile(sentFile);
     } finally {
       setSending(false);
+      setUploading(false);
     }
   };
 
@@ -210,6 +255,8 @@ export default function ChatThread({
           <ChatMessageBubble
             key={m.id}
             body={m.body}
+            attachmentUrl={m.attachmentUrl}
+            attachmentType={m.attachmentType}
             createdAt={m.createdAt}
             isOwn={m.isOwn}
             pending={m.id.startsWith("optimistic-")}
@@ -218,10 +265,39 @@ export default function ChatThread({
         <div ref={messagesEndRef} />
       </div>
 
+      {pendingPreview && (
+        <div
+          className="px-3 pt-2 flex items-center gap-2"
+          style={{
+            borderTopWidth: "1px",
+            borderTopStyle: "solid",
+            borderTopColor: "var(--color-line)",
+          }}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={pendingPreview}
+            alt=""
+            className="w-12 h-12 rounded-[8px] object-cover"
+          />
+          <span className="flex-1 text-[12px] text-[var(--color-text-muted)] truncate">
+            {pendingFile?.name}
+          </span>
+          <button
+            type="button"
+            onClick={() => setPendingFile(null)}
+            aria-label={t("attachRemove")}
+            className="w-6 h-6 rounded-full flex items-center justify-center text-[var(--color-text-muted)] hover:bg-[var(--color-surface-2)]"
+          >
+            <XIcon size={14} />
+          </button>
+        </div>
+      )}
+
       <div
         className="px-3 py-2.5 flex items-end gap-2"
         style={{
-          borderTopWidth: "1px",
+          borderTopWidth: pendingPreview ? "0" : "1px",
           borderTopStyle: "solid",
           borderTopColor: "var(--color-line)",
         }}
@@ -239,10 +315,31 @@ export default function ChatThread({
           className="flex-1 resize-none bg-[var(--color-surface)] border border-[var(--color-line)] rounded-[12px] px-3 py-2 text-[13px] outline-none focus:border-[var(--color-text)] disabled:opacity-50 disabled:cursor-not-allowed"
           style={{ maxHeight: "96px" }}
         />
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          onChange={handleFilePick}
+          className="hidden"
+        />
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={isArchived || sending || uploading || !!pendingFile}
+          aria-label={t("attachPhoto")}
+          className="w-9 h-9 shrink-0 rounded-full flex items-center justify-center text-[var(--color-text-muted)] hover:bg-[var(--color-surface-2)] disabled:opacity-30 disabled:cursor-not-allowed"
+        >
+          <Paperclip size={16} />
+        </button>
         <button
           type="button"
           onClick={handleSend}
-          disabled={isArchived || sending || !inputValue.trim()}
+          disabled={
+            isArchived ||
+            sending ||
+            uploading ||
+            (!inputValue.trim() && !pendingFile)
+          }
           aria-label={t("sendAria")}
           className="w-9 h-9 shrink-0 rounded-full flex items-center justify-center bg-[var(--color-action-bg)] text-[var(--color-action-text)] hover:opacity-90 transition-opacity disabled:opacity-30 disabled:cursor-not-allowed"
         >

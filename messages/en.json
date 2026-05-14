@@ -278,6 +278,10 @@
     "today": "Today",
     "yesterday": "Yesterday",
     "errorSend": "Failed to send",
+    "attachPhoto": "Attach photo",
+    "attachRemove": "Remove",
+    "attachInvalidType": "Only JPG, PNG, WebP are supported",
+    "attachTooLarge": "File too large (max 10MB)",
     "loadingMessages": "Loading messages…",
     "barberChatNoDelete": "Barber chats are removed only when you remove the barber from management",
     "systemBookingCreated": "Booking created: {service}, {date} at {time}"

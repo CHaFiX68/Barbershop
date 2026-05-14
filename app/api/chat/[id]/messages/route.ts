@@ -68,6 +68,8 @@ export async function GET(
       id: message.id,
       senderUserId: message.senderUserId,
       body: message.body,
+      attachmentUrl: message.attachmentUrl,
+      attachmentType: message.attachmentType,
       createdAt: message.createdAt,
     })
     .from(message)
@@ -118,6 +120,8 @@ export async function GET(
       id: m.id,
       senderUserId: m.senderUserId,
       body: m.body,
+      attachmentUrl: m.attachmentUrl,
+      attachmentType: m.attachmentType,
       createdAt: m.createdAt.toISOString(),
       isOwn: m.senderUserId === me,
     })),

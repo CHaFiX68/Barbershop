@@ -22,6 +22,8 @@ export type ChatMessage = {
   id: string;
   senderUserId: string;
   body: string;
+  attachmentUrl?: string | null;
+  attachmentType?: string | null;
   createdAt: string;
   isOwn: boolean;
 };
@@ -73,26 +75,60 @@ export async function pollMessages(
 
 export async function sendMessage(
   chatId: string,
-  body: string
+  body: string,
+  attachment?: { url: string; type: string }
 ): Promise<ChatMessage> {
   const res = await fetch(`/api/chat/${chatId}/send`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ body }),
+    body: JSON.stringify({
+      body,
+      ...(attachment
+        ? { attachmentUrl: attachment.url, attachmentType: attachment.type }
+        : {}),
+    }),
   });
   const json = (await res.json().catch(() => null)) as
-    | { id?: string; body?: string; createdAt?: string; error?: string }
+    | {
+        id?: string;
+        body?: string;
+        attachmentUrl?: string | null;
+        attachmentType?: string | null;
+        createdAt?: string;
+        error?: string;
+      }
     | null;
-  if (!res.ok || !json?.id || !json?.body || !json?.createdAt) {
+  if (!res.ok || !json?.id || !json?.createdAt) {
     throw new Error(json?.error || `sendMessage ${res.status}`);
   }
   return {
     id: json.id,
     senderUserId: "",
-    body: json.body,
+    body: json.body ?? "",
+    attachmentUrl: json.attachmentUrl ?? null,
+    attachmentType: json.attachmentType ?? null,
     createdAt: json.createdAt,
     isOwn: true,
   };
+}
+
+export async function uploadAttachment(
+  chatId: string,
+  file: File
+): Promise<{ url: string; type: string }> {
+  const fd = new FormData();
+  fd.append("file", file);
+  const res = await fetch(`/api/chat/${chatId}/attachment/upload`, {
+    method: "POST",
+    body: fd,
+  });
+  const json = (await res.json().catch(() => null)) as
+    | { url?: string; type?: string; error?: string }
+    | null;
+  if (!res.ok || !json?.url || !json?.type) {
+    throw new Error(json?.error || `uploadAttachment ${res.status}`);
+  }
+  return { url: json.url, type: json.type };
 }
 
 export async function markRead(chatId: string): Promise<void> {

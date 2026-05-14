@@ -2,6 +2,8 @@
 
 type Props = {
   body: string;
+  attachmentUrl?: string | null;
+  attachmentType?: string | null;
   createdAt: string;
   isOwn: boolean;
   pending?: boolean;
@@ -16,10 +18,14 @@ function formatTime(iso: string): string {
 
 export default function ChatMessageBubble({
   body,
+  attachmentUrl,
+  attachmentType,
   createdAt,
   isOwn,
   pending,
 }: Props) {
+  const isImage =
+    !!attachmentUrl && (attachmentType?.startsWith("image/") ?? false);
   return (
     <div
       className={`flex w-full ${isOwn ? "justify-end" : "justify-start"} ${pending ? "opacity-50" : ""}`}
@@ -32,16 +38,40 @@ export default function ChatMessageBubble({
         }`}
         style={
           !isOwn
-            ? { borderWidth: "0.5px", borderStyle: "solid", borderColor: "var(--color-line)" }
+            ? {
+                borderWidth: "0.5px",
+                borderStyle: "solid",
+                borderColor: "var(--color-line)",
+              }
             : undefined
         }
       >
-        <p
-          className="whitespace-pre-wrap"
-          style={{ fontSize: "13px", lineHeight: 1.4 }}
-        >
-          {body}
-        </p>
+        {isImage && (
+          <button
+            type="button"
+            onClick={() =>
+              window.open(attachmentUrl!, "_blank", "noopener,noreferrer")
+            }
+            className="block max-w-full mb-1 rounded-[8px] overflow-hidden cursor-zoom-in"
+            aria-label="Open image"
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={attachmentUrl!}
+              alt=""
+              className="block max-w-[240px] max-h-[240px] w-auto h-auto object-cover"
+              loading="lazy"
+            />
+          </button>
+        )}
+        {body.length > 0 && (
+          <p
+            className="whitespace-pre-wrap"
+            style={{ fontSize: "13px", lineHeight: 1.4 }}
+          >
+            {body}
+          </p>
+        )}
         <span
           className={`block text-right ${isOwn ? "opacity-60" : "text-[var(--color-text-muted)]"}`}
           style={{ fontSize: "10px", marginTop: "2px" }}

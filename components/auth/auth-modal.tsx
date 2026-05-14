@@ -118,7 +118,7 @@ export default function AuthModal() {
         >
           <motion.div
             className="relative bg-[var(--color-surface)] rounded-[16px] max-w-md w-full max-h-[90vh] overflow-hidden flex flex-col"
-            style={{ paddingRight: 8, cursor: "auto" }}
+            style={{ cursor: "auto" }}
             initial={{ opacity: 0, y: "100%" }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: "100%" }}
