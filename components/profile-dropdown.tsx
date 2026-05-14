@@ -31,7 +31,7 @@ type Props = {
 
 export default function ProfileDropdown({ initialSession = null }: Props) {
   const { data: clientSession } = useSession();
-  const { openChat, requestOpenSupport } = useChatActions();
+  const { openChat } = useChatActions();
   // Defensive: prefer client data when available, fall back to server initial.
   // Survives transient null states during back/forward navigation.
   // Logout flow: signOut → router.push + router.refresh → server re-renders
@@ -376,29 +376,8 @@ export default function ProfileDropdown({ initialSession = null }: Props) {
               >
                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
               </svg>
-              <span>{tMenu("chat")}</span>
+              <span>{tMenu("chatsAndSupport")}</span>
             </button>
-            {!isAdminRole && (
-              <button
-                type="button"
-                onClick={() => requestOpenSupport()}
-                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-[8px] hover:bg-[var(--color-surface-2)] transition-colors text-[13px] text-left"
-              >
-                <svg
-                  className="w-[18px] h-[18px] flex-shrink-0 text-[var(--color-text-muted)]"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  aria-hidden="true"
-                >
-                  <path d="M12 22c5.5 0 10-4.5 10-10S17.5 2 12 2 2 6.5 2 12c0 1.7.4 3.3 1.2 4.7L2 22l5.3-1.2c1.4.8 3 1.2 4.7 1.2z" />
-                  <path d="M9.5 9.5c.5-1 1.5-1.5 2.5-1.5 1.7 0 3 1.3 3 3 0 1.5-1 2-2 2.5-.5.3-1 .5-1 1.5" />
-                  <circle cx="12" cy="17" r=".5" fill="currentColor" />
-                </svg>
-                <span>{tMenu("support")}</span>
-              </button>
-            )}
           </div>
 
           {(isBarberRole || isAdminRole) && (

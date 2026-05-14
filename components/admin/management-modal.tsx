@@ -370,7 +370,7 @@ export default function ManagementModal({ isOpen, onClose }: Props) {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ duration: 0.2 }}
-            className="w-full max-w-[calc(100vw-32px)] max-h-[90vh] md:w-[800px] md:max-w-[90vw] md:h-[600px] md:max-h-[85vh] overflow-hidden bg-[var(--color-surface)] border border-[var(--color-line)] rounded-3xl shadow-[0_24px_48px_rgba(0,0,0,0.18)] flex flex-col"
+            className="w-full max-w-[calc(100vw-32px)] h-[90vh] md:w-[800px] md:max-w-[90vw] md:h-[600px] md:max-h-[85vh] overflow-hidden bg-[var(--color-surface)] border border-[var(--color-line)] rounded-3xl shadow-[0_24px_48px_rgba(0,0,0,0.18)] flex flex-col"
           >
         <div className="flex items-center justify-between px-4 md:px-6 pt-3 md:pt-4 pb-2 shrink-0">
           <h2
