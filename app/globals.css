@@ -57,7 +57,6 @@ html {
 
 html,
 body {
-  background: var(--color-bg);
   color: var(--color-text);
 }
 
@@ -314,4 +313,107 @@ button:focus-visible,
 @media (prefers-reduced-motion: reduce) {
   button, [role="button"] { transition: none; }
   button:active, [role="button"]:active { transform: none; }
+}
+
+/* === Lava lamp background === */
+html {
+  background: var(--color-bg);
+}
+body {
+  background: transparent;
+}
+
+.lava-bg {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: -1;
+  background: var(--color-bg);
+}
+
+.lava-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(45px);
+  will-change: transform;
+  pointer-events: none;
+  transition: background 600ms ease, opacity 600ms ease;
+}
+
+.lava-b1, .lava-b3, .lava-b5 {
+  background: #c9b89a;
+  opacity: 0.30;
+}
+.lava-b2, .lava-b4, .lava-b6 {
+  background: #faf7f1;
+  opacity: 0.20;
+}
+
+[data-theme="light"] .lava-blob {
+  background: #1c1b19;
+  opacity: 0.22;
+}
+
+.lava-b1 {
+  width: 180px; height: 180px;
+  top: -40px; left: -30px;
+  animation: lava-float1 22s ease-in-out infinite;
+}
+.lava-b2 {
+  width: 140px; height: 140px;
+  top: 55%; right: -20px;
+  animation: lava-float2 28s ease-in-out infinite;
+}
+.lava-b3 {
+  width: 160px; height: 160px;
+  bottom: -30px; left: 25%;
+  animation: lava-float3 24s ease-in-out infinite;
+}
+.lava-b4 {
+  width: 130px; height: 130px;
+  top: 25%; left: 50%;
+  animation: lava-float4 30s ease-in-out infinite;
+}
+.lava-b5 {
+  width: 110px; height: 110px;
+  top: 15%; right: 25%;
+  animation: lava-float5 26s ease-in-out infinite;
+}
+.lava-b6 {
+  width: 100px; height: 100px;
+  bottom: 25%; left: 10%;
+  animation: lava-float6 32s ease-in-out infinite;
+}
+
+@keyframes lava-float1 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(100px, 60px) scale(1.1); }
+  66% { transform: translate(40px, 120px) scale(0.95); }
+}
+@keyframes lava-float2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-120px, -80px) scale(1.15); }
+}
+@keyframes lava-float3 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  40% { transform: translate(-80px, -100px) scale(1.05); }
+  70% { transform: translate(60px, -40px) scale(0.9); }
+}
+@keyframes lava-float4 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(80px, 100px) scale(1.2); }
+}
+@keyframes lava-float5 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  40% { transform: translate(-60px, 80px) scale(1.1); }
+  70% { transform: translate(40px, -60px) scale(0.95); }
+}
+@keyframes lava-float6 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(100px, -60px) scale(1.15); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lava-blob { animation: none; }
 }

@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Fraunces, DM_Sans } from "next/font/google";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
@@ -9,6 +9,7 @@ import AuthModal from "@/components/auth/auth-modal";
 import ChatBubble from "@/components/chat/chat-bubble";
 import Header from "@/components/header";
 import BookingPopupRoot from "@/components/booking/booking-popup-root";
+import LavaBackground from "@/components/lava-background";
 import { auth } from "@/lib/auth";
 import { BookingProvider } from "@/lib/booking-context";
 import { ChatProvider } from "@/lib/chat-context";
@@ -39,6 +40,16 @@ export const metadata: Metadata = {
   title: "TWOBarbers — класичний барбершоп",
   description:
     "TWOBarbers — класичний барбершоп у Києві. Стрижки, гоління, догляд за бородою. Запис онлайн.",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#EDEAE5" },
+    { media: "(prefers-color-scheme: dark)", color: "#1A1816" },
+  ],
 };
 
 function navKey(href: string) {
@@ -98,10 +109,11 @@ export default async function LocaleLayout({
       className={`${fraunces.variable} ${dmSans.variable} antialiased`}
     >
       <body
-        className="min-h-screen flex flex-col bg-[var(--color-bg)] text-[var(--color-text)]"
+        className="min-h-screen flex flex-col text-[var(--color-text)]"
         suppressHydrationWarning
       >
         <NextIntlClientProvider locale={locale} messages={messages}>
+          <LavaBackground />
           <ThemeProvider initialTheme={theme}>
             <ModalStackProvider>
               <BookingProvider>
