@@ -14,7 +14,7 @@ export default async function BarbersSection() {
       className="pt-6 md:pt-8 pb-12 md:pb-16 border-t border-[var(--color-line)] scroll-mt-16 md:scroll-mt-20"
     >
       <div className="max-w-[1536px] mx-auto px-4 sm:px-6">
-        <div className="max-w-6xl mx-auto">
+        <div className="max-w-[1400px] mx-auto">
           <SectionHeading
             eyebrow={t("eyebrow")}
             title={title}
