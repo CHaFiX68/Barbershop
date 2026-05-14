@@ -72,7 +72,7 @@ export default async function ContactsSection() {
       className="py-12 md:py-16 lg:py-20 border-t border-[var(--color-line)] scroll-mt-16 md:scroll-mt-20"
     >
       <div className="max-w-[1536px] mx-auto px-4 sm:px-6">
-       <div className="max-w-[1400px] mx-auto">
+       <div className="max-w-6xl mx-auto">
         <SectionHeading
           eyebrow={t("eyebrow")}
           title={t("title")}

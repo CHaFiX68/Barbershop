@@ -16,7 +16,7 @@ export default async function AboutSection() {
       className="py-12 md:py-16 lg:py-20 border-t border-[var(--color-line)] scroll-mt-16 md:scroll-mt-20"
     >
       <div className="max-w-[1536px] mx-auto px-4 sm:px-6">
-        <div className="max-w-[1400px] mx-auto">
+        <div className="max-w-6xl mx-auto">
           <div className="flex flex-col text-left items-start">
             <div
               className="hidden lg:block font-display text-[11px] tracking-[0.2em] text-[var(--color-text-muted)] mb-3"

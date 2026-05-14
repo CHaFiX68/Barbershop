@@ -84,7 +84,7 @@ export default function HeroSlider({
   return (
     <section>
       <div className="max-w-[1536px] mx-auto px-4 sm:px-6 py-6">
-       <div className="max-w-[1400px] mx-auto">
+       <div className="max-w-6xl mx-auto">
         <div className="relative">
         <div className="hero-slide-wrapper relative aspect-[16/8] min-h-[180px] bg-[var(--color-text)] overflow-hidden rounded-[24px] isolate transform-gpu">
           {total > 0 && (
