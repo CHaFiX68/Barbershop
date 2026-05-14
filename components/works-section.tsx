@@ -18,7 +18,7 @@ export default async function WorksSection() {
   return (
     <section
       id="works"
-      className="py-12 md:py-16 border-t border-[var(--color-line)] scroll-mt-16 md:scroll-mt-20"
+      className="py-6 md:py-8 border-t border-[var(--color-line)] scroll-mt-16 md:scroll-mt-20"
     >
       <div className="max-w-[1536px] mx-auto px-4 sm:px-6">
         <div className="max-w-6xl mx-auto">
@@ -35,7 +35,7 @@ export default async function WorksSection() {
               </div>
             )}
           </div>
-          <div className="mt-12 md:mt-16 w-[60%] sm:w-full max-w-[920px] mx-auto px-2">
+          <div className="mt-6 md:mt-8 w-[60%] sm:w-full max-w-[920px] mx-auto px-2">
             <WorksCarousel works={works} isAdmin={isAdmin} />
           </div>
         </div>

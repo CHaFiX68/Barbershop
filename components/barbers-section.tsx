@@ -11,7 +11,7 @@ export default async function BarbersSection() {
   return (
     <section
       id="barbers"
-      className="pt-6 md:pt-8 pb-12 md:pb-16 border-t border-[var(--color-line)] scroll-mt-16 md:scroll-mt-20"
+      className="pt-3 md:pt-4 pb-6 md:pb-8 border-t border-[var(--color-line)] scroll-mt-16 md:scroll-mt-20"
     >
       <div className="max-w-[1536px] mx-auto px-4 sm:px-6">
         <div className="max-w-6xl mx-auto">
@@ -23,13 +23,13 @@ export default async function BarbersSection() {
           />
 
           {barbers.length > 0 ? (
-            <div className="mt-12 md:mt-16 flex flex-wrap justify-center gap-3 md:gap-4 pt-2 pb-2">
+            <div className="mt-6 md:mt-8 flex flex-wrap justify-center gap-3 md:gap-4 pt-2 pb-2">
               {barbers.map((barber) => (
                 <BarberCard key={barber.id} barber={barber} />
               ))}
             </div>
           ) : (
-            <div className="mt-12 md:mt-16 text-center py-16 px-6">
+            <div className="mt-6 md:mt-8 text-center py-16 px-6">
               <p className="text-[var(--color-text-muted)] italic text-[15px] max-w-md mx-auto">
                 {t("empty")}
               </p>

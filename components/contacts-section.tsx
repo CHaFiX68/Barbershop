@@ -69,7 +69,7 @@ export default async function ContactsSection() {
   return (
     <section
       id="contacts"
-      className="py-12 md:py-16 lg:py-20 border-t border-[var(--color-line)] scroll-mt-16 md:scroll-mt-20"
+      className="py-6 md:py-8 lg:py-10 border-t border-[var(--color-line)] scroll-mt-16 md:scroll-mt-20"
     >
       <div className="max-w-[1536px] mx-auto px-4 sm:px-6">
        <div className="max-w-6xl mx-auto">
@@ -80,7 +80,7 @@ export default async function ContactsSection() {
           number="04"
         />
 
-        <div className="mt-12 grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16">
+        <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16">
           <div className="flex flex-col">
             <h3
               className="font-display"

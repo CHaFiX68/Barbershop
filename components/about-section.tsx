@@ -13,7 +13,7 @@ export default async function AboutSection() {
   return (
     <section
       id="about"
-      className="py-12 md:py-16 lg:py-20 border-t border-[var(--color-line)] scroll-mt-16 md:scroll-mt-20"
+      className="py-6 md:py-8 lg:py-10 border-t border-[var(--color-line)] scroll-mt-16 md:scroll-mt-20"
     >
       <div className="max-w-[1536px] mx-auto px-4 sm:px-6">
         <div className="max-w-6xl mx-auto">
@@ -46,7 +46,7 @@ export default async function AboutSection() {
             />
           </div>
 
-          <div className="mt-12 max-w-3xl text-left">
+          <div className="mt-6 max-w-3xl text-left">
             <p
               className="font-display italic leading-relaxed"
               style={{ fontSize: "clamp(15px, 1.7vw, 20px)" }}

@@ -165,7 +165,12 @@
       "Bash(awk '{print $5}')",
       "Bash(xargs -r -I {} taskkill /F /PID {})",
       "PowerShell($pids = \\(Get-NetTCPConnection -LocalPort 3100 -ErrorAction SilentlyContinue | Where-Object { $_.State -eq \"Listen\" }\\).OwningProcess; if \\($pids\\) { foreach \\($p in $pids\\) { Stop-Process -Id $p -Force -ErrorAction SilentlyContinue; Write-Output \"killed $p\" } } else { Write-Output \"no listener on 3100\" })",
-      "Bash(grep -rn \"price.*UAH\\\\|price.*kr\\\\|\\\\${.*price.*}.*грн\\\\|\\\\${.*price.*}.*UAH\" components/ app/)"
+      "Bash(grep -rn \"price.*UAH\\\\|price.*kr\\\\|\\\\${.*price.*}.*грн\\\\|\\\\${.*price.*}.*UAH\" components/ app/)",
+      "Bash(sed -i 's|pt-6 md:pt-8 pb-12 md:pb-16 border-t|pt-3 md:pt-4 pb-6 md:pb-8 border-t|' components/barbers-section.tsx)",
+      "Bash(sed -i 's|mt-12 md:mt-16 flex flex-wrap|mt-6 md:mt-8 flex flex-wrap|' components/barbers-section.tsx)",
+      "Bash(sed -i 's|mt-12 md:mt-16 text-center py-16|mt-6 md:mt-8 text-center py-16|' components/barbers-section.tsx)",
+      "Bash(sed -i 's|py-12 md:py-16 border-t|py-6 md:py-8 border-t|' components/works-section.tsx)",
+      "Bash(sed -i 's|mt-12 md:mt-16 w-\\\\[60%\\\\]|mt-6 md:mt-8 w-[60%]|' components/works-section.tsx)"
     ],
     "additionalDirectories": [
       "C:\\Projects\\Barbershop",
