@@ -25,7 +25,7 @@ export default function SectionHeading({
     <div className={`flex flex-col ${alignClass}`}>
       {number ? (
         <div
-          className="hidden lg:block font-display text-[11px] tracking-[0.2em] text-[var(--color-text-muted)] mb-3"
+          className="hidden lg:block font-display text-[11px] tracking-[0.2em] text-[var(--color-text-muted)] mb-1"
           aria-hidden="true"
         >
           — {number}
@@ -44,7 +44,7 @@ export default function SectionHeading({
       {showTitle && (
         <>
           <h2
-            className="font-display mt-4 leading-[1.1]"
+            className="font-display mt-2 leading-[1.1]"
             style={{ fontWeight: 600, fontSize: "clamp(34px, 5vw, 54px)" }}
           >
             {titleContentKey ? (
@@ -59,7 +59,7 @@ export default function SectionHeading({
             )}
           </h2>
           <span
-            className="block mt-6 h-px bg-[var(--color-text)]"
+            className="block mt-3 h-px bg-[var(--color-text)]"
             style={{ width: "40px" }}
           />
         </>

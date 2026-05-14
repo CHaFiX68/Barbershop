@@ -18,10 +18,10 @@ export default function AuthButton({
     <button
       type={type}
       disabled={isDisabled}
-      className={`w-full bg-[var(--color-action-bg)] text-[var(--color-action-text)] border border-transparent rounded-[8px] px-6 py-3 font-medium text-sm transition-colors ${
+      className={`w-full bg-[#1C1B19] text-[#FAF7F1] rounded-[8px] px-6 py-3.5 font-medium text-sm transition-colors ${
         isDisabled
           ? "opacity-50 cursor-not-allowed"
-          : "hover:bg-transparent hover:text-[var(--color-action-bg)] hover:border-[var(--color-action-bg)]"
+          : "hover:bg-[#2C2A27]"
       }`}
     >
       {loading ? "Зачекай..." : children}

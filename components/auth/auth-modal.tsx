@@ -2,16 +2,17 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { AnimatePresence, motion } from "framer-motion";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { signIn } from "@/lib/auth-client";
 import { useModalStack } from "@/lib/modal-stack-context";
+import { X } from "lucide-react";
 import LoginForm from "./login-form";
 import RegisterForm from "./register-form";
 import OtpForm from "./otp-form";
 import ForgotPasswordForm from "./forgot-password-form";
-import CloseButton from "@/components/ui/close-button";
 
 type AuthMode = "login" | "register";
 
@@ -50,7 +51,7 @@ export default function AuthModal() {
 
   const { zIndex, isTop } = useModalStack("auth-modal", isOpen, close);
 
-  if (!mounted || !isOpen) return null;
+  if (!mounted) return null;
 
   const switchTo = (next: AuthMode) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -100,20 +101,37 @@ export default function AuthModal() {
   };
 
   return createPortal(
-    <div
-      role="dialog"
-      aria-modal="true"
-      aria-label={mode === "login" ? t("signInTitle") : t("signUpTitle")}
-      onMouseDown={handleMouseDown}
-      onMouseUp={handleMouseUp}
-      className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4"
-      style={{ zIndex, cursor: "auto" }}
-    >
-      <div
-        className="relative bg-[var(--color-surface)] rounded-[16px] max-w-md w-full max-h-[90vh] overflow-hidden flex flex-col"
-        style={{ paddingRight: 8, cursor: "auto" }}
-      >
-        <CloseButton onClick={close} className="absolute top-4 right-4 z-10" />
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          role="dialog"
+          aria-modal="true"
+          aria-label={mode === "login" ? t("signInTitle") : t("signUpTitle")}
+          onMouseDown={handleMouseDown}
+          onMouseUp={handleMouseUp}
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4"
+          style={{ zIndex, cursor: "auto" }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.3 }}
+        >
+          <motion.div
+            className="relative bg-[var(--color-surface)] rounded-[16px] max-w-md w-full max-h-[90vh] overflow-hidden flex flex-col"
+            style={{ paddingRight: 8, cursor: "auto" }}
+            initial={{ opacity: 0, y: "100%" }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: "100%" }}
+            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+          >
+        <button
+          type="button"
+          onClick={close}
+          aria-label={t("signInTitle")}
+          className="absolute top-4 right-4 w-9 h-9 rounded-full border border-[var(--color-line)] bg-transparent hover:bg-[var(--color-surface-2)] flex items-center justify-center text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-all duration-200 z-10"
+        >
+          <X size={16} strokeWidth={1.5} />
+        </button>
 
         <div
           className="custom-scrollbar flex-1 overflow-y-auto p-8 sm:p-10"
@@ -135,10 +153,10 @@ export default function AuthModal() {
               <button
                 type="button"
                 onClick={() => switchTo("login")}
-                className={`text-sm px-3 py-1.5 rounded-[8px] transition-colors ${
+                className={`px-5 py-2 rounded-full text-[14px] transition-all duration-200 ${
                   mode === "login"
-                    ? "bg-[var(--color-action-bg)] text-[var(--color-action-text)]"
-                    : "text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
+                    ? "bg-[#FAF7F1] text-[#1C1B19] font-medium"
+                    : "bg-transparent text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
                 }`}
               >
                 {t("signIn")}
@@ -146,34 +164,59 @@ export default function AuthModal() {
               <button
                 type="button"
                 onClick={() => switchTo("register")}
-                className={`text-sm px-3 py-1.5 rounded-[8px] transition-colors ${
+                className={`px-5 py-2 rounded-full text-[14px] transition-all duration-200 ${
                   mode === "register"
-                    ? "bg-[var(--color-action-bg)] text-[var(--color-action-text)]"
-                    : "text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
+                    ? "bg-[#FAF7F1] text-[#1C1B19] font-medium"
+                    : "bg-transparent text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
                 }`}
               >
                 {t("signUp")}
               </button>
             </div>
 
-            {mode === "login" ? (
-              <LoginForm
-                hideCard
-                inModal
-                onForgotPassword={() => setShowForgot(true)}
-              />
-            ) : (
-              <RegisterForm
-                hideCard
-                inModal
-                onRegistered={handleRegistered}
-              />
-            )}
+            <div className="relative overflow-hidden" style={{ minHeight: "420px" }}>
+              <AnimatePresence mode="wait" initial={false}>
+                {mode === "login" && (
+                  <motion.div
+                    key="login"
+                    initial={{ opacity: 0, x: -40 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -40 }}
+                    transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+                    className="absolute inset-0"
+                  >
+                    <LoginForm
+                      hideCard
+                      inModal
+                      onForgotPassword={() => setShowForgot(true)}
+                    />
+                  </motion.div>
+                )}
+                {mode === "register" && (
+                  <motion.div
+                    key="register"
+                    initial={{ opacity: 0, x: 40 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: 40 }}
+                    transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+                    className="absolute inset-0"
+                  >
+                    <RegisterForm
+                      hideCard
+                      inModal
+                      onRegistered={handleRegistered}
+                    />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </>
         )}
         </div>
-      </div>
-    </div>,
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>,
     document.body
   );
 }

@@ -57,8 +57,8 @@ export default function BookingCard({
   const endsDate = new Date(b.endsAt);
   const now = new Date();
   const isUpcoming = b.status === "active" && endsDate > now;
-  const isPendingForBarber =
-    role === "barber" && b.status === "active" && endsDate <= now;
+  const isPending = b.status === "active" && endsDate <= now;
+  const isPendingForBarber = role === "barber" && isPending;
   const canCancel = isUpcoming && role !== "admin" && startsDate > now;
 
   const handleStatusChange = async (action: "complete" | "no_show") => {
@@ -118,23 +118,25 @@ export default function BookingCard({
     }
   };
 
-  const statusLabel = isPendingForBarber
-    ? t("statusPending")
-    : b.status === "cancelled"
+  const statusLabel =
+    b.status === "cancelled"
       ? t("statusCancelled")
       : b.status === "completed"
         ? t("statusCompleted")
         : b.status === "no_show"
           ? t("statusNoShow")
-          : t("statusActive");
+          : isPending
+            ? t("statusPending")
+            : t("statusActive");
 
-  const statusClass = isPendingForBarber
-    ? "text-[var(--color-bronze)]"
-    : b.status === "cancelled" || b.status === "no_show"
+  const statusClass =
+    b.status === "cancelled" || b.status === "no_show"
       ? "text-[var(--color-danger)]"
       : b.status === "completed"
         ? "text-[var(--color-text-muted)]"
-        : "text-[#5A7A5A]";
+        : isPending
+          ? "text-[#C9892A]"
+          : "text-[#5A7A5A]";
 
   const personLine = (() => {
     if (role === "customer") return b.barberName ?? "";

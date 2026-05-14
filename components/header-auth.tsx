@@ -29,7 +29,7 @@ export default function HeaderAuth({ initialSession = null }: Props) {
       <div className="hidden md:flex items-center gap-3">
         <AuthModalTrigger
           mode="login"
-          className="text-sm text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors px-3 py-2"
+          className="px-4 py-2 rounded-[8px] border border-[var(--color-line)] text-[var(--color-text)] hover:bg-[var(--color-surface-2)] transition-colors text-[14px] font-medium"
         >
           {t("signIn")}
         </AuthModalTrigger>

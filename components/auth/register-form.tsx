@@ -97,6 +97,70 @@ export default function RegisterForm({
     }
   };
 
+  if (hideCard) {
+    return (
+      <form onSubmit={handleSubmit(onSubmit)} noValidate className="h-full">
+        <div className="mb-4">
+          <h1 className="font-display text-[24px] font-medium text-[var(--color-text)] mb-1">
+            {t("signUpTitle")}
+          </h1>
+          <p className="text-[13px] text-[var(--color-text-muted)]">
+            {t("haveAccount")}{" "}
+            <AuthModalTrigger
+              mode="login"
+              className="text-[var(--color-text)] font-medium underline-offset-2 hover:underline"
+            >
+              {t("signIn")}
+            </AuthModalTrigger>
+          </p>
+        </div>
+
+        <div className="flex flex-col gap-4">
+          <AuthInput
+            label={t("name")}
+            type="text"
+            autoComplete="name"
+            error={errors.name?.message}
+            {...register("name")}
+          />
+          <AuthInput
+            label={t("email")}
+            type="email"
+            autoComplete="email"
+            error={errors.email?.message}
+            {...register("email")}
+          />
+          <AuthInput
+            label={t("password")}
+            type="password"
+            autoComplete="new-password"
+            error={errors.password?.message}
+            {...register("password")}
+          />
+          <AuthInput
+            label={t("confirmPassword")}
+            type="password"
+            autoComplete="new-password"
+            error={errors.confirmPassword?.message}
+            {...register("confirmPassword")}
+          />
+        </div>
+
+        {errors.root && (
+          <p className="mt-3 text-sm text-red-600">{errors.root.message}</p>
+        )}
+
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          className="absolute left-0 right-0 bottom-0 py-3.5 bg-[#1C1B19] text-[#FAF7F1] rounded-[8px] text-[14px] font-medium hover:bg-[#2C2A27] transition-colors disabled:opacity-50"
+        >
+          {isSubmitting ? "…" : t("submitSignUp")}
+        </button>
+      </form>
+    );
+  }
+
   const content = (
     <>
       <h1
@@ -110,18 +174,9 @@ export default function RegisterForm({
         style={{ fontSize: "14px" }}
       >
         {t("haveAccount")}{" "}
-        {inModal ? (
-          <AuthModalTrigger
-            mode="login"
-            className="nav-link text-[var(--color-text)]"
-          >
-            {t("signIn")}
-          </AuthModalTrigger>
-        ) : (
-          <Link href="/login" className="nav-link text-[var(--color-text)]">
-            {t("signIn")}
-          </Link>
-        )}
+        <Link href="/login" className="nav-link text-[var(--color-text)]">
+          {t("signIn")}
+        </Link>
       </p>
 
       <form onSubmit={handleSubmit(onSubmit)} noValidate>
@@ -165,6 +220,5 @@ export default function RegisterForm({
     </>
   );
 
-  if (hideCard) return content;
   return <AuthCard>{content}</AuthCard>;
 }

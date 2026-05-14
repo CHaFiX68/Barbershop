@@ -22,7 +22,7 @@ export default function AuthInput({ label, error, name, id, ...rest }: Props) {
         id={inputId}
         name={name}
         {...rest}
-        className="auth-static-input w-full px-4 py-3 bg-white border border-[#D5D0C8] rounded-[8px] outline-none transition-colors focus:border-[#1C1B19] text-[#1C1B19] caret-[#1C1B19] placeholder:text-[#1C1B19]/50"
+        className="auth-static-input w-full px-4 py-3 bg-[#FAF7F1] border border-[#E8E2D6] rounded-[8px] outline-none transition-all duration-150 focus:border-[#1C1B19] focus:bg-white text-[#1C1B19] caret-[#1C1B19] placeholder:text-[#1C1B19]/35"
         style={{
           fontSize: "15px",
           cursor: "text",
