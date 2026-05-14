@@ -321,10 +321,15 @@ html {
 }
 body {
   background: transparent;
+  position: relative;
+}
+
+html, body {
+  min-height: 100vh;
 }
 
 .lava-bg {
-  position: fixed;
+  position: absolute;
   inset: 0;
   overflow: hidden;
   pointer-events: none;
@@ -335,7 +340,7 @@ body {
 .lava-blob {
   position: absolute;
   border-radius: 50%;
-  filter: blur(45px);
+  filter: blur(clamp(28px, 2.8vw, 56px));
   will-change: transform;
   pointer-events: none;
   transition: background 600ms ease, opacity 600ms ease;
@@ -346,45 +351,48 @@ body {
   opacity: 0.30;
 }
 .lava-b2, .lava-b4, .lava-b6 {
-  background: #faf7f1;
-  opacity: 0.20;
+  background: #A03030;
+  opacity: 0.32;
 }
 
-[data-theme="light"] .lava-blob {
-  background: #1c1b19;
-  opacity: 0.22;
+[data-theme="light"] .lava-blob,
+html.light .lava-blob {
+  background: #4a2020;
+  opacity: 0.55;
+  filter: blur(clamp(20px, 2vw, 40px));
 }
 
-.lava-b1 {
-  width: 180px; height: 180px;
-  top: -40px; left: -30px;
-  animation: lava-float1 22s ease-in-out infinite;
-}
-.lava-b2 {
-  width: 140px; height: 140px;
-  top: 55%; right: -20px;
-  animation: lava-float2 28s ease-in-out infinite;
-}
-.lava-b3 {
-  width: 160px; height: 160px;
-  bottom: -30px; left: 25%;
-  animation: lava-float3 24s ease-in-out infinite;
-}
-.lava-b4 {
-  width: 130px; height: 130px;
-  top: 25%; left: 50%;
-  animation: lava-float4 30s ease-in-out infinite;
-}
-.lava-b5 {
-  width: 110px; height: 110px;
-  top: 15%; right: 25%;
-  animation: lava-float5 26s ease-in-out infinite;
-}
-.lava-b6 {
-  width: 100px; height: 100px;
-  bottom: 25%; left: 10%;
-  animation: lava-float6 32s ease-in-out infinite;
-}
+/* === Pattern 1 — Diagonal === */
+.lava-bg[data-pattern="1"] .lava-b1 { width: 240px; height: 240px; top: -40px; left: -30px; animation: lava-float1 18s ease-in-out infinite; }
+.lava-bg[data-pattern="1"] .lava-b2 { width: 180px; height: 180px; top: 55%; right: -20px; animation: lava-float2 22s ease-in-out infinite; }
+.lava-bg[data-pattern="1"] .lava-b3 { width: 210px; height: 210px; bottom: -30px; left: 25%; animation: lava-float3 19s ease-in-out infinite; }
+.lava-bg[data-pattern="1"] .lava-b4 { width: 170px; height: 170px; top: 25%; left: 50%; animation: lava-float4 24s ease-in-out infinite; }
+.lava-bg[data-pattern="1"] .lava-b5 { width: 150px; height: 150px; top: 15%; right: 25%; animation: lava-float5 21s ease-in-out infinite; }
+.lava-bg[data-pattern="1"] .lava-b6 { width: 140px; height: 140px; bottom: 25%; left: 10%; animation: lava-float6 26s ease-in-out infinite; }
+
+/* === Pattern 2 — Corners === */
+.lava-bg[data-pattern="2"] .lava-b1 { width: 220px; height: 220px; top: -50px; right: -40px; animation: lava-float2 20s ease-in-out infinite; }
+.lava-bg[data-pattern="2"] .lava-b2 { width: 200px; height: 200px; bottom: -40px; left: -30px; animation: lava-float3 24s ease-in-out infinite; }
+.lava-bg[data-pattern="2"] .lava-b3 { width: 180px; height: 180px; top: -30px; left: 35%; animation: lava-float4 22s ease-in-out infinite; }
+.lava-bg[data-pattern="2"] .lava-b4 { width: 160px; height: 160px; bottom: 0; right: 30%; animation: lava-float1 26s ease-in-out infinite; }
+.lava-bg[data-pattern="2"] .lava-b5 { width: 130px; height: 130px; top: 40%; left: 20%; animation: lava-float5 19s ease-in-out infinite; }
+.lava-bg[data-pattern="2"] .lava-b6 { width: 130px; height: 130px; top: 45%; right: 20%; animation: lava-float6 23s ease-in-out infinite; }
+
+/* === Pattern 3 — Center === */
+.lava-bg[data-pattern="3"] .lava-b1 { width: 260px; height: 260px; top: 20%; left: 35%; animation: lava-float4 22s ease-in-out infinite; }
+.lava-bg[data-pattern="3"] .lava-b2 { width: 200px; height: 200px; top: 10%; left: 15%; animation: lava-float3 18s ease-in-out infinite; }
+.lava-bg[data-pattern="3"] .lava-b3 { width: 180px; height: 180px; top: 50%; right: 15%; animation: lava-float1 24s ease-in-out infinite; }
+.lava-bg[data-pattern="3"] .lava-b4 { width: 160px; height: 160px; bottom: 15%; left: 30%; animation: lava-float5 20s ease-in-out infinite; }
+.lava-bg[data-pattern="3"] .lava-b5 { width: 140px; height: 140px; top: 30%; right: 35%; animation: lava-float6 26s ease-in-out infinite; }
+.lava-bg[data-pattern="3"] .lava-b6 { width: 130px; height: 130px; bottom: 25%; right: 40%; animation: lava-float2 23s ease-in-out infinite; }
+
+/* === Pattern 4 — Edge === */
+.lava-bg[data-pattern="4"] .lava-b1 { width: 210px; height: 210px; top: -30px; left: 20%; animation: lava-float3 21s ease-in-out infinite; }
+.lava-bg[data-pattern="4"] .lava-b2 { width: 190px; height: 190px; top: 30%; left: -50px; animation: lava-float1 24s ease-in-out infinite; }
+.lava-bg[data-pattern="4"] .lava-b3 { width: 200px; height: 200px; bottom: -30px; right: 25%; animation: lava-float2 19s ease-in-out infinite; }
+.lava-bg[data-pattern="4"] .lava-b4 { width: 170px; height: 170px; top: 50%; right: -40px; animation: lava-float4 22s ease-in-out infinite; }
+.lava-bg[data-pattern="4"] .lava-b5 { width: 140px; height: 140px; top: 5%; right: 5%; animation: lava-float5 26s ease-in-out infinite; }
+.lava-bg[data-pattern="4"] .lava-b6 { width: 130px; height: 130px; bottom: 10%; left: 8%; animation: lava-float6 23s ease-in-out infinite; }
 
 @keyframes lava-float1 {
   0%, 100% { transform: translate(0, 0) scale(1); }
