@@ -91,7 +91,7 @@ export default function Header({ navItems, initialSession = null }: Props) {
     <>
       <header className="sticky top-0 z-40 bg-[var(--color-bg)]/85 backdrop-blur-[8px] border-b border-[var(--color-line)]">
         <div className="max-w-[1536px] mx-auto px-4 sm:px-6">
-         <div className="max-w-6xl mx-auto h-16 md:h-20 flex items-center justify-between">
+         <div className="max-w-[1400px] mx-auto h-16 md:h-20 flex items-center justify-between">
           <Link
             href="/"
             aria-label={t("logoAriaLabel")}
