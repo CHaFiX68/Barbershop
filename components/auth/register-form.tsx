@@ -140,14 +140,6 @@ export default function RegisterForm({
             error={errors.password?.message}
             {...register("password")}
           />
-          <AuthInput
-            label={t("confirmPassword")}
-            type="password"
-            autoComplete="new-password"
-            placeholder={t("confirmPasswordPlaceholder")}
-            error={errors.confirmPassword?.message}
-            {...register("confirmPassword")}
-          />
         </div>
 
         {errors.root && (
@@ -207,14 +199,6 @@ export default function RegisterForm({
           placeholder={t("passwordPlaceholder")}
           error={errors.password?.message}
           {...register("password")}
-        />
-        <AuthInput
-          label={t("confirmPassword")}
-          type="password"
-          autoComplete="new-password"
-          placeholder={t("confirmPasswordPlaceholder")}
-          error={errors.confirmPassword?.message}
-          {...register("confirmPassword")}
         />
 
         {errors.root && (
