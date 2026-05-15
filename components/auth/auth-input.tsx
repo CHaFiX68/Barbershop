@@ -6,10 +6,10 @@ type Props = {
 export default function AuthInput({ label, error, name, id, ...rest }: Props) {
   const inputId = id ?? name;
   return (
-    <div className="mb-5">
+    <div className="mb-2">
       <label
         htmlFor={inputId}
-        className="block mb-2 text-[var(--color-text-muted)]"
+        className="block mb-1 text-[var(--color-text-muted)]"
         style={{
           fontSize: "13px",
           letterSpacing: "0.05em",

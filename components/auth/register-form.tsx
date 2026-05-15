@@ -100,7 +100,7 @@ export default function RegisterForm({
   if (hideCard) {
     return (
       <form onSubmit={handleSubmit(onSubmit)} noValidate className="h-full">
-        <div className="mb-4">
+        <div className="mb-3">
           <h1 className="font-display text-[24px] font-medium text-[var(--color-text)] mb-1">
             {t("signUpTitle")}
           </h1>
@@ -115,7 +115,7 @@ export default function RegisterForm({
           </p>
         </div>
 
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-2">
           <AuthInput
             label={t("name")}
             type="text"
@@ -149,7 +149,7 @@ export default function RegisterForm({
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full mt-6 py-3.5 bg-[#1C1B19] text-[#FAF7F1] rounded-[10px] text-[14px] font-medium hover:bg-[#2C2A27] transition-colors disabled:opacity-50"
+          className="w-full mt-4 py-3.5 bg-[#1C1B19] text-[#FAF7F1] rounded-[10px] text-[14px] font-medium hover:bg-[#2C2A27] transition-colors disabled:opacity-50"
         >
           {isSubmitting ? "…" : t("submitSignUp")}
         </button>
