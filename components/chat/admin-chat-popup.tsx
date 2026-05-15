@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useTranslations } from "next-intl";
 import {
   openChatWithBarber,
@@ -124,13 +124,101 @@ export default function AdminChatPopup({
   const showList = !isMobile || selectedChatId == null;
   const showConversation = !isMobile || selectedChatId != null;
 
+  const listPaneContent = (
+    <div className="flex flex-col h-full min-h-0 min-w-0">
+      {actionError && (
+        <p
+          className="px-4 py-2 italic text-[var(--color-danger)]"
+          style={{ fontSize: "11px" }}
+        >
+          {actionError}
+        </p>
+      )}
+
+      <div className="flex-1 overflow-y-auto custom-scrollbar">
+        {!loading && items.length === 0 && (
+          <p
+            className="italic text-center px-4 py-8 text-[var(--color-text-muted)]"
+            style={{ fontSize: "12px" }}
+          >
+            {tSupport("noActiveTickets")}
+          </p>
+        )}
+
+        {barberItems.length > 0 && (
+          <>
+            <SectionHeader
+              label={tManagement("barbersHeader")}
+              tooltip={t("barberChatNoDelete")}
+            />
+            {barberItems.map((item) => (
+              <ChatRow
+                key={`barber-${item.partnerId}`}
+                item={item}
+                selected={
+                  item.chatId != null && selectedChatId === item.chatId
+                }
+                onClick={() => handleSelectBarber(item)}
+                isOpening={openingBarberId === item.partnerId}
+              />
+            ))}
+          </>
+        )}
+
+        {supportItems.length > 0 && (
+          <>
+            <SectionHeader label={tSupport("title")} />
+            {supportItems.map((item) => (
+              <ChatRow
+                key={`support-${item.chatId}`}
+                item={item}
+                selected={selectedChatId === item.chatId}
+                onClick={() => item.chatId && onSelectChat(item.chatId)}
+                isOpening={false}
+              />
+            ))}
+          </>
+        )}
+      </div>
+    </div>
+  );
+
+  const conversationPaneContent = (
+    <div className="flex flex-col h-full min-h-0 min-w-0">
+      {selectedChatId && selectedItem ? (
+        <ChatConversationPane
+          key={selectedChatId}
+          chatId={selectedChatId}
+          isPopupOpen
+          onChatRefetch={onChatsRefetch}
+          onBackMobile={isMobile ? () => onSelectChat(null) : undefined}
+          onDeleted={() => {
+            onSelectChat(null);
+            onChatsRefetch();
+          }}
+          currentUserRole="admin"
+          canDeleteOverride={false}
+        />
+      ) : (
+        <div className="flex items-center justify-center h-full px-6">
+          <p
+            className="italic text-[var(--color-text-muted)] text-center"
+            style={{ fontSize: "13px", lineHeight: 1.5 }}
+          >
+            {tSupport("selectTicketPlaceholder")}
+          </p>
+        </div>
+      )}
+    </div>
+  );
+
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.95, y: 20 }}
       animate={{ opacity: 1, scale: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95, y: 20 }}
       transition={{ duration: 0.2 }}
-      className="fixed bg-[var(--color-surface)] shadow-2xl overflow-hidden flex flex-col"
+      className="fixed bg-[var(--color-bg)]/85 backdrop-blur-[8px] border border-[var(--color-line)] shadow-2xl overflow-hidden flex flex-col"
       style={{
         zIndex,
         bottom: isMobile ? "0" : "24px",
@@ -166,101 +254,48 @@ export default function AdminChatPopup({
 
       <div
         className="flex-1 min-h-0 overflow-hidden"
-        style={{
-          display: "grid",
-          gridTemplateColumns: isMobile ? "1fr" : "280px 1px 1fr",
-        }}
+        style={
+          isMobile
+            ? { position: "relative" }
+            : {
+                display: "grid",
+                gridTemplateColumns: "280px 1px 1fr",
+              }
+        }
       >
-        {showList && (
-          <div className="flex flex-col h-full min-h-0 min-w-0">
-            {actionError && (
-              <p
-                className="px-4 py-2 italic text-[var(--color-danger)]"
-                style={{ fontSize: "11px" }}
+        {isMobile ? (
+          <AnimatePresence mode="wait" initial={false}>
+            {showList && (
+              <motion.div
+                key="list"
+                initial={{ x: "-100%" }}
+                animate={{ x: 0 }}
+                exit={{ x: "-100%" }}
+                transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+                className="absolute inset-0 flex flex-col"
               >
-                {actionError}
-              </p>
+                {listPaneContent}
+              </motion.div>
             )}
-
-            <div className="flex-1 overflow-y-auto custom-scrollbar">
-              {!loading && items.length === 0 && (
-                <p
-                  className="italic text-center px-4 py-8 text-[var(--color-text-muted)]"
-                  style={{ fontSize: "12px" }}
-                >
-                  {tSupport("noActiveTickets")}
-                </p>
-              )}
-
-              {barberItems.length > 0 && (
-                <>
-                  <SectionHeader
-                    label={tManagement("barbersHeader")}
-                    tooltip={t("barberChatNoDelete")}
-                  />
-                  {barberItems.map((item) => (
-                    <ChatRow
-                      key={`barber-${item.partnerId}`}
-                      item={item}
-                      selected={
-                        item.chatId != null && selectedChatId === item.chatId
-                      }
-                      onClick={() => handleSelectBarber(item)}
-                      isOpening={openingBarberId === item.partnerId}
-                    />
-                  ))}
-                </>
-              )}
-
-              {supportItems.length > 0 && (
-                <>
-                  <SectionHeader label={tSupport("title")} />
-                  {supportItems.map((item) => (
-                    <ChatRow
-                      key={`support-${item.chatId}`}
-                      item={item}
-                      selected={selectedChatId === item.chatId}
-                      onClick={() => item.chatId && onSelectChat(item.chatId)}
-                      isOpening={false}
-                    />
-                  ))}
-                </>
-              )}
-            </div>
-          </div>
-        )}
-
-        {!isMobile && <div style={{ background: "var(--color-line)" }} />}
-
-        {showConversation && (
-          <div className="flex flex-col h-full min-h-0 min-w-0">
-            {selectedChatId && selectedItem ? (
-              <ChatConversationPane
-                key={selectedChatId}
-                chatId={selectedChatId}
-                isPopupOpen
-                onChatRefetch={onChatsRefetch}
-                onBackMobile={
-                  isMobile ? () => onSelectChat(null) : undefined
-                }
-                onDeleted={() => {
-                  onSelectChat(null);
-                  onChatsRefetch();
-                }}
-                currentUserRole="admin"
-                canDeleteOverride={false}
-              />
-            ) : (
-              <div className="flex items-center justify-center h-full px-6">
-                <p
-                  className="italic text-[var(--color-text-muted)] text-center"
-                  style={{ fontSize: "13px", lineHeight: 1.5 }}
-                >
-                  {tSupport("selectTicketPlaceholder")}
-                </p>
-              </div>
+            {showConversation && selectedChatId && (
+              <motion.div
+                key="conversation"
+                initial={{ x: "100%" }}
+                animate={{ x: 0 }}
+                exit={{ x: "100%" }}
+                transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+                className="absolute inset-0 flex flex-col"
+              >
+                {conversationPaneContent}
+              </motion.div>
             )}
-          </div>
+          </AnimatePresence>
+        ) : (
+          <>
+            {showList && listPaneContent}
+            <div style={{ background: "var(--color-line)" }} />
+            {showConversation && conversationPaneContent}
+          </>
         )}
       </div>
     </motion.div>

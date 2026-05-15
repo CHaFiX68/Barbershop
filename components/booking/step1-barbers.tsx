@@ -29,7 +29,7 @@ export default function Step1Barbers({ barbers, onSelect }: Props) {
   }
 
   return (
-    <section className="flex flex-wrap items-center justify-center gap-3 py-12 h-full">
+    <section className={`flex flex-wrap items-center justify-center gap-3 md:gap-4 py-12 h-full mx-auto ${barbers.length === 2 || barbers.length === 4 ? "max-w-[576px]" : "max-w-[872px]"}`}>
       {barbers.map((b) => (
         <button
           key={b.id}
@@ -37,7 +37,7 @@ export default function Step1Barbers({ barbers, onSelect }: Props) {
           onClick={() => onSelect(b.id)}
           className="block bg-[var(--color-surface)] border-[0.5px] border-[var(--color-line)] rounded-[10px] md:rounded-[12px] p-2.5 md:p-3.5 max-w-45 md:max-w-72 mx-auto transition-all duration-300 hover:scale-105 hover:ring-2 hover:ring-[var(--color-text)] hover:shadow-[0_8px_30px_rgba(28,27,25,0.25)]"
         >
-          <div className="relative w-40 h-40 md:w-62.5 md:h-62.5 mx-auto bg-[var(--color-surface-2)] rounded-[8px] md:rounded-[10px] overflow-hidden flex items-center justify-center">
+          <div className="relative w-40 md:w-62.5 aspect-[3/4] mx-auto bg-[var(--color-surface-2)] rounded-[8px] md:rounded-[10px] overflow-hidden flex items-center justify-center">
             {b.landingImage ? (
               <Image
                 src={b.landingImage}

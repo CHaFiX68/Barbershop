@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+import { AnimatePresence, motion } from "framer-motion";
 import { useTranslations } from "next-intl";
 import type { DaySchedule, WeekSchedule } from "@/lib/db/schema";
 import { DAY_KEYS } from "@/lib/schedule";
@@ -12,26 +13,6 @@ import EditableBio from "./editable-bio";
 import EditablePhone from "./editable-phone";
 import LandingImageEditorModal from "./landing-image-editor";
 import CloseButton from "@/components/ui/close-button";
-
-const DAY_LABELS: Record<keyof WeekSchedule, string> = {
-  mon: "Пн",
-  tue: "Вт",
-  wed: "Ср",
-  thu: "Чт",
-  fri: "Пт",
-  sat: "Сб",
-  sun: "Нд",
-};
-
-const DAY_FULL_LABELS: Record<keyof WeekSchedule, string> = {
-  mon: "Понеділок",
-  tue: "Вівторок",
-  wed: "Середа",
-  thu: "Четвер",
-  fri: "П'ятниця",
-  sat: "Субота",
-  sun: "Неділя",
-};
 
 const TIME_OPTIONS: { value: number; label: string }[] = [];
 for (let m = 0; m <= 1440; m += 15) {
@@ -124,18 +105,28 @@ function FloatingPopup({
   const { zIndex } = useModalStack(id, true, onClose);
   if (!mounted) return null;
   return createPortal(
-    <div
+    <motion.div
       data-anketa-modal
-      className="fixed inset-0 pointer-events-none flex items-center justify-center p-4"
+      className="fixed inset-0 flex items-center justify-center p-4 bg-black/30 backdrop-blur-[2px]"
       style={{ zIndex }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.2 }}
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="pointer-events-auto bg-[var(--color-surface)] border border-[var(--color-line)] rounded-[12px] shadow-2xl p-4 w-full max-w-[360px] flex flex-col gap-3">
+      <motion.div
+        className="bg-[var(--color-bg)]/85 backdrop-blur-[8px] border border-[var(--color-line)] rounded-[12px] shadow-2xl p-4 w-full max-w-[360px] flex flex-col gap-3"
+        initial={{ opacity: 0, y: 24 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: 24 }}
+        transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+      >
         {children}
-      </div>
-    </div>,
+      </motion.div>
+    </motion.div>,
     document.body
   );
 }
@@ -147,6 +138,25 @@ export default function AnketaCardEditable(props: Props) {
   const [imageEditorOpen, setImageEditorOpen] = useState(false);
   const confirm = useConfirm();
   const t = useTranslations("anketa");
+
+  const DAY_LABELS: Record<keyof WeekSchedule, string> = {
+    mon: t("weekdaysShort.mon"),
+    tue: t("weekdaysShort.tue"),
+    wed: t("weekdaysShort.wed"),
+    thu: t("weekdaysShort.thu"),
+    fri: t("weekdaysShort.fri"),
+    sat: t("weekdaysShort.sat"),
+    sun: t("weekdaysShort.sun"),
+  };
+  const DAY_FULL_LABELS: Record<keyof WeekSchedule, string> = {
+    mon: t("weekdaysFull.mon"),
+    tue: t("weekdaysFull.tue"),
+    wed: t("weekdaysFull.wed"),
+    thu: t("weekdaysFull.thu"),
+    fri: t("weekdaysFull.fri"),
+    sat: t("weekdaysFull.sat"),
+    sun: t("weekdaysFull.sun"),
+  };
 
   const {
     userName,
@@ -229,10 +239,10 @@ export default function AnketaCardEditable(props: Props) {
   const hasPhone = !!phone.trim();
   const toggleDisabled = isSubmitting || !hasPhone;
   const toggleTitle = !hasPhone
-    ? "Спочатку додайте номер телефону"
+    ? t("addPhoneFirst")
     : isActive
-      ? "Приймаю клієнтів"
-      : "Не приймаю клієнтів";
+      ? t("acceptingClients")
+      : t("notAcceptingClients");
 
   return (
     <div className="space-y-4">
@@ -240,7 +250,7 @@ export default function AnketaCardEditable(props: Props) {
         <div className="col-span-full flex items-center justify-end gap-3 mb-2">
           {!hasPhone && (
             <span className="italic text-[11px] text-[var(--color-danger)]">
-              Спочатку додайте номер телефону
+              {t("addPhoneFirst")}
             </span>
           )}
           <button
@@ -279,7 +289,7 @@ export default function AnketaCardEditable(props: Props) {
           <button
             type="button"
             onClick={() => setImageEditorOpen(true)}
-            aria-label="Змінити фото"
+            aria-label={t("editPhoto")}
             className="relative aspect-[4/5] w-full max-h-[240px] md:max-h-none bg-[var(--color-surface-2)] rounded-[12px] overflow-hidden flex items-center justify-center mb-3 group cursor-pointer"
           >
             {landingImage ? (
@@ -300,7 +310,7 @@ export default function AnketaCardEditable(props: Props) {
             )}
             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 flex items-center justify-center transition-colors">
               <span className="opacity-0 group-hover:opacity-100 text-white text-[12px] bg-black/60 px-3 py-1 rounded-full transition-opacity">
-                Змінити фото
+                {t("editPhoto")}
               </span>
             </div>
           </button>
@@ -312,45 +322,72 @@ export default function AnketaCardEditable(props: Props) {
 
         <div className="flex flex-col">
           <div className="text-[10px] font-medium uppercase tracking-[0.18em] text-[var(--color-text)] mb-3 text-center">
-            Послуги
+            {t("servicesTitle")}
           </div>
 
           <div className="flex flex-col gap-2">
-            {services.map((service) => (
-              <button
-                key={service.id}
-                type="button"
-                onClick={() => setActiveServiceId(service.id)}
-                className="flex items-center justify-between p-3 md:p-4 rounded-[10px] border-[var(--color-line)] bg-[var(--color-surface)] text-left transition-all hover:bg-[var(--color-surface)] hover:border-[var(--color-text)]"
-                style={{ borderWidth: "0.5px" }}
-              >
-                <div className="flex-1 min-w-0 mr-3">
-                  <div className="text-[14px] md:text-[15px] text-[var(--color-text)] mb-0.5 break-words">
-                    {service.name || "Без назви"}
+            <AnimatePresence initial={false}>
+              {services.map((service) => (
+                <motion.button
+                  key={service.id}
+                  layout
+                  initial={{ opacity: 0, scale: 0.95, y: -8 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{
+                    opacity: 0,
+                    scale: 0.92,
+                    height: 0,
+                    marginTop: 0,
+                    paddingTop: 0,
+                    paddingBottom: 0,
+                  }}
+                  transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+                  type="button"
+                  onClick={() => setActiveServiceId(service.id)}
+                  className="flex items-center justify-between p-3 md:p-4 rounded-[10px] border-[var(--color-line)] bg-[var(--color-surface)] text-left transition-all hover:bg-[var(--color-surface)] hover:border-[var(--color-text)] overflow-hidden"
+                  style={{ borderWidth: "0.5px" }}
+                >
+                  <div className="flex-1 min-w-0 mr-3">
+                    <div className="text-[14px] md:text-[15px] text-[var(--color-text)] mb-0.5 break-words">
+                      {service.name || t("untitled")}
+                    </div>
+                    <div className="text-[11px] md:text-[12px] text-[var(--color-text-muted)]">
+                      {service.estimatedMinutes
+                        ? `~${service.estimatedMinutes} ${t("minutesShort")}`
+                        : t("durationNotSet")}
+                    </div>
                   </div>
-                  <div className="text-[11px] md:text-[12px] text-[var(--color-text-muted)]">
-                    {service.estimatedMinutes
-                      ? `~${service.estimatedMinutes} хв`
-                      : "тривалість не вказана"}
+                  <div className="text-right shrink-0">
+                    <div className="text-[13px] md:text-[14px] font-medium text-[var(--color-text)] whitespace-nowrap">
+                      {service.price ? service.price : "—"}
+                    </div>
                   </div>
-                </div>
-                <div className="text-right shrink-0">
-                  <div className="text-[13px] md:text-[14px] font-medium text-[var(--color-text)] whitespace-nowrap">
-                    {service.price ? service.price : "—"}
-                  </div>
-                </div>
-              </button>
-            ))}
+                </motion.button>
+              ))}
 
-            {services.length < MAX_SERVICES && (
-              <button
-                type="button"
-                onClick={handleAddNewService}
-                className="w-full p-3 md:p-4 border border-dashed border-[var(--color-bronze)] rounded-[10px] text-[var(--color-text-muted)] italic text-[13px] md:text-[14px] hover:bg-[var(--color-surface)] hover:text-[var(--color-text)] hover:border-[var(--color-text)] transition-all"
-              >
-                + {t("addService")}
-              </button>
-            )}
+              {services.length < MAX_SERVICES && (
+                <motion.button
+                  key="add-service-cta"
+                  layout
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{
+                    opacity: 0,
+                    scale: 0.95,
+                    height: 0,
+                    marginTop: 0,
+                    paddingTop: 0,
+                    paddingBottom: 0,
+                  }}
+                  transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+                  type="button"
+                  onClick={handleAddNewService}
+                  className="w-full p-3 md:p-4 border border-dashed border-[var(--color-bronze)] rounded-[10px] text-[var(--color-text-muted)] italic text-[13px] md:text-[14px] hover:bg-[var(--color-surface)] hover:text-[var(--color-text)] hover:border-[var(--color-text)] transition-all overflow-hidden"
+                >
+                  + {t("addService")}
+                </motion.button>
+              )}
+            </AnimatePresence>
           </div>
 
           <div className="mt-3">
@@ -388,7 +425,7 @@ export default function AnketaCardEditable(props: Props) {
             color: "var(--color-text)",
           }}
         >
-          Графік
+          {t("scheduleTitle")}
         </p>
         <div className="grid grid-cols-7 gap-1.5 md:gap-2">
           {DAY_KEYS.map((dayKey) => {
@@ -425,6 +462,7 @@ export default function AnketaCardEditable(props: Props) {
         </div>
       </div>
 
+      <AnimatePresence>
       {activeService && (
         <FloatingPopup
           key={`service-${activeService.id}`}
@@ -433,13 +471,13 @@ export default function AnketaCardEditable(props: Props) {
         >
           <div className="flex items-center justify-between">
             <h4 className="font-display text-[15px] font-medium">
-              Редагувати послугу
+              {t("editService")}
             </h4>
             <CloseButton onClick={handleCloseServicePopup} />
           </div>
           <label className="flex flex-col gap-1 text-[12px]">
             <span className="text-[var(--color-text-muted)] uppercase tracking-[0.1em] text-[10px]">
-              Назва
+              {t("serviceName")}
             </span>
             <input
               type="text"
@@ -522,7 +560,9 @@ export default function AnketaCardEditable(props: Props) {
           </div>
         </FloatingPopup>
       )}
+      </AnimatePresence>
 
+      <AnimatePresence>
       {activeDay && activeDayKey && (
         <FloatingPopup
           key={`day-${activeDayKey}`}
@@ -537,77 +577,99 @@ export default function AnketaCardEditable(props: Props) {
           </div>
 
           <div className="flex items-center gap-3 text-[12px] flex-wrap">
-            <span className="text-[var(--color-text-muted)]">З</span>
+            <span className="text-[var(--color-text-muted)]">{t("fromTime")}</span>
             <TimeSelect
               value={activeDay.startMinutes}
               onChange={(n) =>
                 updateDay(activeDayKey, { startMinutes: n })
               }
             />
-            <span className="text-[var(--color-text-muted)]">до</span>
+            <span className="text-[var(--color-text-muted)]">{t("toTime")}</span>
             <TimeSelect
               value={activeDay.endMinutes}
               onChange={(n) => updateDay(activeDayKey, { endMinutes: n })}
             />
           </div>
 
-          {activeDay.breakStartMinutes !== null &&
-          activeDay.breakEndMinutes !== null ? (
-            <div className="flex items-center gap-3 text-[12px] flex-wrap">
-              <span className="text-[10px] uppercase tracking-[0.15em] text-[var(--color-text-muted)]">
-                перерва
-              </span>
-              <TimeSelect
-                value={activeDay.breakStartMinutes}
-                onChange={(n) =>
-                  updateDay(activeDayKey, { breakStartMinutes: n })
-                }
-              />
-              <span className="text-[var(--color-text-muted)]">—</span>
-              <TimeSelect
-                value={activeDay.breakEndMinutes}
-                onChange={(n) =>
-                  updateDay(activeDayKey, { breakEndMinutes: n })
-                }
-              />
-              <button
+          <AnimatePresence mode="wait" initial={false}>
+            {activeDay.breakStartMinutes !== null &&
+            activeDay.breakEndMinutes !== null ? (
+              <motion.div
+                key="break-set"
+                initial={{ opacity: 0, scale: 0.9, y: -4 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9, y: -4 }}
+                transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+                className="flex items-center gap-3 text-[12px] flex-wrap"
+              >
+                <span className="text-[10px] uppercase tracking-[0.15em] text-[var(--color-text-muted)]">
+                  {t("breakLabel")}
+                </span>
+                <TimeSelect
+                  value={activeDay.breakStartMinutes}
+                  onChange={(n) =>
+                    updateDay(activeDayKey, { breakStartMinutes: n })
+                  }
+                />
+                <span className="text-[var(--color-text-muted)]">—</span>
+                <TimeSelect
+                  value={activeDay.breakEndMinutes}
+                  onChange={(n) =>
+                    updateDay(activeDayKey, { breakEndMinutes: n })
+                  }
+                />
+                <motion.button
+                  type="button"
+                  onClick={() =>
+                    updateDay(activeDayKey, {
+                      breakStartMinutes: null,
+                      breakEndMinutes: null,
+                    })
+                  }
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                  transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+                  className="px-3 py-2 rounded-[8px] text-[12px] bg-[var(--color-surface-2)] text-[var(--color-text)] hover:bg-[var(--color-surface)] hover:border-[var(--color-text)] transition-colors border border-[var(--color-line)]"
+                >
+                  {t("removeBreak")}
+                </motion.button>
+              </motion.div>
+            ) : (
+              <motion.button
+                key="break-add"
                 type="button"
                 onClick={() =>
                   updateDay(activeDayKey, {
-                    breakStartMinutes: null,
-                    breakEndMinutes: null,
+                    breakStartMinutes: 780,
+                    breakEndMinutes: 840,
                   })
                 }
-                className="px-3 py-2 rounded-[8px] text-[12px] bg-[var(--color-surface-2)] text-[var(--color-text)] hover:bg-[#EBE5D8] transition-colors border border-[var(--color-line)]"
+                initial={{ opacity: 0, scale: 0.9, y: -4 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9, y: -4 }}
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+                className="self-start border border-[var(--color-line)] bg-transparent text-[12px] px-4 py-2 rounded-[8px] hover:bg-[var(--color-surface-2)] transition-colors"
               >
-                Прибрати перерву
-              </button>
-            </div>
-          ) : (
-            <button
-              type="button"
-              onClick={() =>
-                updateDay(activeDayKey, {
-                  breakStartMinutes: 780,
-                  breakEndMinutes: 840,
-                })
-              }
-              className="self-start border border-[var(--color-line)] bg-transparent text-[12px] px-4 py-2 rounded-[8px] hover:bg-[var(--color-surface-2)] transition-colors"
-            >
-              + Перерва
-            </button>
-          )}
+                + {t("breakLabel")}
+              </motion.button>
+            )}
+          </AnimatePresence>
 
-          <button
+          <motion.button
             type="button"
             onClick={() => {
               updateDay(activeDayKey, { enabled: false });
               setActiveDayKey(null);
             }}
-            className="self-start px-3 py-2 rounded-[8px] text-[12px] bg-[#F9E8E3] text-[var(--color-danger)] hover:bg-[#F2D5CD] transition-colors border border-[#E5C8C0] mt-1"
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
+            transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+            className="self-start px-3 py-2 rounded-[8px] text-[12px] bg-[var(--color-surface-2)] text-[var(--color-danger)] hover:bg-[var(--color-surface)] hover:border-[var(--color-danger)] transition-colors border border-[var(--color-line)] mt-1"
           >
             {t("dayClosed")}
-          </button>
+          </motion.button>
 
           <button
             type="button"
@@ -618,6 +680,7 @@ export default function AnketaCardEditable(props: Props) {
           </button>
         </FloatingPopup>
       )}
+      </AnimatePresence>
 
       <LandingImageEditorModal
         isOpen={imageEditorOpen}

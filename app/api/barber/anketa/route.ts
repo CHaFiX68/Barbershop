@@ -6,6 +6,7 @@ import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { sendAnketaPendingNotificationToAdmin } from "@/lib/email";
 import {
   barberProfile,
   barberProfilePending,
@@ -126,7 +127,7 @@ export async function PUT(request: Request) {
     console.log("[ANKETA-PUT] start, userId:", session.user.id);
 
     const [currentUser] = await db
-      .select({ role: user.role })
+      .select({ role: user.role, name: user.name, email: user.email })
       .from(user)
       .where(eq(user.id, session.user.id));
     const role = currentUser?.role;
@@ -269,6 +270,14 @@ export async function PUT(request: Request) {
     }
 
     console.log("[ANKETA-PUT] returning status:", "pending");
+
+    if (currentUser?.name && currentUser?.email) {
+      void sendAnketaPendingNotificationToAdmin(
+        currentUser.name,
+        currentUser.email
+      );
+    }
+
     return NextResponse.json({ ok: true, status: "pending" });
   } catch (err) {
     console.error("PUT /api/barber/anketa error:", err);

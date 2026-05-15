@@ -185,7 +185,7 @@ export default function Header({ navItems, initialSession = null }: Props) {
                   animate={{ x: 0 }}
                   exit={{ x: "100%" }}
                   transition={{ duration: 0.3, ease: [0.32, 0.72, 0, 1] }}
-                  className="fixed top-0 right-0 bottom-0 w-[280px] max-w-[85vw] bg-[var(--color-bg)] shadow-2xl md:hidden flex flex-col"
+                  className="fixed top-0 right-0 bottom-0 w-[280px] max-w-[85vw] bg-[var(--color-bg)]/85 backdrop-blur-[8px] shadow-2xl md:hidden flex flex-col"
                   style={{ zIndex: drawerZ }}
                 >
                   <div className="flex items-center justify-between p-5 border-b border-[var(--color-line)]">
@@ -228,7 +228,8 @@ export default function Header({ navItems, initialSession = null }: Props) {
                   </nav>
 
                   <div className="border-t border-[var(--color-line)] p-5 flex flex-col gap-4 mt-auto">
-                    <div className="flex items-center justify-end">
+                    <div className="flex items-center justify-between">
+                      <LocaleSwitcher />
                       <ThemeToggle />
                     </div>
                     {!initialSession?.user && (

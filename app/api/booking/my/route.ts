@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { headers } from "next/headers";
-import { and, desc, eq, gt, lt, ne, or } from "drizzle-orm";
+import { and, asc, eq, gt, lt, ne, or } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { booking, user } from "@/lib/db/schema";
@@ -54,7 +54,7 @@ export async function GET() {
           )
         )
       )
-      .orderBy(desc(booking.startsAt)),
+      .orderBy(asc(booking.startsAt)),
   ]);
 
   const serialize = (r: (typeof active)[number]) => ({

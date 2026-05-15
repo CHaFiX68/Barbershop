@@ -15,6 +15,7 @@ type StackItem = {
   id: string;
   onCloseRef: MutableRefObject<() => void>;
   respectEsc: boolean;
+  lockBody: boolean;
 };
 
 type ModalStackContextValue = {
@@ -81,17 +82,18 @@ export function ModalStackProvider({
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [stack]);
 
-  // Centralized body lock: when ≥1 modal is open, lock body scroll. The
-  // html `scrollbar-gutter: stable` reservation prevents layout shift when
-  // overflow toggles, so no padding compensation is needed.
+  // Centralized body lock: when ≥1 stack entry has lockBody=true, lock body
+  // scroll. Non-modal overlays (e.g. profile dropdown) register with
+  // lockBody=false so the page stays scrollable underneath them.
+  const hasLocking = stack.some((entry) => entry.lockBody);
   useEffect(() => {
-    if (stack.length === 0) return;
+    if (!hasLocking) return;
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => {
       document.body.style.overflow = prevOverflow;
     };
-  }, [stack.length]);
+  }, [hasLocking]);
 
   const value = useMemo<ModalStackContextValue>(
     () => ({ register, unregister, isTop, getZIndex }),
@@ -107,6 +109,7 @@ export function ModalStackProvider({
 
 type UseModalStackOptions = {
   respectEsc?: boolean;
+  lockBody?: boolean;
 };
 
 /**
@@ -127,7 +130,7 @@ export function useModalStack(
   onClose: () => void,
   options: UseModalStackOptions = {}
 ) {
-  const { respectEsc = true } = options;
+  const { respectEsc = true, lockBody = true } = options;
   const ctx = useContext(ModalStackContext);
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
@@ -142,9 +145,9 @@ export function useModalStack(
 
   useEffect(() => {
     if (!register || !unregister || !isOpen) return;
-    register({ id, onCloseRef, respectEsc });
+    register({ id, onCloseRef, respectEsc, lockBody });
     return () => unregister(id);
-  }, [register, unregister, id, isOpen, respectEsc]);
+  }, [register, unregister, id, isOpen, respectEsc, lockBody]);
 
   return {
     zIndex: ctx?.getZIndex(id) ?? BASE_Z_INDEX,

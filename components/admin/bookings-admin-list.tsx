@@ -43,6 +43,9 @@ export default function BookingsAdminList({ mode }: Props) {
   const locale = useLocale();
   const [bookings, setBookings] = useState<AdminBookingItem[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [activeBarberEmail, setActiveBarberEmail] = useState<string | null>(
+    null
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -86,7 +89,7 @@ export default function BookingsAdminList({ mode }: Props) {
     filtered.sort((a, b) => {
       const ta = new Date(a.startsAt).getTime();
       const tb = new Date(b.startsAt).getTime();
-      return mode === "history" ? tb - ta : ta - tb;
+      return ta - tb;
     });
 
     const map = new Map<
@@ -108,6 +111,24 @@ export default function BookingsAdminList({ mode }: Props) {
     }
     return Array.from(map.values());
   }, [bookings, mode]);
+
+  useEffect(() => {
+    if (!grouped || grouped.length === 0) {
+      setActiveBarberEmail(null);
+      return;
+    }
+    if (
+      !activeBarberEmail ||
+      !grouped.some((g) => g.email === activeBarberEmail)
+    ) {
+      setActiveBarberEmail(grouped[0].email);
+    }
+  }, [grouped, activeBarberEmail]);
+
+  const activeGroup = useMemo(
+    () => grouped?.find((g) => g.email === activeBarberEmail) ?? null,
+    [grouped, activeBarberEmail]
+  );
 
   if (error) {
     return (
@@ -136,59 +157,75 @@ export default function BookingsAdminList({ mode }: Props) {
   const now = new Date();
 
   return (
-    <div className="flex flex-col gap-5">
-      {grouped.map((g) => (
-        <div key={g.email}>
-          <div className="flex items-center gap-2 mb-2 px-0.5">
-            <div
-              className="w-[22px] h-[22px] rounded-full flex items-center justify-center font-display italic flex-shrink-0"
-              style={{
-                background: "var(--color-bronze)",
-                color: "var(--color-surface)",
-                fontSize: "11px",
-              }}
+    <>
+      <div
+        className="flex gap-1.5 mb-3 overflow-x-auto pb-1"
+        style={{ scrollbarWidth: "none" }}
+      >
+        {grouped.map((g) => {
+          const isActive = g.email === activeBarberEmail;
+          return (
+            <button
+              key={g.email}
+              type="button"
+              onClick={() => setActiveBarberEmail(g.email)}
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-full text-[14px] font-medium border whitespace-nowrap transition-colors ${
+                isActive
+                  ? "bg-[var(--color-surface-2)] border-[var(--color-text)] text-[var(--color-text)]"
+                  : "bg-[var(--color-surface)] border-[var(--color-line)] text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
+              }`}
             >
-              {g.name.charAt(0).toUpperCase()}
-            </div>
-            <div className="text-[12px] font-medium text-[var(--color-text)] truncate flex-1 min-w-0">
-              {g.name}
-            </div>
-            <div className="text-[10px] text-[var(--color-text-muted)] bg-[var(--color-surface-2)] px-2 py-0.5 rounded-full">
-              {g.items.length}
-            </div>
-          </div>
-          <div className="flex flex-col gap-1.5">
-            {g.items.map((b) => {
-              const starts = new Date(b.startsAt);
-              const cs = getComputedStatus(b, now);
-              return (
-                <div
-                  key={b.id}
-                  className="bg-[var(--color-surface)] border border-[var(--color-line)] rounded-[10px] px-3 py-2 flex items-center gap-3"
-                >
-                  <div className="text-[13px] font-medium tabular-nums text-[var(--color-bronze)] flex-shrink-0 w-[88px] sm:w-[96px]">
-                    {mode === "today"
-                      ? formatBookingTime(starts)
-                      : `${formatBookingDate(starts, locale)} · ${formatBookingTime(starts)}`}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-[12px] font-medium text-[var(--color-text)] truncate leading-tight">
-                      {b.serviceName}
-                    </div>
-                    <div className="text-[10px] text-[var(--color-text-muted)] truncate mt-0.5">
-                      {b.customerEmail ?? ""}
-                      {b.customerEmail ? " · " : ""}
-                      {b.servicePrice}
-                    </div>
-                  </div>
-                  <StatusPill status={cs} />
+              <span
+                className="w-5 h-5 rounded-full flex items-center justify-center font-display italic flex-shrink-0"
+                style={{
+                  background: "var(--color-bronze)",
+                  color: "var(--color-surface)",
+                  fontSize: "12px",
+                }}
+              >
+                {g.name.charAt(0).toUpperCase()}
+              </span>
+              <span>{g.name}</span>
+              <span className="text-[12px] opacity-70 tabular-nums">
+                {g.items.length}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      {activeGroup && (
+        <div className="flex flex-col gap-1.5">
+          {activeGroup.items.map((b) => {
+            const starts = new Date(b.startsAt);
+            const cs = getComputedStatus(b, now);
+            return (
+              <div
+                key={b.id}
+                className="bg-[var(--color-surface)] border border-[var(--color-line)] rounded-[10px] px-3 py-2 flex items-center gap-3"
+              >
+                <div className="text-[13px] font-medium tabular-nums text-[var(--color-bronze)] flex-shrink-0 w-[88px] sm:w-[96px]">
+                  {mode === "today"
+                    ? formatBookingTime(starts)
+                    : `${formatBookingDate(starts, locale)} · ${formatBookingTime(starts)}`}
                 </div>
-              );
-            })}
-          </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-[12px] font-medium text-[var(--color-text)] truncate leading-tight">
+                    {b.serviceName}
+                  </div>
+                  <div className="text-[10px] text-[var(--color-text-muted)] truncate mt-0.5">
+                    {b.customerEmail ?? ""}
+                    {b.customerEmail ? " · " : ""}
+                    {b.servicePrice}
+                  </div>
+                </div>
+                <StatusPill status={cs} />
+              </div>
+            );
+          })}
         </div>
-      ))}
-    </div>
+      )}
+    </>
   );
 }
 

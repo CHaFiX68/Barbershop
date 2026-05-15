@@ -91,7 +91,7 @@ export default function BookingPopup({ open, onClose, initialBarberId }: Props) 
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ duration: 0.2 }}
-            className="w-[calc(100vw-32px)] md:w-262.5 md:max-w-[calc(100vw-64px)] h-[calc(100vh-64px)] md:h-auto md:min-h-160 md:max-h-[calc(100vh-32px)] bg-[var(--color-surface)] border border-[var(--color-line)] rounded-[16px] shadow-[0_24px_48px_rgba(0,0,0,0.18)] overflow-hidden flex flex-col"
+            className="w-[calc(100vw-32px)] md:w-262.5 md:max-w-[calc(100vw-64px)] h-[calc(100vh-64px)] md:h-auto md:min-h-160 md:max-h-[calc(100vh-32px)] bg-[var(--color-bg)]/85 backdrop-blur-[8px] border border-[var(--color-line)] rounded-[16px] shadow-[0_24px_48px_rgba(0,0,0,0.18)] overflow-hidden flex flex-col"
           >
             <header className="shrink-0 flex items-start justify-between px-6 md:px-8 pt-6 md:pt-8 pb-4 border-b-[0.5px] border-[var(--color-line)]">
               <h2

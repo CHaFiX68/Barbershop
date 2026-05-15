@@ -117,7 +117,7 @@ export default function AuthModal() {
           transition={{ duration: 0.3 }}
         >
           <motion.div
-            className="relative bg-[var(--color-surface)] rounded-[16px] max-w-md w-full max-h-[90vh] overflow-hidden flex flex-col"
+            className="relative bg-[var(--color-bg)]/85 backdrop-blur-[8px] rounded-[16px] max-w-md w-full max-h-[90vh] overflow-hidden flex flex-col"
             style={{ cursor: "auto" }}
             initial={{ opacity: 0, y: "100%" }}
             animate={{ opacity: 1, y: 0 }}

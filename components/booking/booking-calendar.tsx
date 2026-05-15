@@ -44,12 +44,21 @@ type Props = {
   selectedDate: Date | null;
   onDateSelect: (date: Date) => void;
   schedule: WeekSchedule;
+  availableDates?: Set<string> | null;
 };
+
+function formatDayKey(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
 
 export default function BookingCalendar({
   selectedDate,
   onDateSelect,
   schedule,
+  availableDates,
 }: Props) {
   const t = useTranslations("booking");
   const tWeekdays = useTranslations("booking.weekdays");
@@ -131,7 +140,7 @@ export default function BookingCalendar({
   };
 
   return (
-    <div className="bg-[var(--color-surface)] border border-[var(--color-line)] rounded-[12px] p-4">
+    <div className="relative bg-[var(--color-surface)] border border-[var(--color-line)] rounded-[12px] p-4">
       <div className="flex items-center justify-between mb-3">
         <button
           type="button"
@@ -207,7 +216,21 @@ export default function BookingCalendar({
           const isSelected = selectedDate ? isSameDay(day, selectedDate) : false;
           const dayKey = DAY_KEYS_BY_INDEX[day.getDay()];
           const isOffDay = !schedule[dayKey]?.enabled;
-          const disabled = !isCurrentMonth || isPast || isFuture || isOffDay;
+          const isCalendarLoading = availableDates === undefined ? false : availableDates === null;
+          const isFullyBooked =
+            isCurrentMonth &&
+            !isPast &&
+            !isFuture &&
+            !isOffDay &&
+            availableDates != null &&
+            !availableDates.has(formatDayKey(day));
+          const disabled =
+            !isCurrentMonth ||
+            isPast ||
+            isFuture ||
+            isOffDay ||
+            isFullyBooked ||
+            isCalendarLoading;
 
           let cls =
             "aspect-square flex items-center justify-center rounded-[8px] text-[13px] transition-colors";
@@ -219,6 +242,9 @@ export default function BookingCalendar({
               " opacity-30 cursor-not-allowed text-[var(--color-text-muted)]";
           } else if (isOffDay) {
             cls += " opacity-50 cursor-not-allowed text-[var(--color-bronze)]";
+          } else if (isFullyBooked) {
+            cls +=
+              " opacity-40 cursor-not-allowed text-[var(--color-text-muted)] line-through";
           } else if (isSelected) {
             cls +=
               " bg-[var(--color-action-bg)] text-[var(--color-action-text)] cursor-pointer font-medium";
@@ -232,6 +258,7 @@ export default function BookingCalendar({
             if (isPast) title = "Минула дата";
             else if (isFuture) title = "Поза вікном бронювання";
             else if (isOffDay) title = "Вихідний";
+            else if (isFullyBooked) title = "Немає вільних слотів";
           }
 
           return (
@@ -250,6 +277,13 @@ export default function BookingCalendar({
           );
         })}
       </div>
+      {availableDates === null && (
+        <div className="absolute inset-0 bg-[var(--color-bg)]/40 backdrop-blur-[2px] flex items-center justify-center rounded-[12px] pointer-events-none">
+          <span className="text-[12px] text-[var(--color-text-muted)] italic">
+            {t("loading")}
+          </span>
+        </div>
+      )}
     </div>
   );
 }

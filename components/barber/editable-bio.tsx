@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 
 type Props = {
   bio: string;
@@ -10,6 +11,7 @@ type Props = {
 const MAX = 60;
 
 export default function EditableBio({ bio, onChange }: Props) {
+  const t = useTranslations("anketa");
   const [isEditing, setIsEditing] = useState(false);
   const [value, setValue] = useState(bio);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -66,9 +68,9 @@ export default function EditableBio({ bio, onChange }: Props) {
       type="button"
       onClick={() => setIsEditing(true)}
       className="w-full font-display italic text-[14px] text-[var(--color-text-muted)] text-center min-h-[40px] py-1.5 px-2 rounded-[6px] border border-dashed border-[var(--color-bronze)] hover:border-solid hover:bg-[var(--color-surface-2)] hover:text-[var(--color-text)] transition-colors"
-      title="Клікни щоб редагувати"
+      title={t("clickToEdit")}
     >
-      {bio || "Клікни щоб додати опис..."}
+      {bio || t("clickToAddBio")}
     </button>
   );
 }

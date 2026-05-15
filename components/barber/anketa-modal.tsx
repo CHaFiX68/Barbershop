@@ -123,7 +123,7 @@ export default function AnketaModal({ isOpen, onClose }: Props) {
         aria-modal="true"
         aria-label={t("title")}
         data-anketa-modal
-        className="w-full max-w-[calc(100vw-32px)] md:w-280 md:max-w-[calc(100vw-32px)] max-h-[90vh] bg-[var(--color-surface)] border border-[var(--color-line)] rounded-[16px] shadow-[0_24px_48px_rgba(0,0,0,0.18)] flex flex-col overflow-hidden pr-2"
+        className="w-full max-w-[calc(100vw-32px)] md:w-280 md:max-w-[calc(100vw-32px)] max-h-[90vh] bg-[var(--color-bg)]/85 backdrop-blur-[8px] border border-[var(--color-line)] rounded-[16px] shadow-[0_24px_48px_rgba(0,0,0,0.18)] flex flex-col overflow-hidden pr-2"
         style={{
           opacity: animateIn ? 1 : 0,
           transform: animateIn ? "translateY(0)" : "translateY(8px)",
@@ -157,7 +157,7 @@ export default function AnketaModal({ isOpen, onClose }: Props) {
                     letterSpacing: "0.15em",
                   }}
                 >
-                  На розгляді
+                  {t("pending")}
                 </span>
               )}
             </div>

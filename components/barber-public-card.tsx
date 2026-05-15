@@ -102,7 +102,7 @@ function CompactLayout({
 }) {
   const booking = useBooking();
   const photo = (
-    <div className="relative w-40 h-40 md:w-62.5 md:h-62.5 mx-auto bg-[var(--color-surface-2)] rounded-[8px] md:rounded-[10px] overflow-hidden flex items-center justify-center">
+    <div className="relative w-40 md:w-62.5 aspect-[3/4] mx-auto bg-[var(--color-surface-2)] rounded-[8px] md:rounded-[10px] overflow-hidden flex items-center justify-center">
       {landingImage ? (
         <Image
           src={landingImage}

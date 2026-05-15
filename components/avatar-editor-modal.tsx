@@ -33,6 +33,7 @@ export default function AvatarEditorModal({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
   const t = useTranslations("editors");
+  const tCommon = useTranslations("common");
 
   useEffect(() => {
     setMounted(true);
@@ -49,11 +50,11 @@ export default function AvatarEditorModal({
     const file = e.target.files?.[0];
     if (!file) return;
     if (!file.type.startsWith("image/")) {
-      setError("Тільки зображення");
+      setError(t("onlyImages"));
       return;
     }
     if (file.size > 5 * 1024 * 1024) {
-      setError("Максимум 5MB");
+      setError(t("maxSize"));
       return;
     }
     setError(null);
@@ -131,7 +132,7 @@ export default function AvatarEditorModal({
         handleClose();
       }}
     >
-      <div className="bg-[var(--color-surface)] rounded-[16px] w-full max-w-md max-h-[90vh] overflow-hidden flex flex-col">
+      <div className="bg-[var(--color-bg)]/85 backdrop-blur-[8px] rounded-[16px] w-full max-w-md max-h-[90vh] overflow-hidden flex flex-col">
         <div className="overflow-y-auto custom-scrollbar p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="font-display text-[18px] font-medium">
@@ -204,7 +205,7 @@ export default function AvatarEditorModal({
                 type="button"
                 onClick={() => setRotation((r) => (r + 90) % 360)}
                 className="w-8 h-8 flex items-center justify-center border border-[var(--color-line)] rounded-[6px] text-[var(--color-text-muted)] hover:bg-[var(--color-surface-2)]"
-                title="Обернути"
+                title={t("rotate")}
               >
                 ↻
               </button>
@@ -221,7 +222,7 @@ export default function AvatarEditorModal({
                 disabled={isUploading}
                 className="text-[13px] text-[var(--color-text-muted)] hover:text-[var(--color-text)] disabled:opacity-50"
               >
-                Скинути
+                {t("reset")}
               </button>
               <div className="flex gap-2">
                 <button
@@ -230,7 +231,7 @@ export default function AvatarEditorModal({
                   disabled={isUploading}
                   className="px-4 py-2 text-[13px] hover:bg-[var(--color-surface-2)] rounded-[6px] disabled:opacity-50"
                 >
-                  Скасувати
+                  {tCommon("cancel")}
                 </button>
                 <button
                   type="button"
@@ -238,7 +239,7 @@ export default function AvatarEditorModal({
                   disabled={isUploading || !imageSrc || !croppedAreaPixels}
                   className="px-5 py-2 bg-[var(--color-action-bg)] text-[var(--color-action-text)] rounded-[6px] text-[13px] hover:opacity-90 disabled:opacity-50"
                 >
-                  {isUploading ? "Завантаження..." : "Застосувати"}
+                  {isUploading ? t("uploading") : t("apply")}
                 </button>
               </div>
             </div>

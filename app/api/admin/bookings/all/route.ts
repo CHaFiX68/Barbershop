@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { headers } from "next/headers";
-import { aliasedTable, desc, eq } from "drizzle-orm";
+import { aliasedTable, asc, eq } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { booking, user } from "@/lib/db/schema";
@@ -42,7 +42,7 @@ export async function GET() {
     .from(booking)
     .innerJoin(customer, eq(customer.id, booking.customerUserId))
     .innerJoin(barber, eq(barber.id, booking.barberUserId))
-    .orderBy(desc(booking.startsAt));
+    .orderBy(asc(booking.startsAt));
 
   return NextResponse.json({
     bookings: rows.map((r) => ({

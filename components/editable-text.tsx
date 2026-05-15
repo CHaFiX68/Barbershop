@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import { useSession } from "@/lib/auth-client";
 
 type Props = {
@@ -21,6 +22,7 @@ export default function EditableText({
   maxLength,
 }: Props) {
   const { data: session } = useSession();
+  const t = useTranslations("anketa");
   const [mounted, setMounted] = useState(false);
   const [value, setValue] = useState(initialValue);
   const [editing, setEditing] = useState(false);
@@ -178,10 +180,10 @@ export default function EditableText({
         (e.currentTarget as HTMLElement).style.outline =
           "1px dashed transparent";
       }}
-      title="Клікни щоб редагувати"
+      title={t("clickToEdit")}
     >
       {value === "" ? (
-        <span style={{ opacity: 0.4, fontStyle: "italic" }}>порожньо</span>
+        <span style={{ opacity: 0.4, fontStyle: "italic" }}>{t("emptyValue")}</span>
       ) : (
         value
       )}

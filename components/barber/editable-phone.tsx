@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 
 type Props = {
   phone: string;
@@ -10,6 +11,7 @@ type Props = {
 const MAX = 20;
 
 export default function EditablePhone({ phone, onChange }: Props) {
+  const t = useTranslations("anketa");
   const [isEditing, setIsEditing] = useState(false);
   const [value, setValue] = useState(phone);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -56,7 +58,7 @@ export default function EditablePhone({ phone, onChange }: Props) {
         onBlur={handleBlur}
         onKeyDown={handleKeyDown}
         maxLength={MAX}
-        placeholder="Номер телефону"
+        placeholder={t("phonePlaceholder")}
         className="w-full text-[14px] font-medium text-center text-[var(--color-text)] bg-[var(--color-surface-2)] border border-[var(--color-line)] rounded-[6px] px-2 py-1.5 outline-none focus:border-[var(--color-text)]"
       />
     );
@@ -73,9 +75,9 @@ export default function EditablePhone({ phone, onChange }: Props) {
           ? "italic text-[var(--color-danger)] hover:text-[var(--color-text)]"
           : "font-medium text-[var(--color-text)]"
       }`}
-      title="Клікни щоб редагувати"
+      title={t("clickToEdit")}
     >
-      {phone || "Введіть номер телефону"}
+      {phone || t("enterPhone")}
     </button>
   );
 }

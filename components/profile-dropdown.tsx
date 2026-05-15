@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { motion } from "framer-motion";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { signOut, useSession } from "@/lib/auth-client";
@@ -101,7 +102,8 @@ export default function ProfileDropdown({ initialSession = null }: Props) {
   const { zIndex: dropdownZ, isTop: dropdownIsTop } = useModalStack(
     "profile-dropdown",
     isOpen,
-    dropdownClose
+    dropdownClose,
+    { lockBody: false }
   );
 
   // Compute panel position relative to trigger so the dropdown's right edge
@@ -156,6 +158,27 @@ export default function ProfileDropdown({ initialSession = null }: Props) {
   const role = session.user.role ?? "user";
   const isBarberRole = role === "barber";
   const isAdminRole = role === "admin";
+
+  const [pendingAnketaCount, setPendingAnketaCount] = useState(0);
+
+  useEffect(() => {
+    if (!isAdminRole) return;
+    let cancelled = false;
+    const fetchCount = () => {
+      fetch("/api/admin/anketas/pending-count")
+        .then((r) => (r.ok ? r.json() : null))
+        .then((d: { count: number } | null) => {
+          if (!cancelled && d) setPendingAnketaCount(d.count);
+        })
+        .catch(() => {});
+    };
+    fetchCount();
+    const interval = setInterval(fetchCount, 30000);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, [isAdminRole]);
 
   const handleLogout = async () => {
     const ok = await confirm({
@@ -247,7 +270,18 @@ export default function ProfileDropdown({ initialSession = null }: Props) {
         aria-label="Меню профілю"
         aria-expanded={isOpen}
       >
-        <Avatar src={avatarUrl} name={effectiveName} size={34} />
+        <span className="relative inline-flex">
+          <Avatar src={avatarUrl} name={effectiveName} size={34} />
+          {isAdminRole && pendingAnketaCount > 0 && (
+            <motion.span
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+              className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-white shadow-[0_0_6px_rgba(255,255,255,0.6)]"
+              aria-hidden="true"
+            />
+          )}
+        </span>
         <span className="hidden md:inline text-[15px] font-medium text-[var(--color-text)]">
           {effectiveName}
         </span>
@@ -272,7 +306,7 @@ export default function ProfileDropdown({ initialSession = null }: Props) {
       {isMounted && createPortal(
         <div
           ref={panelRef}
-          className="fixed top-[68px] left-4 right-4 bg-[var(--color-surface)] border border-[var(--color-line)] rounded-[12px] shadow-[0_12px_32px_rgba(0,0,0,0.08)] overflow-hidden origin-top-right transition-[opacity,transform] duration-150"
+          className="fixed top-[68px] left-4 right-4 bg-[var(--color-bg)]/85 backdrop-blur-[8px] border border-[var(--color-line)] rounded-[12px] shadow-[0_12px_32px_rgba(0,0,0,0.08)] overflow-hidden origin-top-right transition-[opacity,transform] duration-150"
           style={{
             zIndex: dropdownZ,
             opacity: isOpen && !isAnimating ? 1 : 0,
@@ -358,7 +392,7 @@ export default function ProfileDropdown({ initialSession = null }: Props) {
                   <rect x="3" y="5" width="18" height="16" rx="2" />
                   <path d="M16 3v4M8 3v4M3 10h18" />
                 </svg>
-                <span>Мої записи</span>
+                <span>{tMenu("bookings")}</span>
               </button>
             )}
             <button
@@ -454,7 +488,18 @@ export default function ProfileDropdown({ initialSession = null }: Props) {
                   <circle cx="12" cy="12" r="3" />
                   <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
                 </svg>
-                <span>{tMenu("management")}</span>
+                <span className="flex items-center gap-2">
+                  {tMenu("management")}
+                  {pendingAnketaCount > 0 && (
+                    <motion.span
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+                      className="w-2 h-2 rounded-full bg-white shadow-[0_0_6px_rgba(255,255,255,0.6)]"
+                      aria-label={`${pendingAnketaCount} pending`}
+                    />
+                  )}
+                </span>
               </button>
             )}
               </div>

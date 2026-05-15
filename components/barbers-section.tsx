@@ -23,7 +23,7 @@ export default async function BarbersSection() {
           />
 
           {barbers.length > 0 ? (
-            <div className="mt-6 md:mt-8 flex flex-wrap justify-center gap-3 md:gap-4 pt-2 pb-2">
+            <div className={`mt-6 md:mt-8 flex flex-wrap justify-center gap-3 md:gap-4 pt-2 pb-2 mx-auto ${barbers.length === 2 || barbers.length === 4 ? "max-w-[576px]" : "max-w-[872px]"}`}>
               {barbers.map((barber) => (
                 <BarberCard key={barber.id} barber={barber} />
               ))}

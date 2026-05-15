@@ -94,6 +94,9 @@ export default function BookingFlow({
   const [barberData, setBarberData] = useState<BarberDataResp | null>(null);
   const [barberLoading, setBarberLoading] = useState(false);
   const [barberError, setBarberError] = useState<string | null>(null);
+  const [availableDates, setAvailableDates] = useState<Set<string> | null>(
+    null
+  );
 
   const selectedBarberPublic = useMemo(
     () =>
@@ -133,6 +136,35 @@ export default function BookingFlow({
       cancelled = true;
     };
   }, [selectedBarberId]);
+
+  useEffect(() => {
+    if (!selectedBarberId || !selectedServiceId) {
+      setAvailableDates(null);
+      return;
+    }
+    let cancelled = false;
+    const todayDt = new Date();
+    const pad = (n: number) => String(n).padStart(2, "0");
+    const fmt = (d: Date) =>
+      `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+    const from = fmt(todayDt);
+    const to = fmt(new Date(todayDt.getTime() + 30 * 86_400_000));
+    fetch(
+      `/api/booking/availability/month?barberId=${selectedBarberId}&serviceId=${selectedServiceId}&from=${from}&to=${to}`
+    )
+      .then(async (res) => {
+        if (!res.ok) return null;
+        return (await res.json()) as { availableDates: string[] };
+      })
+      .then((data) => {
+        if (cancelled || !data) return;
+        setAvailableDates(new Set(data.availableDates));
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedBarberId, selectedServiceId]);
 
   // Validate initial service against barber data once loaded — drop to step 2 if invalid
   useEffect(() => {
@@ -243,7 +275,7 @@ export default function BookingFlow({
     : STEPS;
 
   return (
-    <div className="flex flex-col gap-8 flex-1 min-h-0">
+    <div className="flex flex-col gap-3 flex-1 min-h-0">
       {step !== "success" && (
         <header>
           {(step === 3 || (step === 2 && !validInitialBarberId)) && (
@@ -253,7 +285,7 @@ export default function BookingFlow({
                 step === 3 ? handleBackToServices : handleBackToBarbers
               }
               aria-label={t("back")}
-              className="inline-flex items-center gap-1.5 px-2 py-2 -ml-2 mb-3 text-sm text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors"
+              className="inline-flex items-center gap-1.5 px-2 py-1 -ml-2 mb-1 text-sm text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors"
             >
               <span className="text-base leading-none">←</span>
               <span>{t("back")}</span>
@@ -304,9 +336,9 @@ export default function BookingFlow({
       )}
 
       {(step === 2 || step === 3) && selectedBarberPublic && (
-        <div className="flex items-center justify-center mb-2">
+        <div className="flex items-center justify-center">
           <div
-            className="flex items-center gap-3 pl-2 pr-5 py-2 bg-[var(--color-surface)] rounded-full"
+            className="flex items-center gap-2 pl-1.5 pr-3 py-1 bg-[var(--color-surface)] rounded-full"
             style={{
               borderWidth: "0.5px",
               borderStyle: "solid",
@@ -317,23 +349,23 @@ export default function BookingFlow({
               <Image
                 src={selectedBarberPublic.landingImage}
                 alt=""
-                width={40}
-                height={40}
-                className="w-10 h-10 rounded-full object-cover shrink-0"
+                width={28}
+                height={28}
+                className="w-7 h-7 rounded-full object-cover shrink-0"
               />
             ) : (
-              <div className="w-10 h-10 rounded-full bg-[var(--color-surface-2)] flex items-center justify-center text-[14px] font-display italic text-[var(--color-text-muted)] shrink-0">
+              <div className="w-7 h-7 rounded-full bg-[var(--color-surface-2)] flex items-center justify-center text-[11px] font-display italic text-[var(--color-text-muted)] shrink-0">
                 {selectedBarberPublic.initials}
               </div>
             )}
-            <span className="font-display text-lg text-[var(--color-text)]">
+            <span className="font-display text-[14px] text-[var(--color-text)]">
               {selectedBarberPublic.name}
             </span>
             {barbers.length > 1 && (
               <button
                 type="button"
                 onClick={handleBackToBarbers}
-                className="ml-2 text-xs text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors"
+                className="ml-1 text-[10px] text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors"
               >
                 ↻ {t("change")}
               </button>
@@ -383,6 +415,7 @@ export default function BookingFlow({
                   servicePrice={selectedService.price}
                   estimatedMinutes={selectedService.estimatedMinutes}
                   schedule={selectedBarberPublic.schedule}
+                  availableDates={availableDates}
                   onBack={handleBackToServices}
                   onSuccess={handleSuccess}
                 />

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useTranslations } from "next-intl";
 import type { ChatListItem } from "@/lib/chat-client";
 import { useModalStack } from "@/lib/modal-stack-context";
@@ -50,7 +50,7 @@ export default function ChatPopup({
       animate={{ opacity: 1, scale: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95, y: 20 }}
       transition={{ duration: 0.2 }}
-      className="fixed bg-[var(--color-surface)] shadow-2xl overflow-hidden flex flex-col"
+      className="fixed bg-[var(--color-bg)]/85 backdrop-blur-[8px] border border-[var(--color-line)] shadow-2xl overflow-hidden flex flex-col"
       style={{
         zIndex,
         bottom: isMobile ? "0" : "24px",
@@ -82,50 +82,100 @@ export default function ChatPopup({
 
       <div
         className="flex-1 min-h-0"
-        style={{
-          display: "grid",
-          gridTemplateColumns: isMobile ? "1fr" : "280px 1px 1fr",
-        }}
+        style={
+          isMobile
+            ? { position: "relative", overflow: "hidden" }
+            : {
+                display: "grid",
+                gridTemplateColumns: "280px 1px 1fr",
+                overflow: "hidden",
+              }
+        }
       >
-        {showList && (
-          <ChatListPane
-            chats={chats}
-            selectedChatId={selectedChatId}
-            onSelectChat={(id) => onSelectChat(id)}
-            onChatsRefetch={onChatsRefetch}
-            loading={loading}
-            currentUserRole={currentUserRole}
-          />
-        )}
-        {!isMobile && (
-          <div style={{ background: "var(--color-line)" }} />
-        )}
-        {showConversation && (
+        {isMobile ? (
+          <AnimatePresence mode="wait" initial={false}>
+            {showList && (
+              <motion.div
+                key="list"
+                initial={{ x: "-100%" }}
+                animate={{ x: 0 }}
+                exit={{ x: "-100%" }}
+                transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+                className="absolute inset-0 flex flex-col"
+              >
+                <ChatListPane
+                  chats={chats}
+                  selectedChatId={selectedChatId}
+                  onSelectChat={(id) => onSelectChat(id)}
+                  onChatsRefetch={onChatsRefetch}
+                  loading={loading}
+                  currentUserRole={currentUserRole}
+                />
+              </motion.div>
+            )}
+            {showConversation && selectedChatId && (
+              <motion.div
+                key="conversation"
+                initial={{ x: "100%" }}
+                animate={{ x: 0 }}
+                exit={{ x: "100%" }}
+                transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+                className="absolute inset-0 flex flex-col"
+              >
+                <ChatConversationPane
+                  key={selectedChatId}
+                  chatId={selectedChatId}
+                  isPopupOpen={true}
+                  onChatRefetch={onChatsRefetch}
+                  onBackMobile={() => onSelectChat(null)}
+                  onDeleted={() => {
+                    onSelectChat(null);
+                    onChatsRefetch();
+                  }}
+                  currentUserRole={currentUserRole}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        ) : (
           <>
-            {selectedChatId ? (
-              <ChatConversationPane
-                key={selectedChatId}
-                chatId={selectedChatId}
-                isPopupOpen={true}
-                onChatRefetch={onChatsRefetch}
-                onBackMobile={
-                  isMobile ? () => onSelectChat(null) : undefined
-                }
-                onDeleted={() => {
-                  onSelectChat(null);
-                  onChatsRefetch();
-                }}
+            {showList && (
+              <ChatListPane
+                chats={chats}
+                selectedChatId={selectedChatId}
+                onSelectChat={(id) => onSelectChat(id)}
+                onChatsRefetch={onChatsRefetch}
+                loading={loading}
                 currentUserRole={currentUserRole}
               />
-            ) : (
-              <div className="flex items-center justify-center h-full px-6">
-                <p
-                  className="italic text-[var(--color-text-muted)] text-center"
-                  style={{ fontSize: "13px", lineHeight: 1.5 }}
-                >
-                  Оберіть чат зліва
-                </p>
-              </div>
+            )}
+            <div style={{ background: "var(--color-line)" }} />
+            {showConversation && (
+              <>
+                {selectedChatId ? (
+                  <ChatConversationPane
+                    key={selectedChatId}
+                    chatId={selectedChatId}
+                    isPopupOpen={true}
+                    onChatRefetch={onChatsRefetch}
+                    onBackMobile={undefined}
+                    onDeleted={() => {
+                      onSelectChat(null);
+                      onChatsRefetch();
+                    }}
+                    currentUserRole={currentUserRole}
+                  />
+                ) : (
+                  <div className="flex items-center justify-center h-full px-6">
+                    <p
+                      className="italic text-[var(--color-text-muted)] text-center"
+                      style={{ fontSize: "13px", lineHeight: 1.5 }}
+                    >
+                      Select a chat from the left
+                    </p>
+                  </div>
+                )}
+              </>
             )}
           </>
         )}

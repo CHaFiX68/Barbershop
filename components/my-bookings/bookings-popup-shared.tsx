@@ -112,7 +112,7 @@ export default function BookingsPopupShared({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ duration: 0.2 }}
-            className="w-[calc(100vw-32px)] max-h-[90vh] md:w-160 md:h-140 md:max-h-[calc(100vh-32px)] bg-[var(--color-surface)] border border-[var(--color-line)] rounded-[16px] shadow-[0_24px_48px_rgba(0,0,0,0.18)] overflow-hidden flex flex-col"
+            className="w-[calc(100vw-32px)] max-h-[90vh] md:w-160 md:h-140 md:max-h-[calc(100vh-32px)] bg-[var(--color-bg)]/85 backdrop-blur-[8px] border border-[var(--color-line)] rounded-[16px] shadow-[0_24px_48px_rgba(0,0,0,0.18)] overflow-hidden flex flex-col"
           >
             <header className="shrink-0 px-6 md:px-8 pt-6 md:pt-8">
               <div className="flex items-start justify-between mb-4">

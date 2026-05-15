@@ -122,6 +122,31 @@ export async function sendBookingConfirmation(
   });
 }
 
+export async function sendAnketaPendingNotificationToAdmin(
+  barberName: string,
+  barberEmail: string
+): Promise<void> {
+  if (!process.env.RESEND_API_KEY) {
+    console.warn(
+      "[EMAIL] RESEND_API_KEY missing, skipping anketa notification"
+    );
+    return;
+  }
+  const adminEmail = process.env.ADMIN_EMAIL ?? "akktop26@gmail.com";
+  const baseUrl =
+    process.env.NEXT_PUBLIC_BASE_URL ?? "https://barbershop-mocha.vercel.app";
+  try {
+    await getResend().emails.send({
+      from: FROM_BOOKING,
+      to: adminEmail,
+      subject: `New anketa for review: ${barberName}`,
+      html: `<!DOCTYPE html><html><body style="font-family: Arial, sans-serif; padding: 32px; background: #EDEAE5;"><div style="max-width: 480px; margin: 0 auto; background: #ffffff; padding: 32px; border-radius: 16px;"><h1 style="font-family: Georgia, serif; color: #1C1B19; margin: 0 0 16px;">New barber anketa submitted</h1><p style="color: #5A554E; font-size: 14px; line-height: 1.6;">Barber <strong>${barberName}</strong> (${barberEmail}) submitted profile changes for review.</p><p style="margin-top: 24px;"><a href="${baseUrl}/admin/support" style="display: inline-block; background: #1C1B19; color: #ffffff; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-size: 14px;">Open admin panel</a></p></div></body></html>`,
+    });
+  } catch (err) {
+    console.error("[EMAIL] sendAnketaPendingNotificationToAdmin error:", err);
+  }
+}
+
 export async function sendBookingNotificationToBarber(
   to: string,
   barberName: string,

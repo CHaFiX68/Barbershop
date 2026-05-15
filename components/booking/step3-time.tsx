@@ -1,9 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import type { WeekSchedule } from "@/lib/db/schema";
-import { useTheme } from "@/lib/theme-context";
 import BookingCalendar from "./booking-calendar";
 
 function formatYMD(d: Date): string {
@@ -30,6 +29,7 @@ type Props = {
   servicePrice: string;
   estimatedMinutes: number;
   schedule: WeekSchedule;
+  availableDates: Set<string> | null;
   onBack: () => void;
   onSuccess: (bookingId: string, date: Date, time: string) => void;
 };
@@ -41,6 +41,7 @@ export default function Step3Time({
   servicePrice,
   estimatedMinutes,
   schedule,
+  availableDates,
   onBack,
   onSuccess,
 }: Props) {
@@ -51,7 +52,8 @@ export default function Step3Time({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [refetchTick, setRefetchTick] = useState(0);
-  const { theme } = useTheme();
+  const summaryRef = useRef<HTMLDivElement>(null);
+  const bottomRef = useRef<HTMLDivElement>(null);
   const t = useTranslations("booking");
   const locale = useLocale();
 
@@ -89,6 +91,47 @@ export default function Step3Time({
       cancelled = true;
     };
   }, [selectedDate, barberId, serviceId, refetchTick]);
+
+  useEffect(() => {
+    if (!selectedDate) return;
+    if (slots === null || loadingSlots) return;
+    if (typeof window === "undefined" || window.innerWidth >= 768) return;
+    const tid = setTimeout(() => {
+      if (!bottomRef.current) return;
+      let el: HTMLElement | null = bottomRef.current.parentElement;
+      while (el) {
+        const style = getComputedStyle(el);
+        const overflowY = style.overflowY;
+        const isScrollable =
+          (overflowY === "auto" ||
+            overflowY === "scroll" ||
+            overflowY === "overlay") &&
+          el.scrollHeight > el.clientHeight;
+        if (isScrollable) {
+          el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+          return;
+        }
+        el = el.parentElement;
+      }
+      window.scrollTo({
+        top: document.documentElement.scrollHeight,
+        behavior: "smooth",
+      });
+    }, 100);
+    return () => clearTimeout(tid);
+  }, [selectedDate, slots, loadingSlots]);
+
+  useEffect(() => {
+    if (!selectedDate || !selectedTime) return;
+    if (typeof window === "undefined" || window.innerWidth >= 768) return;
+    const tid = setTimeout(() => {
+      summaryRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }, 100);
+    return () => clearTimeout(tid);
+  }, [selectedTime, selectedDate]);
 
   const handleDateSelect = (d: Date) => {
     setSelectedDate(d);
@@ -149,12 +192,13 @@ export default function Step3Time({
   };
 
   return (
-    <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <section className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-6">
       <div>
         <BookingCalendar
           selectedDate={selectedDate}
           onDateSelect={handleDateSelect}
           schedule={schedule}
+          availableDates={availableDates}
         />
         <button
           type="button"
@@ -238,7 +282,12 @@ export default function Step3Time({
                     key={s.time}
                     type="button"
                     disabled
-                    className={`py-2.5 px-3 rounded-[8px] text-[14px] bg-[#F0EDE8] text-[#B5AEA4] cursor-not-allowed ${theme === "dark" ? "line-through decoration-[var(--color-text)] decoration-2" : ""}`}
+                    className="py-2.5 px-3 rounded-[8px] text-[14px] bg-[#B8B3A8] text-[var(--color-text)] line-through decoration-[var(--color-text)] decoration-2 cursor-not-allowed"
+                    style={{
+                      borderWidth: "1px",
+                      borderStyle: "solid",
+                      borderColor: "var(--color-text)",
+                    }}
                   >
                     {s.time}
                   </button>
@@ -269,7 +318,8 @@ export default function Step3Time({
 
         {selectedDate && selectedTime && (
           <div
-            className="bg-[var(--color-surface)] rounded-[12px] p-4 mt-2 flex flex-col gap-2"
+            ref={summaryRef}
+            className="bg-[var(--color-surface)] rounded-[12px] p-4 mt-2 flex flex-col gap-2 scroll-mt-4"
             style={{
               borderWidth: "0.5px",
               borderStyle: "solid",
@@ -313,6 +363,7 @@ export default function Step3Time({
             </button>
           </div>
         )}
+        <div ref={bottomRef} aria-hidden="true" />
       </div>
     </section>
   );

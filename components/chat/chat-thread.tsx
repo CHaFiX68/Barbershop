@@ -222,7 +222,7 @@ export default function ChatThread({
     return (
       <div className="flex-1 flex items-center justify-center">
         <p className="italic text-[var(--color-text-muted)] text-[13px]">
-          Завантаження...
+          {t("loadingMessages")}
         </p>
       </div>
     );
@@ -248,7 +248,7 @@ export default function ChatThread({
       >
         {messages.length === 0 && (
           <p className="italic text-[var(--color-text-muted)] text-[13px] text-center my-auto">
-            Це початок розмови
+            {t("startOfConversation")}
           </p>
         )}
         {messages.map((m) => (
