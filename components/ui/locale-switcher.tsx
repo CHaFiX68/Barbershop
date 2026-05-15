@@ -23,7 +23,7 @@ export default function LocaleSwitcher() {
 
   return (
     <div
-      className="flex items-center text-[12px] font-medium border border-[var(--color-line)] rounded-[8px] overflow-hidden"
+      className="flex items-center text-[12px] font-medium border border-[var(--color-text)] rounded-[8px] overflow-hidden"
       aria-label="Language"
     >
       {LOCALES.map((code) => {
