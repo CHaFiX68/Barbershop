@@ -133,7 +133,7 @@ export default function LoginForm({
         <button
           type="submit"
           disabled={isSubmitting}
-          className="absolute left-0 right-0 bottom-0 py-3.5 bg-[#1C1B19] text-[#FAF7F1] rounded-t-[8px] rounded-b-[16px] text-[14px] font-medium hover:bg-[#2C2A27] transition-colors disabled:opacity-50"
+          className="w-full mt-6 py-3.5 bg-[#1C1B19] text-[#FAF7F1] rounded-[10px] text-[14px] font-medium hover:bg-[#2C2A27] transition-colors disabled:opacity-50"
         >
           {isSubmitting ? "…" : t("submitSignIn")}
         </button>
