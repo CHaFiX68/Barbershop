@@ -161,19 +161,6 @@ export default async function LocaleLayout({
         className="min-h-screen flex flex-col text-[var(--color-text)]"
         suppressHydrationWarning
       >
-        <div
-          aria-hidden="true"
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            right: 0,
-            height: "env(safe-area-inset-top)",
-            background: "var(--color-bg)",
-            zIndex: 30,
-            pointerEvents: "none",
-          }}
-        />
         <NextIntlClientProvider locale={locale} messages={messages}>
           <LavaBackground />
           <ThemeProvider initialTheme={theme}>
