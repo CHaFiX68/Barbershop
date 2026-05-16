@@ -25,6 +25,7 @@ type NavItem = {
 type Props = {
   navItems: NavItem[];
   initialSession?: InitialSession;
+  isEmbeddedBrowser?: boolean;
 };
 
 const NAV_KEY_MAP: Record<string, string> = {
@@ -35,7 +36,11 @@ const NAV_KEY_MAP: Record<string, string> = {
   "#booking": "booking",
 };
 
-export default function Header({ navItems, initialSession = null }: Props) {
+export default function Header({
+  navItems,
+  initialSession = null,
+  isEmbeddedBrowser = false,
+}: Props) {
   const t = useTranslations("header");
   const tAuth = useTranslations("auth");
   const pathname = usePathname();
@@ -89,7 +94,7 @@ export default function Header({ navItems, initialSession = null }: Props) {
 
   return (
     <>
-      <header className="fixed top-0 left-0 right-0 z-40 bg-[var(--color-bg)] border-b border-[var(--color-line)]">
+      <header className={`${isEmbeddedBrowser ? "sticky" : "fixed"} top-0 left-0 right-0 z-40 bg-[var(--color-bg)] border-b border-[var(--color-line)]`}>
         <div className="max-w-[1536px] mx-auto px-4 sm:px-6">
          <div className="max-w-6xl mx-auto h-16 md:h-20 flex items-center justify-between">
           <Link
@@ -159,10 +164,12 @@ export default function Header({ navItems, initialSession = null }: Props) {
          </div>
         </div>
       </header>
-      <div
-        aria-hidden="true"
-        className="shrink-0 h-[calc(4rem+1px)] md:h-[calc(5rem+1px)]"
-      />
+      {!isEmbeddedBrowser && (
+        <div
+          aria-hidden="true"
+          className="shrink-0 h-[calc(4rem+1px)] md:h-[calc(5rem+1px)]"
+        />
+      )}
 
       {mounted &&
         createPortal(

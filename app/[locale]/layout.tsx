@@ -181,7 +181,11 @@ export default async function LocaleLayout({
               <BookingProvider>
                 <ChatProvider>
                   <ConfirmDialogProvider>
-                    <Header navItems={navItems} initialSession={initialSession} />
+                    <Header
+                      navItems={navItems}
+                      initialSession={initialSession}
+                      isEmbeddedBrowser={isEmbeddedBrowser}
+                    />
                     {children}
                     <Suspense fallback={null}>
                       <AuthModal />
