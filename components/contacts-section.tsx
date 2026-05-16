@@ -34,13 +34,13 @@ export default async function ContactsSection() {
   const c = await getContentMap({
     "contacts.subhead.contact": t("connectLabel"),
     "contacts.subhead.hours": t("hoursTitle"),
-    "contacts.address": "вул. Хрещатик, 22, Київ",
-    "contacts.phone": "+38 (000) 000 00 00",
+    "contacts.address": "Ekensbergsvägen 126, 172 69 Sundbyberg",
+    "contacts.phone": "+46 8 424 215 50",
     "contacts.email": "hello@barberco.ua",
     "contacts.hours.weekdays.day": t("monFri"),
-    "contacts.hours.weekdays.time": "10:00 — 21:00",
+    "contacts.hours.weekdays.time": "10:00 — 19:00",
     "contacts.hours.sat.day": t("saturday"),
-    "contacts.hours.sat.time": "10:00 — 20:00",
+    "contacts.hours.sat.time": "10:00 — 17:00",
     "contacts.hours.sun.day": t("sunday"),
     "contacts.hours.sun.time": t("weekend"),
   });
@@ -191,7 +191,7 @@ export default async function ContactsSection() {
 
           <div className="w-full h-full overflow-hidden border border-[var(--color-line)] min-h-[272px] lg:min-h-[340px] rounded-[16px]">
             <iframe
-              src="https://maps.google.com/maps?q=Khreshchatyk+22+Kyiv&t=&z=15&ie=UTF8&iwloc=&output=embed"
+              src="https://maps.google.com/maps?q=Sundbybergs+Barbershop,+Ekensbergsv%C3%A4gen+126,+172+69+Sundbyberg&t=&z=15&ie=UTF8&iwloc=&output=embed"
               className="w-full h-full min-h-[272px] lg:min-h-[340px] border-0 block"
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"

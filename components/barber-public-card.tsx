@@ -136,7 +136,11 @@ function CompactLayout({
       <button
         type="button"
         onClick={() => booking.open(barberId)}
-        className={`${baseClass} text-left transition-all duration-300 hover:scale-105 hover:ring-2 hover:ring-[var(--color-text)] hover:shadow-[0_8px_30px_rgba(28,27,25,0.25)]`}
+        className={`${baseClass} text-left hover:scale-[1.035] hover:ring-2 hover:ring-[var(--color-text)] hover:shadow-[0_8px_30px_rgba(28,27,25,0.25)]`}
+        style={{
+          transition:
+            "transform 1318ms cubic-bezier(0.16,1,0.3,1), box-shadow 1318ms cubic-bezier(0.16,1,0.3,1), border-color 1318ms cubic-bezier(0.16,1,0.3,1)",
+        }}
       >
         {body}
       </button>

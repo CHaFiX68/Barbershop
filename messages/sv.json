@@ -405,5 +405,11 @@
       "modifyNote": "Vi ses snart!",
       "footer": "TWOBarbers"
     }
+  },
+  "cookies": {
+    "title": "Cookie-meddelande",
+    "message": "Vi använder cookies för att webbplatsen ska fungera, komma ihåg dina inställningar och förbättra din upplevelse. Du kan acceptera eller avböja icke nödvändiga cookies.",
+    "accept": "Acceptera",
+    "decline": "Avböj"
   }
 }

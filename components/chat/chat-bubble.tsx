@@ -121,7 +121,7 @@ export default function ChatBubble({ initialRole = null }: Props) {
             transition={{ duration: 0.18 }}
             onClick={() => openChat()}
             aria-label="Відкрити чат"
-            className="fixed bottom-6 right-6 z-40 w-14 h-14 rounded-full bg-[#1C1B19] hover:bg-[#2C2B29] shadow-lg flex items-center justify-center transition-colors"
+            className="fixed bottom-6 right-6 z-40 w-14 h-14 rounded-full bg-[#1C1B19]/55 hover:bg-[#1C1B19]/85 backdrop-blur-[6px] shadow-lg flex items-center justify-center transition-colors"
           >
             <MessageCircle size={24} className="text-white" />
             {totalUnread > 0 && (

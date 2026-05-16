@@ -20,6 +20,35 @@ export default async function Footer() {
               maxLength={200}
             />
           </p>
+          <div className="flex items-center justify-center gap-3.5 mt-4">
+            <span
+              className="h-px w-12 bg-[var(--color-bronze)]"
+              aria-hidden="true"
+            />
+            <a
+              href="https://tessel.studio/uk"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors"
+              style={{
+                fontSize: "11px",
+                letterSpacing: "2.5px",
+                fontWeight: 500,
+              }}
+            >
+              BUILT BY TESSEL.STUDIO
+              <span
+                className="text-[var(--color-danger)]"
+                aria-hidden="true"
+              >
+                &rarr;
+              </span>
+            </a>
+            <span
+              className="h-px w-12 bg-[var(--color-bronze)]"
+              aria-hidden="true"
+            />
+          </div>
         </div>
       </div>
     </footer>

@@ -178,9 +178,8 @@ export default function WorksCarousel({ works, isAdmin }: Props) {
       <button
         type="button"
         onClick={goPrev}
-        disabled={isAnimating}
         aria-label={t("prevAria")}
-        className="absolute top-1/2 -translate-y-1/2 -left-3 md:-left-5 w-10 h-10 md:w-12 md:h-12 flex items-center justify-center bg-[var(--color-surface)] border border-[var(--color-line)] hover:bg-[var(--color-action-bg)] hover:text-[var(--color-action-text)] hover:border-[var(--color-text)] transition-colors rounded-full shadow-md cursor-pointer z-10 disabled:opacity-60 disabled:cursor-not-allowed"
+        className="absolute top-1/2 -translate-y-1/2 -left-3 md:-left-5 w-10 h-10 md:w-12 md:h-12 flex items-center justify-center bg-[var(--color-surface)] border border-[var(--color-line)] hover:bg-[var(--color-action-bg)] hover:text-[var(--color-action-text)] hover:border-[var(--color-text)] transition-colors rounded-full shadow-md cursor-pointer z-10"
       >
         <svg
           width="14"
@@ -200,9 +199,8 @@ export default function WorksCarousel({ works, isAdmin }: Props) {
       <button
         type="button"
         onClick={goNext}
-        disabled={isAnimating}
         aria-label={t("nextAria")}
-        className="absolute top-1/2 -translate-y-1/2 -right-3 md:-right-5 w-10 h-10 md:w-12 md:h-12 flex items-center justify-center bg-[var(--color-surface)] border border-[var(--color-line)] hover:bg-[var(--color-action-bg)] hover:text-[var(--color-action-text)] hover:border-[var(--color-text)] transition-colors rounded-full shadow-md cursor-pointer z-10 disabled:opacity-60 disabled:cursor-not-allowed"
+        className="absolute top-1/2 -translate-y-1/2 -right-3 md:-right-5 w-10 h-10 md:w-12 md:h-12 flex items-center justify-center bg-[var(--color-surface)] border border-[var(--color-line)] hover:bg-[var(--color-action-bg)] hover:text-[var(--color-action-text)] hover:border-[var(--color-text)] transition-colors rounded-full shadow-md cursor-pointer z-10"
       >
         <svg
           width="14"

@@ -7,6 +7,7 @@ import { hasLocale, NextIntlClientProvider } from "next-intl";
 import "../globals.css";
 import AuthModal from "@/components/auth/auth-modal";
 import ChatBubble from "@/components/chat/chat-bubble";
+import CookieConsent from "@/components/cookie-consent";
 import Header from "@/components/header";
 import BookingPopupRoot from "@/components/booking/booking-popup-root";
 import LavaBackground from "@/components/lava-background";
@@ -128,6 +129,7 @@ export default async function LocaleLayout({
                       <ChatBubble initialRole={initialSession.user.role ?? null} />
                     )}
                     <BookingPopupRoot />
+                    <CookieConsent />
                   </ConfirmDialogProvider>
                 </ChatProvider>
               </BookingProvider>
