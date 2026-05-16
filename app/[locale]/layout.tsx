@@ -37,11 +37,51 @@ const dmSans = DM_Sans({
   display: "swap",
 });
 
-export const metadata: Metadata = {
-  title: "TWOBarbers — класичний барбершоп",
-  description:
-    "TWOBarbers — класичний барбершоп у Києві. Стрижки, гоління, догляд за бородою. Запис онлайн.",
+type LocaleMeta = {
+  title: string;
+  description: string;
+  ogLocale: string;
 };
+
+const META: Record<string, LocaleMeta> = {
+  en: {
+    title: "TWOBarbers — a classic barbershop",
+    description:
+      "TWOBarbers — a classic barbershop in Sundbyberg. Haircuts, shaves, beard care. Book online.",
+    ogLocale: "en_US",
+  },
+  sv: {
+    title: "TWOBarbers — en klassisk barbershop",
+    description:
+      "TWOBarbers — en klassisk barbershop i Sundbyberg. Klippning, rakning och skäggvård. Boka online.",
+    ogLocale: "sv_SE",
+  },
+};
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const m = META[locale] ?? META.en;
+  return {
+    title: m.title,
+    description: m.description,
+    openGraph: {
+      title: m.title,
+      description: m.description,
+      siteName: "TWOBarbers",
+      locale: m.ogLocale,
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: m.title,
+      description: m.description,
+    },
+  };
+}
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -121,21 +161,19 @@ export default async function LocaleLayout({
         className="min-h-screen flex flex-col text-[var(--color-text)]"
         suppressHydrationWarning
       >
-        {isEmbeddedBrowser && (
-          <div
-            aria-hidden="true"
-            style={{
-              position: "fixed",
-              top: 0,
-              left: 0,
-              right: 0,
-              height: "env(safe-area-inset-top)",
-              background: "var(--color-bg)",
-              zIndex: 30,
-              pointerEvents: "none",
-            }}
-          />
-        )}
+        <div
+          aria-hidden="true"
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            height: "env(safe-area-inset-top)",
+            background: "var(--color-bg)",
+            zIndex: 30,
+            pointerEvents: "none",
+          }}
+        />
         <NextIntlClientProvider locale={locale} messages={messages}>
           <LavaBackground />
           <ThemeProvider initialTheme={theme}>
