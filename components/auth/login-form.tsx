@@ -12,6 +12,7 @@ import AuthCard from "./auth-card";
 import AuthInput from "./auth-input";
 import AuthButton from "./auth-button";
 import AuthModalTrigger from "./auth-modal-trigger";
+import GoogleAuthButton from "./google-auth-button";
 
 type Props = {
   hideCard?: boolean;
@@ -80,64 +81,76 @@ export default function LoginForm({
 
   if (hideCard) {
     return (
-      <form onSubmit={handleSubmit(onSubmit)} noValidate className="h-full">
-        <div className="mb-3">
-          <h1 className="font-display text-[24px] font-medium text-[var(--color-text)] mb-1">
-            {t("signInTitle")}
-          </h1>
-          <p className="text-[13px] text-[var(--color-text-muted)]">
-            {t("noAccount")}{" "}
-            <AuthModalTrigger
-              mode="register"
-              className="text-[var(--color-text)] font-medium underline-offset-2 hover:underline"
-            >
-              {t("signUp")}
-            </AuthModalTrigger>
-          </p>
-        </div>
-
-        <div className="flex flex-col gap-2">
-          <AuthInput
-            label={t("email")}
-            type="email"
-            autoComplete="email"
-            placeholder={t("emailPlaceholder")}
-            error={errors.email?.message}
-            {...register("email")}
-          />
-          <AuthInput
-            label={t("password")}
-            type="password"
-            autoComplete="current-password"
-            placeholder={t("passwordPlaceholder")}
-            error={errors.password?.message}
-            {...register("password")}
-          />
-          {onForgotPassword && (
-            <div className="text-right -mt-1">
-              <button
-                type="button"
-                onClick={onForgotPassword}
-                className="text-[12px] text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
+      <>
+        <form onSubmit={handleSubmit(onSubmit)} noValidate className="h-full">
+          <div className="mb-3">
+            <h1 className="font-display text-[24px] font-medium text-[var(--color-text)] mb-1">
+              {t("signInTitle")}
+            </h1>
+            <p className="text-[13px] text-[var(--color-text-muted)]">
+              {t("noAccount")}{" "}
+              <AuthModalTrigger
+                mode="register"
+                className="text-[var(--color-text)] font-medium underline-offset-2 hover:underline"
               >
-                {t("forgotPassword")}
-              </button>
-            </div>
+                {t("signUp")}
+              </AuthModalTrigger>
+            </p>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <AuthInput
+              label={t("email")}
+              type="email"
+              autoComplete="email"
+              placeholder={t("emailPlaceholder")}
+              error={errors.email?.message}
+              {...register("email")}
+            />
+            <AuthInput
+              label={t("password")}
+              type="password"
+              autoComplete="current-password"
+              placeholder={t("passwordPlaceholder")}
+              error={errors.password?.message}
+              {...register("password")}
+            />
+            {onForgotPassword && (
+              <div className="text-right -mt-1">
+                <button
+                  type="button"
+                  onClick={onForgotPassword}
+                  className="text-[12px] text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
+                >
+                  {t("forgotPassword")}
+                </button>
+              </div>
+            )}
+          </div>
+
+          {errors.root && (
+            <p className="mt-3 text-sm text-red-600">{errors.root.message}</p>
           )}
+
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="w-full mt-4 py-3.5 bg-[#1C1B19] text-[#FAF7F1] rounded-[10px] text-[14px] font-medium hover:bg-[#2C2A27] transition-colors disabled:opacity-50"
+          >
+            {isSubmitting ? "…" : t("submitSignIn")}
+          </button>
+        </form>
+
+        <div className="flex items-center gap-3 my-4">
+          <span className="flex-1 h-px bg-[var(--color-line)]" aria-hidden="true" />
+          <span className="text-[11px] uppercase tracking-[0.2em] text-[var(--color-text-muted)]">
+            {t("or")}
+          </span>
+          <span className="flex-1 h-px bg-[var(--color-line)]" aria-hidden="true" />
         </div>
 
-        {errors.root && (
-          <p className="mt-3 text-sm text-red-600">{errors.root.message}</p>
-        )}
-
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="w-full mt-4 py-3.5 bg-[#1C1B19] text-[#FAF7F1] rounded-[10px] text-[14px] font-medium hover:bg-[#2C2A27] transition-colors disabled:opacity-50"
-        >
-          {isSubmitting ? "…" : t("submitSignIn")}
-        </button>
-      </form>
+        <GoogleAuthButton />
+      </>
     );
   }
 

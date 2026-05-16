@@ -166,7 +166,9 @@
     "errorInvalidCredentials": "Felaktig e-post eller lösenord",
     "errorEmailTaken": "E-posten är redan registrerad",
     "errorOtpInvalid": "Ogiltig eller utgången kod",
-    "errorGeneric": "Något gick fel"
+    "errorGeneric": "Något gick fel",
+    "continueWithGoogle": "Fortsätt med Google",
+    "or": "eller"
   },
   "profile": {
     "menu": {

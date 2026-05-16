@@ -166,7 +166,9 @@
     "errorInvalidCredentials": "Invalid email or password",
     "errorEmailTaken": "Email already registered",
     "errorOtpInvalid": "Invalid or expired code",
-    "errorGeneric": "Something went wrong"
+    "errorGeneric": "Something went wrong",
+    "continueWithGoogle": "Continue with Google",
+    "or": "or"
   },
   "profile": {
     "menu": {
