@@ -186,7 +186,8 @@
       "Bash(npm ls *)",
       "Bash(cmd /c \"set ANALYZE=true && npm run build\")",
       "PowerShell($env:ANALYZE = \"true\"; npm run build 2>&1 | Select-Object -Last 30)",
-      "Bash(node scripts/chunks-audit.mjs)"
+      "Bash(node scripts/chunks-audit.mjs)",
+      "Bash(node -e \"const s=require\\('fs'\\).readFileSync\\('app/globals.css','utf8'\\); console.log\\('lines:', s.split\\(/\\\\r?\\\\n/\\).length\\); console.log\\('last 5 lines:'\\); console.log\\(s.split\\(/\\\\r?\\\\n/\\).slice\\(-5\\).join\\('\\\\n'\\)\\);\")"
     ],
     "additionalDirectories": [
       "C:\\Projects\\Barbershop",

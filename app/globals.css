@@ -53,6 +53,7 @@ html {
   font-size: 87.5%;
   scroll-behavior: smooth;
   scrollbar-gutter: stable;
+  background-color: var(--color-bg);
 }
 
 html,
@@ -488,5 +489,18 @@ html.light .lava-blob {
   [data-theme="light"] .lava-blob,
   html.light .lava-blob {
     filter: blur(14px) !important;
+  }
+}
+
+/* In-app browsers (Telegram, Instagram, etc.) on mobile:
+   fixed header замість sticky — стабільне позиціонування у webview. */
+@media (max-width: 767px) {
+  html[data-embedded-browser="true"] header {
+    position: fixed;
+    left: 0;
+    right: 0;
+  }
+  html[data-embedded-browser="true"] body {
+    padding-top: 65px;
   }
 }
