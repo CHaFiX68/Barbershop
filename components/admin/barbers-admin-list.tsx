@@ -47,6 +47,7 @@ export default function BarbersAdminList({
                   alt={b.name}
                   width={30}
                   height={30}
+                  sizes="30px"
                   className="rounded-full object-cover"
                   style={{ width: 30, height: 30 }}
                 />

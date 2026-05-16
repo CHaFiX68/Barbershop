@@ -1,5 +1,7 @@
 "use client";
 
+import { memo } from "react";
+
 type Props = {
   body: string;
   attachmentUrl?: string | null;
@@ -16,7 +18,7 @@ function formatTime(iso: string): string {
   return `${hh}:${mm}`;
 }
 
-export default function ChatMessageBubble({
+function ChatMessageBubble({
   body,
   attachmentUrl,
   attachmentType,
@@ -82,3 +84,5 @@ export default function ChatMessageBubble({
     </div>
   );
 }
+
+export default memo(ChatMessageBubble);

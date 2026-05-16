@@ -8,6 +8,10 @@ import { useTranslations } from "next-intl";
 import type { WeekSchedule } from "@/lib/db/schema";
 import { normalizeWeekSchedule } from "@/lib/schedule";
 import { useModalStack } from "@/lib/modal-stack-context";
+import {
+  invalidateCachedFetch,
+  invalidateCachedFetchPrefix,
+} from "@/lib/use-cached-fetch";
 import BarberPreview from "./barber-preview";
 import BarbersAdminList from "./barbers-admin-list";
 import BookingsAdminList from "./bookings-admin-list";
@@ -69,6 +73,7 @@ function BarberRow({
               alt={barber.name}
               width={48}
               height={48}
+              sizes="48px"
               className="rounded-[8px] object-cover"
               style={{ width: 48, height: 48 }}
             />
@@ -265,6 +270,8 @@ export default function ManagementModal({ isOpen, onClose }: Props) {
       setPromoteEmail("");
       setPromoteSuccess(`${data.name} додано як барбера`);
       setTimeout(() => setPromoteSuccess(null), 3000);
+      invalidateCachedFetch("booking-barbers");
+      invalidateCachedFetchPrefix("barber-detail:");
       await fetchBarbers();
     } catch {
       setPromoteError("Не вдалося виконати дію");
@@ -293,6 +300,8 @@ export default function ManagementModal({ isOpen, onClose }: Props) {
         alert(data.error ?? "Помилка");
         return;
       }
+      invalidateCachedFetch("booking-barbers");
+      invalidateCachedFetchPrefix("barber-detail:");
       await fetchBarbers();
     } catch {
       alert("Не вдалося виконати дію");
@@ -327,6 +336,9 @@ export default function ManagementModal({ isOpen, onClose }: Props) {
         );
         const data = await res.json().catch(() => ({}));
         alert(data.error ?? "Не вдалося змінити статус");
+      } else {
+        invalidateCachedFetch("booking-barbers");
+        invalidateCachedFetchPrefix("barber-detail:");
       }
     } catch {
       setBarbers((prev) =>

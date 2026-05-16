@@ -106,7 +106,7 @@ export default function ChatPopup({
                 <ChatListPane
                   chats={chats}
                   selectedChatId={selectedChatId}
-                  onSelectChat={(id) => onSelectChat(id)}
+                  onSelectChat={onSelectChat}
                   onChatsRefetch={onChatsRefetch}
                   loading={loading}
                   currentUserRole={currentUserRole}
@@ -143,7 +143,7 @@ export default function ChatPopup({
               <ChatListPane
                 chats={chats}
                 selectedChatId={selectedChatId}
-                onSelectChat={(id) => onSelectChat(id)}
+                onSelectChat={onSelectChat}
                 onChatsRefetch={onChatsRefetch}
                 loading={loading}
                 currentUserRole={currentUserRole}

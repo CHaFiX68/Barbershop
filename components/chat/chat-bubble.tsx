@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import dynamic from "next/dynamic";
 import { AnimatePresence, motion } from "framer-motion";
 import { MessageCircle } from "lucide-react";
 import { fetchChats, openSupport, type ChatListItem } from "@/lib/chat-client";
@@ -9,8 +10,16 @@ import {
   type AdminChatListItem,
 } from "@/lib/admin-chat-client";
 import { useChatActions } from "@/lib/chat-context";
-import AdminChatPopup from "./admin-chat-popup";
-import ChatPopup from "./chat-popup";
+import { useIdlePrefetch } from "@/lib/use-idle-prefetch";
+
+const AdminChatPopup = dynamic(() => import("./admin-chat-popup"), {
+  ssr: false,
+  loading: () => null,
+});
+const ChatPopup = dynamic(() => import("./chat-popup"), {
+  ssr: false,
+  loading: () => null,
+});
 
 const POLL_INTERVAL_MS = 5000;
 
@@ -20,6 +29,12 @@ type Props = {
 
 export default function ChatBubble({ initialRole = null }: Props) {
   const isAdmin = initialRole === "admin";
+
+  useIdlePrefetch(
+    isAdmin
+      ? [() => import("./admin-chat-popup")]
+      : [() => import("./chat-popup")]
+  );
 
   const {
     isOpen,

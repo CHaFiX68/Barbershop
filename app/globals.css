@@ -342,6 +342,7 @@ html, body {
   border-radius: 50%;
   filter: blur(clamp(28px, 2.8vw, 56px));
   will-change: transform;
+  backface-visibility: hidden;
   pointer-events: none;
   transition: background 600ms ease, opacity 600ms ease;
 }

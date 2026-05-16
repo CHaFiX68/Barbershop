@@ -5,6 +5,7 @@ import Image from "next/image";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { useTranslations } from "next-intl";
 import type { BarberPublic } from "@/lib/barbers";
+import { useCachedFetch } from "@/lib/use-cached-fetch";
 import Step1Barbers from "./step1-barbers";
 import Step2Services from "./step2-services";
 import Step3Time from "./step3-time";
@@ -91,12 +92,30 @@ export default function BookingFlow({
 
   const step = flow.kind;
 
-  const [barberData, setBarberData] = useState<BarberDataResp | null>(null);
-  const [barberLoading, setBarberLoading] = useState(false);
   const [barberError, setBarberError] = useState<string | null>(null);
   const [availableDates, setAvailableDates] = useState<Set<string> | null>(
     null
   );
+
+  const {
+    data: barberData,
+    loading: barberLoading,
+    error: barberFetchError,
+  } = useCachedFetch<BarberDataResp>(
+    selectedBarberId ? `barber-detail:${selectedBarberId}` : "",
+    () =>
+      fetch(`/api/booking/barber/${selectedBarberId}`).then(async (res) => {
+        const json = await res.json().catch(() => null);
+        if (!res.ok) {
+          throw new Error(json?.error || t("errorGeneric"));
+        }
+        return json as BarberDataResp;
+      }),
+    selectedBarberId !== null
+  );
+  useEffect(() => {
+    setBarberError(barberFetchError);
+  }, [barberFetchError]);
 
   const selectedBarberPublic = useMemo(
     () =>
@@ -106,36 +125,6 @@ export default function BookingFlow({
     [barbers, selectedBarberId]
   );
 
-  useEffect(() => {
-    if (!selectedBarberId) {
-      setBarberData(null);
-      setBarberError(null);
-      return;
-    }
-    let cancelled = false;
-    setBarberLoading(true);
-    setBarberError(null);
-    fetch(`/api/booking/barber/${selectedBarberId}`)
-      .then(async (res) => {
-        const json = await res.json().catch(() => null);
-        if (!res.ok) {
-          throw new Error(json?.error || t("errorGeneric"));
-        }
-        return json as BarberDataResp;
-      })
-      .then((data) => {
-        if (!cancelled) setBarberData(data);
-      })
-      .catch((err: Error) => {
-        if (!cancelled) setBarberError(err.message);
-      })
-      .finally(() => {
-        if (!cancelled) setBarberLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [selectedBarberId]);
 
   useEffect(() => {
     if (!selectedBarberId || !selectedServiceId) {
@@ -351,6 +340,7 @@ export default function BookingFlow({
                 alt=""
                 width={28}
                 height={28}
+                sizes="28px"
                 className="w-7 h-7 rounded-full object-cover shrink-0"
               />
             ) : (

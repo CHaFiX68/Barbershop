@@ -2,14 +2,20 @@
 
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+import dynamic from "next/dynamic";
 import { useTranslations } from "next-intl";
 import { useRouter, usePathname } from "@/i18n/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import type { BarberPublic } from "@/lib/barbers";
 import { useSession } from "@/lib/auth-client";
 import { useModalStack } from "@/lib/modal-stack-context";
-import BookingFlow from "./booking-flow";
+import { useCachedFetch } from "@/lib/use-cached-fetch";
 import CloseButton from "@/components/ui/close-button";
+
+const BookingFlow = dynamic(() => import("./booking-flow"), {
+  ssr: false,
+  loading: () => null,
+});
 
 type Props = {
   open: boolean;
@@ -21,8 +27,6 @@ export default function BookingPopup({ open, onClose, initialBarberId }: Props) 
   const t = useTranslations("booking");
   const tHeader = useTranslations("header");
   const [mounted, setMounted] = useState(false);
-  const [barbers, setBarbers] = useState<BarberPublic[] | null>(null);
-  const [loading, setLoading] = useState(false);
   const { data: session } = useSession();
   const router = useRouter();
   const pathname = usePathname();
@@ -32,26 +36,17 @@ export default function BookingPopup({ open, onClose, initialBarberId }: Props) 
     setMounted(true);
   }, []);
 
-  useEffect(() => {
-    if (!open) return;
-    if (barbers !== null) return;
-    let cancelled = false;
-    setLoading(true);
-    fetch("/api/barbers")
-      .then((r) => r.json())
-      .then((data: { barbers: BarberPublic[] }) => {
-        if (!cancelled) setBarbers(data.barbers);
-      })
-      .catch(() => {
-        if (!cancelled) setBarbers([]);
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [open, barbers]);
+  const { data: barbersData, loading } = useCachedFetch<{
+    barbers: BarberPublic[];
+  }>(
+    "booking-barbers",
+    () =>
+      fetch("/api/barbers")
+        .then((r) => r.json() as Promise<{ barbers: BarberPublic[] }>)
+        .catch(() => ({ barbers: [] })),
+    open
+  );
+  const barbers = barbersData?.barbers ?? null;
 
   if (!mounted) return null;
 

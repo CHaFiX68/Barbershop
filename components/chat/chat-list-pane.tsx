@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { memo, useState } from "react";
 import { HelpCircle } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { openSupport, type ChatListItem } from "@/lib/chat-client";
@@ -155,7 +155,7 @@ export default function ChatListPane({
             key={c.id}
             chat={c}
             isSelected={selectedChatId === c.id}
-            onSelect={() => onSelectChat(c.id)}
+            onSelect={onSelectChat}
             currentUserRole={currentUserRole}
           />
         ))}
@@ -176,7 +176,7 @@ export default function ChatListPane({
   );
 }
 
-function ChatRow({
+const ChatRow = memo(function ChatRow({
   chat,
   isSelected,
   onSelect,
@@ -184,7 +184,7 @@ function ChatRow({
 }: {
   chat: ChatListItem;
   isSelected: boolean;
-  onSelect: () => void;
+  onSelect: (chatId: string) => void;
   currentUserRole: string | null;
 }) {
   const t = useTranslations("chat");
@@ -200,7 +200,7 @@ function ChatRow({
   return (
     <button
       type="button"
-      onClick={onSelect}
+      onClick={() => onSelect(chat.id)}
       className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors ${
         isSelected ? "bg-[var(--color-bg)]" : "hover:bg-[var(--color-bg)]"
       } ${isArchived ? "opacity-60" : ""}`}
@@ -273,4 +273,4 @@ function ChatRow({
       </div>
     </button>
   );
-}
+});
