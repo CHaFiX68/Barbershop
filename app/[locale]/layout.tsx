@@ -116,9 +116,20 @@ export default async function LocaleLayout({
     navDefaults[navKey(item.href)] = item.label;
   }
 
+  const headersList = await headers();
+  const ua = headersList.get("user-agent") ?? "";
+  const isEmbeddedBrowser =
+    /Telegram|Instagram|FBAN|FBAV|FB_IAB|Line\/|WhatsApp|TikTok|musical_ly|BytedanceWebview|Snapchat|Pinterest/i.test(
+      ua
+    ) ||
+    (/iPhone|iPad|iPod/.test(ua) &&
+      /Mobile\//.test(ua) &&
+      !/Safari\//.test(ua)) ||
+    (/Android/.test(ua) && /; wv\)/.test(ua));
+
   const [navContent, session, theme] = await Promise.all([
     getContentMap(navDefaults),
-    auth.api.getSession({ headers: await headers() }),
+    auth.api.getSession({ headers: headersList }),
     getTheme(),
   ]);
 
@@ -147,6 +158,7 @@ export default async function LocaleLayout({
     <html
       lang={locale}
       data-theme={theme}
+      data-embedded-browser={isEmbeddedBrowser ? "true" : undefined}
       className={`${fraunces.variable} ${dmSans.variable} antialiased`}
     >
       <body
@@ -160,7 +172,11 @@ export default async function LocaleLayout({
               <BookingProvider>
                 <ChatProvider>
                   <ConfirmDialogProvider>
-                    <Header navItems={navItems} initialSession={initialSession} />
+                    <Header
+                      navItems={navItems}
+                      initialSession={initialSession}
+                      isEmbeddedBrowser={isEmbeddedBrowser}
+                    />
                     {children}
                     <Suspense fallback={null}>
                       <AuthModal />
