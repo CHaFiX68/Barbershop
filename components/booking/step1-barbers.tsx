@@ -29,13 +29,13 @@ export default function Step1Barbers({ barbers, onSelect }: Props) {
   }
 
   return (
-    <section className={`flex flex-wrap items-center justify-center gap-3 md:gap-4 py-12 h-full mx-auto ${barbers.length === 2 || barbers.length === 4 ? "max-w-[576px]" : "max-w-[872px]"}`}>
+    <section className={`flex flex-wrap items-stretch justify-center gap-3 md:gap-4 py-12 h-full mx-auto ${barbers.length === 2 || barbers.length === 4 ? "max-w-[576px]" : "max-w-[872px]"}`}>
       {barbers.map((b) => (
         <button
           key={b.id}
           type="button"
           onClick={() => onSelect(b.id)}
-          className="block bg-[var(--color-surface)] border-[0.5px] border-[var(--color-line)] rounded-[10px] md:rounded-[12px] p-2.5 md:p-3.5 max-w-45 md:max-w-72 mx-auto hover:scale-[1.035] hover:ring-2 hover:ring-[var(--color-text)] hover:shadow-[0_8px_30px_rgba(28,27,25,0.25)]"
+          className="flex flex-col h-full bg-[var(--color-surface)] border-[0.5px] border-[var(--color-line)] rounded-[10px] md:rounded-[12px] p-2.5 md:p-3.5 max-w-45 md:max-w-72 mx-auto hover:scale-[1.035] hover:ring-2 hover:ring-[var(--color-text)] hover:shadow-[0_8px_30px_rgba(28,27,25,0.25)]"
           style={{
             transition:
               "transform 1318ms cubic-bezier(0.16,1,0.3,1), box-shadow 1318ms cubic-bezier(0.16,1,0.3,1), border-color 1318ms cubic-bezier(0.16,1,0.3,1)",
@@ -56,14 +56,16 @@ export default function Step1Barbers({ barbers, onSelect }: Props) {
               </span>
             )}
           </div>
-          <h3 className="font-display text-sm md:text-xl text-center mt-2 md:mt-3 text-[var(--color-text)]">
-            {b.name}
-          </h3>
-          {b.bio && (
-            <p className="font-display italic text-xs md:text-sm text-center mt-1 md:mt-2 text-[var(--color-text-muted)] line-clamp-2">
-              {b.bio}
-            </p>
-          )}
+          <div className="flex flex-col flex-1 items-center justify-center mt-2 md:mt-3">
+            <h3 className="font-display text-sm md:text-xl text-center text-[var(--color-text)]">
+              {b.name}
+            </h3>
+            {b.bio && (
+              <p className="font-display not-italic text-xs md:text-sm text-center mt-1 md:mt-2 text-[var(--color-text-muted)] line-clamp-2">
+                {b.bio}
+              </p>
+            )}
+          </div>
         </button>
       ))}
     </section>
