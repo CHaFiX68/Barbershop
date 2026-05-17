@@ -101,7 +101,7 @@ export default function RegisterForm({
   if (hideCard) {
     return (
       <>
-        <form onSubmit={handleSubmit(onSubmit)} noValidate className="h-full">
+        <form onSubmit={handleSubmit(onSubmit)} noValidate>
           <div className="mb-3">
             <h1 className="font-display text-[24px] font-medium text-[var(--color-text)] mb-1">
               {t("signUpTitle")}

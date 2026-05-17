@@ -174,7 +174,7 @@ export default function AuthModal() {
               </button>
             </div>
 
-            <div className="relative overflow-hidden" style={{ minHeight: "420px" }}>
+            <div className="relative overflow-hidden">
               <AnimatePresence mode="wait" initial={false}>
                 {mode === "login" && (
                   <motion.div
@@ -183,7 +183,6 @@ export default function AuthModal() {
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -40 }}
                     transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
-                    className="absolute inset-0"
                   >
                     <LoginForm
                       hideCard
@@ -199,7 +198,6 @@ export default function AuthModal() {
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: 40 }}
                     transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
-                    className="absolute inset-0"
                   >
                     <RegisterForm
                       hideCard
