@@ -2,7 +2,7 @@
 
 import { Link } from "@/i18n/navigation";
 import { useSearchParams } from "next/navigation";
-import { usePathname, useRouter } from "@/i18n/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -27,7 +27,6 @@ export default function LoginForm({
 }: Props) {
   const t = useTranslations("auth");
   const router = useRouter();
-  const pathname = usePathname();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") ?? "/";
 
@@ -49,12 +48,9 @@ export default function LoginForm({
   });
 
   const closeModalAndRefresh = () => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.delete("auth");
-    const query = params.toString();
-    router.replace(query ? `${pathname}?${query}` : pathname, {
-      scroll: false,
-    });
+    const url = new URL(window.location.href);
+    url.searchParams.delete("auth");
+    window.history.replaceState(null, "", `${url.pathname}${url.search}`);
     router.refresh();
   };
 

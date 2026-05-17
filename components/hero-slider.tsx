@@ -69,7 +69,7 @@ export default function HeroSlider({
       setCurrent((c) => (c + 1) % total);
     }, 6000);
     return () => clearInterval(id);
-  }, [total]);
+  }, [total, current]);
 
   useEffect(() => {
     if (current >= total && total > 0) {

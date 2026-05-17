@@ -196,6 +196,7 @@ export const chat = pgTable(
     lastMessagePreview: text("last_message_preview"),
     createdAt: timestamp("created_at").notNull().defaultNow(),
     archivedAt: timestamp("archived_at"),
+    lastNotifiedAt: timestamp("last_notified_at", { withTimezone: true }),
   },
   (t) => [
     index("chat_participant_a_status_idx").on(

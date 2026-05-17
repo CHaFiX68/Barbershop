@@ -3,19 +3,27 @@
 import { motion } from "framer-motion";
 import { useLocale, useTranslations } from "next-intl";
 import { usePathname, useRouter } from "@/i18n/navigation";
-import { useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 
 const LOCALES = ["en", "sv"] as const;
+type Locale = (typeof LOCALES)[number];
 
 export default function LocaleSwitcher() {
   const t = useTranslations("header");
-  const locale = useLocale();
+  const locale = useLocale() as Locale;
   const router = useRouter();
   const pathname = usePathname();
-  const [pending, startTransition] = useTransition();
+  const [, startTransition] = useTransition();
+  const [visualLocale, setVisualLocale] = useState<Locale>(locale);
 
-  const switchTo = (next: "en" | "sv") => {
-    if (next === locale) return;
+  // Keep visual state in sync with actual locale (e.g. back/forward, external nav).
+  useEffect(() => {
+    setVisualLocale(locale);
+  }, [locale]);
+
+  const switchTo = (next: Locale) => {
+    if (next === visualLocale) return;
+    setVisualLocale(next);
     startTransition(() => {
       router.replace(pathname, { locale: next });
     });
@@ -27,13 +35,12 @@ export default function LocaleSwitcher() {
       aria-label="Language"
     >
       {LOCALES.map((code) => {
-        const isActive = locale === code;
+        const isActive = visualLocale === code;
         return (
           <button
             key={code}
             type="button"
             onClick={() => switchTo(code)}
-            disabled={pending}
             aria-label={
               code === "en" ? t("localeSwitcherEn") : t("localeSwitcherSv")
             }

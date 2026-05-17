@@ -1,7 +1,5 @@
 "use client";
 
-import { Link } from "@/i18n/navigation";
-
 type Props = {
   mode: "login" | "register";
   className?: string;
@@ -15,14 +13,15 @@ export default function AuthModalTrigger({
   onClick,
   children,
 }: Props) {
+  const handleClick = () => {
+    const url = new URL(window.location.href);
+    url.searchParams.set("auth", mode);
+    window.history.pushState(null, "", `${url.pathname}${url.search}`);
+    onClick?.();
+  };
   return (
-    <Link
-      href={`?auth=${mode}`}
-      scroll={false}
-      className={className}
-      onClick={onClick}
-    >
+    <button type="button" onClick={handleClick} className={className}>
       {children}
-    </Link>
+    </button>
   );
 }

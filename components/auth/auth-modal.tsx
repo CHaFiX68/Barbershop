@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { usePathname, useRouter } from "@/i18n/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { signIn } from "@/lib/auth-client";
 import { useModalStack } from "@/lib/modal-stack-context";
 import { X } from "lucide-react";
@@ -19,7 +19,6 @@ type AuthMode = "login" | "register";
 export default function AuthModal() {
   const t = useTranslations("auth");
   const router = useRouter();
-  const pathname = usePathname();
   const searchParams = useSearchParams();
   const authParam = searchParams.get("auth");
   const mode: AuthMode | null =
@@ -39,24 +38,26 @@ export default function AuthModal() {
   }, []);
 
   const close = useCallback(() => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.delete("auth");
-    const query = params.toString();
-    router.replace(query ? `${pathname}?${query}` : pathname, {
-      scroll: false,
-    });
+    const url = new URL(window.location.href);
+    url.searchParams.delete("auth");
+    const search = url.search;
+    window.history.replaceState(
+      null,
+      "",
+      `${url.pathname}${search}`
+    );
     setPendingVerify(null);
     setShowForgot(false);
-  }, [pathname, router, searchParams]);
+  }, []);
 
   const { zIndex, isTop } = useModalStack("auth-modal", isOpen, close);
 
   if (!mounted) return null;
 
   const switchTo = (next: AuthMode) => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("auth", next);
-    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    const url = new URL(window.location.href);
+    url.searchParams.set("auth", next);
+    window.history.replaceState(null, "", `${url.pathname}${url.search}`);
     setShowForgot(false);
   };
 

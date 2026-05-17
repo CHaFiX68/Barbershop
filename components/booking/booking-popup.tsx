@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import dynamic from "next/dynamic";
 import { useTranslations } from "next-intl";
-import { useRouter, usePathname } from "@/i18n/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import type { BarberPublic } from "@/lib/barbers";
 import { useSession } from "@/lib/auth-client";
@@ -28,8 +27,6 @@ export default function BookingPopup({ open, onClose, initialBarberId }: Props) 
   const tHeader = useTranslations("header");
   const [mounted, setMounted] = useState(false);
   const { data: session } = useSession();
-  const router = useRouter();
-  const pathname = usePathname();
   const { zIndex, isTop } = useModalStack("booking", open, onClose);
 
   useEffect(() => {
@@ -56,9 +53,9 @@ export default function BookingPopup({ open, onClose, initialBarberId }: Props) 
 
   const goToLogin = () => {
     onClose();
-    const params = new URLSearchParams();
-    params.set("auth", "login");
-    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    const url = new URL(window.location.href);
+    url.searchParams.set("auth", "login");
+    window.history.pushState(null, "", `${url.pathname}${url.search}`);
   };
 
   return createPortal(

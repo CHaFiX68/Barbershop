@@ -129,7 +129,7 @@ export default function ChatConversationPane({
 
   return (
     <div className="flex flex-col h-full min-h-0">
-      <header className="shrink-0">
+      <header className="shrink-0 bg-[var(--color-surface)]">
         <div
           className={`flex items-center gap-3 px-4 py-3 ${
             showPinnedBooking

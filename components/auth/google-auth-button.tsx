@@ -23,7 +23,7 @@ export default function GoogleAuthButton() {
       type="button"
       onClick={handleClick}
       disabled={loading}
-      className="w-full inline-flex items-center justify-center gap-2.5 py-3.5 border border-[var(--color-line)] bg-transparent text-[var(--color-text)] rounded-[10px] text-[14px] font-medium hover:bg-[var(--color-surface-2)] transition-colors disabled:opacity-50"
+      className="w-full inline-flex items-center justify-center gap-2.5 py-3.5 bg-[#1C1B19] text-[#FAF7F1] rounded-[10px] text-[14px] font-medium hover:bg-[#2C2A27] transition-colors disabled:opacity-50"
     >
       <svg
         width="18"
