@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { headers } from "next/headers";
-import { and, asc, eq } from "drizzle-orm";
+import { asc, eq } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { barberProfile, service, user } from "@/lib/db/schema";

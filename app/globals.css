@@ -293,6 +293,34 @@ body {
   display: none;
 }
 
+/* Slim scrollbar for chat list pane — narrower thumb, muted color */
+.chat-list-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-text-muted) transparent;
+}
+
+.chat-list-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.chat-list-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.chat-list-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--color-text-muted);
+  border-radius: 6px;
+  min-height: 24px;
+}
+
+.chat-list-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text);
+}
+
+.chat-list-scrollbar::-webkit-scrollbar-button {
+  display: none;
+}
+
 /* === Tactile press feedback === */
 button,
 [role="button"] {

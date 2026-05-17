@@ -71,6 +71,7 @@ export default function AdminChatPopup({
   const [actionError, setActionError] = useState<string | null>(null);
   const { zIndex } = useModalStack("admin-chat-popup", true, onClose, {
     respectEsc: false,
+    lockBody: isMobile,
   });
   const t = useTranslations("chat");
   const tSupport = useTranslations("support");
@@ -135,7 +136,7 @@ export default function AdminChatPopup({
         </p>
       )}
 
-      <div className="flex-1 overflow-y-auto custom-scrollbar">
+      <div className="flex-1 overflow-y-auto overscroll-contain chat-list-scrollbar">
         {!loading && items.length === 0 && (
           <p
             className="italic text-center px-4 py-8 text-[var(--color-text-muted)]"
@@ -185,30 +186,48 @@ export default function AdminChatPopup({
 
   const conversationPaneContent = (
     <div className="flex flex-col h-full min-h-0 min-w-0">
-      {selectedChatId && selectedItem ? (
-        <ChatConversationPane
-          key={selectedChatId}
-          chatId={selectedChatId}
-          isPopupOpen
-          onChatRefetch={onChatsRefetch}
-          onBackMobile={isMobile ? () => onSelectChat(null) : undefined}
-          onDeleted={() => {
-            onSelectChat(null);
-            onChatsRefetch();
-          }}
-          currentUserRole="admin"
-          canDeleteOverride={false}
-        />
-      ) : (
-        <div className="flex items-center justify-center h-full px-6">
-          <p
-            className="italic text-[var(--color-text-muted)] text-center"
-            style={{ fontSize: "13px", lineHeight: 1.5 }}
+      <AnimatePresence mode="wait" initial={false}>
+        {selectedChatId && selectedItem ? (
+          <motion.div
+            key={selectedChatId}
+            initial={{ opacity: 0, x: 14 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -14 }}
+            transition={{ duration: 0.16, ease: "easeOut" }}
+            className="flex flex-col h-full min-h-0 min-w-0"
           >
-            {tSupport("selectTicketPlaceholder")}
-          </p>
-        </div>
-      )}
+            <ChatConversationPane
+              key={selectedChatId}
+              chatId={selectedChatId}
+              isPopupOpen
+              onChatRefetch={onChatsRefetch}
+              onBackMobile={isMobile ? () => onSelectChat(null) : undefined}
+              onDeleted={() => {
+                onSelectChat(null);
+                onChatsRefetch();
+              }}
+              currentUserRole="admin"
+              canDeleteOverride={false}
+            />
+          </motion.div>
+        ) : (
+          <motion.div
+            key="placeholder"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.16 }}
+            className="flex items-center justify-center h-full px-6"
+          >
+            <p
+              className="italic text-[var(--color-text-muted)] text-center"
+              style={{ fontSize: "13px", lineHeight: 1.5 }}
+            >
+              {tSupport("selectTicketPlaceholder")}
+            </p>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 

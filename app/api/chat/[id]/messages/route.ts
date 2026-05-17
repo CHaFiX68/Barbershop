@@ -34,9 +34,11 @@ export async function GET(
       participantAUserId: chat.participantAUserId,
       participantBUserId: chat.participantBUserId,
       participantAName: userA.name,
+      participantAEmail: userA.email,
       participantARole: userA.role,
       participantAPhone: profileA.phone,
       participantBName: userB.name,
+      participantBEmail: userB.email,
       participantBRole: userB.role,
       participantBPhone: profileB.phone,
       bookingServiceName: booking.serviceName,
@@ -79,6 +81,9 @@ export async function GET(
 
   const isA = chatRow.participantAUserId === me;
   const otherName = isA ? chatRow.participantBName : chatRow.participantAName;
+  const otherEmail = isA
+    ? chatRow.participantBEmail
+    : chatRow.participantAEmail;
   const otherRole = isA ? chatRow.participantBRole : chatRow.participantARole;
   const otherPhone = isA
     ? chatRow.participantBPhone
@@ -104,6 +109,7 @@ export async function GET(
       otherParticipant: {
         userId: otherId,
         name: otherName,
+        email: otherEmail ?? null,
         role: otherRole,
         phone: otherPhone ?? null,
       },

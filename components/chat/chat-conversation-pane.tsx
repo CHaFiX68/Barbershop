@@ -110,26 +110,33 @@ export default function ChatConversationPane({
       setDeleting(false);
     }
   };
+  const isAdminViewer = currentUserRole === "admin";
   const counterpartName = chat
     ? isSupportChat
-      ? currentUserRole === "barber"
-        ? t("administrator")
-        : t("supportLabel")
+      ? isAdminViewer
+        ? chat.otherParticipant.name
+        : currentUserRole === "barber"
+          ? t("administrator")
+          : t("supportLabel")
       : chat.otherParticipant.name
     : tCommon("loading");
   const phoneToShow = chat
     ? isSupportChat
-      ? chat.supportPhone
+      ? isAdminViewer
+        ? chat.otherParticipant.phone
+        : chat.supportPhone
       : chat.otherParticipant.phone
     : null;
+  const emailToShow =
+    chat && isAdminViewer ? chat.otherParticipant.email : null;
   const showPinnedBooking =
     isBookingChat && !!chat?.bookingServiceName && !!chat?.bookingStartsAt;
 
   const statusInfo = statusLabelAndColor(chat?.bookingStatus ?? null);
 
   return (
-    <div className="flex flex-col h-full min-h-0">
-      <header className="shrink-0 bg-[var(--color-surface)]">
+    <div className="flex flex-col h-full min-h-0 bg-[var(--color-surface)]">
+      <header className="shrink-0">
         <div
           className={`flex items-center gap-3 px-4 py-3 ${
             showPinnedBooking
@@ -164,6 +171,14 @@ export default function ChatConversationPane({
                 style={{ fontSize: "11px" }}
               >
                 {phoneToShow}
+              </p>
+            )}
+            {emailToShow && (
+              <p
+                className="truncate text-[var(--color-text-muted)]"
+                style={{ fontSize: "11px" }}
+              >
+                {emailToShow}
               </p>
             )}
           </div>

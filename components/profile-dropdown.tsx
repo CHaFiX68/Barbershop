@@ -271,13 +271,7 @@ export default function ProfileDropdown({ initialSession = null }: Props) {
         aria-expanded={isOpen}
       >
         <span className="relative inline-flex">
-          <span
-            aria-hidden="true"
-            className="not-italic relative flex items-center justify-center rounded-[6px] bg-[var(--color-surface-2)] text-[var(--color-text)] font-medium flex-shrink-0"
-            style={{ width: 34, height: 34, fontSize: 14 }}
-          >
-            {effectiveName?.[0]?.toUpperCase() ?? "?"}
-          </span>
+          <Avatar src={avatarUrl} name={effectiveName} size={34} />
           {isAdminRole && pendingAnketaCount > 0 && (
             <motion.span
               initial={{ scale: 0 }}

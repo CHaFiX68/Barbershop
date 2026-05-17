@@ -187,7 +187,11 @@
       "Bash(cmd /c \"set ANALYZE=true && npm run build\")",
       "PowerShell($env:ANALYZE = \"true\"; npm run build 2>&1 | Select-Object -Last 30)",
       "Bash(node scripts/chunks-audit.mjs)",
-      "Bash(node -e \"const s=require\\('fs'\\).readFileSync\\('app/globals.css','utf8'\\); console.log\\('lines:', s.split\\(/\\\\r?\\\\n/\\).length\\); console.log\\('last 5 lines:'\\); console.log\\(s.split\\(/\\\\r?\\\\n/\\).slice\\(-5\\).join\\('\\\\n'\\)\\);\")"
+      "Bash(node -e \"const s=require\\('fs'\\).readFileSync\\('app/globals.css','utf8'\\); console.log\\('lines:', s.split\\(/\\\\r?\\\\n/\\).length\\); console.log\\('last 5 lines:'\\); console.log\\(s.split\\(/\\\\r?\\\\n/\\).slice\\(-5\\).join\\('\\\\n'\\)\\);\")",
+      "Bash(npx --yes knip --reporter json)",
+      "Bash(npx --yes eslint . --rule '{ \"@typescript-eslint/no-unused-vars\": \"error\" }')",
+      "Bash(npx --yes eslint .)",
+      "Bash(grep -E \"^C:.*\\\\.tsx?$|never used|never read\")"
     ],
     "additionalDirectories": [
       "C:\\Projects\\Barbershop",

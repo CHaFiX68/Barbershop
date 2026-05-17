@@ -35,6 +35,7 @@ export type ChatDetail = {
   otherParticipant: {
     userId: string;
     name: string;
+    email: string | null;
     role: string;
     phone: string | null;
   };

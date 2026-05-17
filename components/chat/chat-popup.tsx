@@ -31,6 +31,7 @@ export default function ChatPopup({
   const [isMobile, setIsMobile] = useState(false);
   const { zIndex } = useModalStack("chat-popup", true, onClose, {
     respectEsc: false,
+    lockBody: isMobile,
   });
   const t = useTranslations("chat");
 

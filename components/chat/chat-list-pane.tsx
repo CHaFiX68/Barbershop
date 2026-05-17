@@ -71,9 +71,6 @@ export default function ChatListPane({
   const [supportError, setSupportError] = useState<string | null>(null);
   const t = useTranslations("chat");
 
-  const getSupportLabel = (role: string | null | undefined): string =>
-    role === "barber" ? t("administrator") : t("supportLabel");
-
   const supportChat = chats.find((c) => c.type === "support") ?? null;
   const otherChats = chats.filter((c) => c.type !== "support");
 
@@ -96,7 +93,7 @@ export default function ChatListPane({
 
   return (
     <div className="flex flex-col h-full min-h-0">
-      <div className="flex-1 overflow-y-auto custom-scrollbar pt-2">
+      <div className="flex-1 overflow-y-auto overscroll-contain chat-list-scrollbar pt-2 bg-[var(--color-bg)]/80 backdrop-blur-[8px]">
         {/* Support row — pinned */}
         {supportChat ? (
           <ChatRow
