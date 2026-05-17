@@ -35,7 +35,7 @@ export default function Step1Barbers({ barbers, onSelect }: Props) {
           key={b.id}
           type="button"
           onClick={() => onSelect(b.id)}
-          className="flex flex-col h-full bg-[var(--color-surface)] border-[0.5px] border-[var(--color-line)] rounded-[10px] md:rounded-[12px] p-2.5 md:p-3.5 max-w-45 md:max-w-72 mx-auto hover:scale-[1.035] hover:ring-2 hover:ring-[var(--color-text)] hover:shadow-[0_8px_30px_rgba(28,27,25,0.25)]"
+          className="flex flex-col self-stretch bg-[var(--color-surface)] border-[0.5px] border-[var(--color-line)] rounded-[10px] md:rounded-[12px] p-2.5 md:p-3.5 max-w-45 md:max-w-72 hover:scale-[1.035] hover:ring-2 hover:ring-[var(--color-text)] hover:shadow-[0_8px_30px_rgba(28,27,25,0.25)]"
           style={{
             transition:
               "transform 1318ms cubic-bezier(0.16,1,0.3,1), box-shadow 1318ms cubic-bezier(0.16,1,0.3,1), border-color 1318ms cubic-bezier(0.16,1,0.3,1)",
