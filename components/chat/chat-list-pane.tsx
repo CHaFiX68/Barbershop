@@ -93,7 +93,7 @@ export default function ChatListPane({
 
   return (
     <div className="flex flex-col h-full min-h-0">
-      <div className="flex-1 overflow-y-auto overscroll-contain chat-list-scrollbar pt-2 bg-[var(--color-bg)]/80 backdrop-blur-[8px]">
+      <div className="flex-1 overflow-y-auto overscroll-contain chat-list-scrollbar pt-2">
         {/* Support row — pinned */}
         {supportChat ? (
           <ChatRow
