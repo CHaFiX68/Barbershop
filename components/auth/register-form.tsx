@@ -74,21 +74,7 @@ export default function RegisterForm({
         });
         return;
       }
-      // TODO: повернути на OTP-form коли налаштовано власний Resend домен
-      const signInResult = await signIn.email({
-        email: data.email,
-        password: data.password,
-      });
-      if (signInResult.error) {
-        setError("root", { message: t("errorGeneric") });
-        return;
-      }
-      if (inModal) {
-        closeModalAndRefresh();
-      } else {
-        router.push(callbackUrl);
-        router.refresh();
-      }
+      onRegistered?.(data.email, data.password);
     } catch {
       setError("root", { message: t("errorGeneric") });
     }
