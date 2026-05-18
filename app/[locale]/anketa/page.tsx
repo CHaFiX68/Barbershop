@@ -1,7 +1,9 @@
+import type { Metadata } from "next";
 import { Link } from "@/i18n/navigation";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { asc, eq } from "drizzle-orm";
+import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { barberProfile, service, user } from "@/lib/db/schema";
@@ -9,7 +11,16 @@ import { normalizeWeekSchedule } from "@/lib/schedule";
 import AnketaEditor from "@/components/barber/anketa-editor";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Моя анкета — TWOBarbers" };
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "anketa" });
+  return { title: t("metaTitle") };
+}
 
 function computeInitials(name: string): string {
   const parts = name.trim().split(/\s+/);
@@ -19,6 +30,7 @@ function computeInitials(name: string): string {
 }
 
 export default async function AnketaPage() {
+  const t = await getTranslations("anketa");
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session?.user) redirect("/?auth=login");
 
@@ -57,20 +69,20 @@ export default async function AnketaPage() {
           className="inline-flex items-center gap-1.5 text-[13px] text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors mb-6"
         >
           <span aria-hidden="true">←</span>
-          <span>Назад</span>
+          <span>{t("back")}</span>
         </Link>
 
         <h1
           className="font-display mb-2"
           style={{ fontWeight: 600, fontSize: "28px" }}
         >
-          Моя анкета
+          {t("pageHeading")}
         </h1>
         <p
           className="mb-8 text-[var(--color-text-muted)]"
           style={{ fontSize: "13px" }}
         >
-          Клікни на будь-яке поле щоб редагувати. Збереження автоматичне.
+          {t("editHint")}
         </p>
 
         <AnketaEditor

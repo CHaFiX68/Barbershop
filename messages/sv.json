@@ -249,7 +249,11 @@
       "fri": "Fre",
       "sat": "Lör",
       "sun": "Sön"
-    }
+    },
+    "back": "Tillbaka",
+    "pageHeading": "Min profil",
+    "editHint": "Klicka på valfritt fält för att redigera. Ändringar sparas automatiskt.",
+    "metaTitle": "Min profil — TWOBarbers"
   },
   "management": {
     "title": "Hantera",

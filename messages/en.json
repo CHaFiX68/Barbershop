@@ -249,7 +249,11 @@
       "fri": "Fri",
       "sat": "Sat",
       "sun": "Sun"
-    }
+    },
+    "back": "Back",
+    "pageHeading": "My profile",
+    "editHint": "Click any field to edit. Changes are saved automatically.",
+    "metaTitle": "My profile — TWOBarbers"
   },
   "management": {
     "title": "Management",
