@@ -327,7 +327,10 @@ export default function ProfileDropdown({ initialSession = null }: Props) {
               src={avatarUrl}
               name={effectiveName}
               size={48}
-              onClick={() => setIsAvatarEditorOpen(true)}
+              onClick={() => {
+                setIsOpen(false);
+                setIsAvatarEditorOpen(true);
+              }}
             />
             <div className="flex flex-col gap-0.5 min-w-0 flex-1">
               {isEditingName ? (
@@ -378,7 +381,10 @@ export default function ProfileDropdown({ initialSession = null }: Props) {
             {!isBarberRole && !isAdminRole && (
               <button
                 type="button"
-                onClick={() => setIsBookingsOpen(true)}
+                onClick={() => {
+                  setIsOpen(false);
+                  setIsBookingsOpen(true);
+                }}
                 className="w-full flex items-center gap-3 px-3 py-2.5 rounded-[8px] hover:bg-[var(--color-surface-2)] transition-colors text-[13px] text-left"
               >
                 <svg
@@ -423,6 +429,7 @@ export default function ProfileDropdown({ initialSession = null }: Props) {
                 type="button"
                 onClick={() => {
                   const isMobile = window.innerWidth < 768;
+                  setIsOpen(false);
                   if (isMobile) {
                     router.push("/anketa");
                     return;
@@ -450,7 +457,10 @@ export default function ProfileDropdown({ initialSession = null }: Props) {
             {isBarberRole && (
               <button
                 type="button"
-                onClick={() => setIsBarberBookingsOpen(true)}
+                onClick={() => {
+                  setIsOpen(false);
+                  setIsBarberBookingsOpen(true);
+                }}
                 className="w-full flex items-center gap-3 px-3 py-2.5 rounded-[8px] transition-colors text-[13px] text-left hover:bg-[var(--color-surface-2)]"
               >
                 <svg
@@ -471,6 +481,7 @@ export default function ProfileDropdown({ initialSession = null }: Props) {
               <button
                 type="button"
                 onClick={() => {
+                  setIsOpen(false);
                   setIsManagementOpen((v) => !v);
                 }}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-[8px] transition-colors text-[13px] ${
