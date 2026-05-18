@@ -2,12 +2,12 @@ import type { Metadata } from "next";
 import { Link } from "@/i18n/navigation";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { asc, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { barberProfile, service, user } from "@/lib/db/schema";
-import { normalizeWeekSchedule } from "@/lib/schedule";
+import { user } from "@/lib/db/schema";
+import { getBarberSelfProfile } from "@/lib/barber-self";
 import AnketaEditor from "@/components/barber/anketa-editor";
 
 export const dynamic = "force-dynamic";
@@ -46,20 +46,11 @@ export default async function AnketaPage() {
     redirect("/");
   }
 
-  const [profile] = await db
-    .select()
-    .from(barberProfile)
-    .where(eq(barberProfile.userId, session.user.id));
+  const data = await getBarberSelfProfile(session.user.id);
 
-  if (!profile) {
+  if (!data) {
     redirect("/");
   }
-
-  const services = await db
-    .select()
-    .from(service)
-    .where(eq(service.barberUserId, session.user.id))
-    .orderBy(asc(service.orderIndex));
 
   return (
     <div className="max-w-[1536px] mx-auto px-4 sm:px-6 py-8 sm:py-16">
@@ -88,17 +79,13 @@ export default async function AnketaPage() {
         <AnketaEditor
           userName={currentUser.name}
           initials={computeInitials(currentUser.name)}
-          initialPhone={profile.phone ?? ""}
-          initialBio={profile.bio ?? ""}
-          initialLandingImage={profile.landingImage}
-          initialIsActive={profile.isActive}
-          initialServices={services.map((s) => ({
-            id: s.id,
-            name: s.name,
-            price: s.price,
-            estimatedMinutes: s.estimatedMinutes,
-          }))}
-          initialSchedule={normalizeWeekSchedule(profile.schedule)}
+          initialPhone={data.profile.phone}
+          initialBio={data.profile.bio}
+          initialLandingImage={data.profile.landingImage}
+          initialIsActive={data.profile.isActive}
+          initialServices={data.services}
+          initialSchedule={data.profile.schedule}
+          initialHasPending={data.hasPendingChanges}
         />
       </div>
     </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useRouter } from "@/i18n/navigation";
 import type { WeekSchedule } from "@/lib/db/schema";
 import { DEFAULT_SCHEDULE } from "@/lib/schedule";
 import AnketaCardEditable, {
@@ -83,6 +84,7 @@ export default function AnketaEditor({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const router = useRouter();
 
   const isDirty = useMemo(() => {
     if (phone !== snapshot.phone) return true;
@@ -155,6 +157,7 @@ export default function AnketaEditor({
         })),
         schedule,
       });
+      router.refresh();
       if (data.status === "pending") {
         onPendingChange?.(true);
       }
