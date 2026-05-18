@@ -298,7 +298,7 @@ export default function HeroSlider({
           <button
             type="button"
             onClick={() => booking.open()}
-            className="inline-flex items-center justify-center bg-[#EDEAE5] text-[#1C1B19] border border-[#EDEAE5] px-6 py-3 rounded-[8px] text-[14px] font-medium hover:opacity-85 transition-opacity cursor-pointer"
+            className="cta-book-light-border inline-flex items-center justify-center bg-[#EDEAE5] text-[#1C1B19] border border-[#EDEAE5] px-6 py-3 rounded-[8px] text-[14px] font-medium hover:opacity-85 transition-opacity cursor-pointer"
           >
             {t("ctaBook")}
           </button>

@@ -321,6 +321,12 @@ body {
   display: none;
 }
 
+/* Mobile hero CTA "Book now" — visible dark border only in light theme
+   (button bg matches page bg in light theme → would otherwise blend in). */
+html[data-theme="light"] .cta-book-light-border {
+  border-color: var(--color-text);
+}
+
 /* === Tactile press feedback === */
 button,
 [role="button"] {
