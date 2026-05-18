@@ -139,7 +139,16 @@ export async function PUT(request: Request) {
     const body = await request.json();
     const parsed = submitSchema.safeParse(body);
     if (!parsed.success) {
-      return NextResponse.json({ error: "Invalid input" }, { status: 400 });
+      const issues = parsed.error.issues.map((i) => ({
+        path: i.path.join("."),
+        message: i.message,
+        code: i.code,
+      }));
+      console.error("[ANKETA-PUT] validation failed:", issues);
+      return NextResponse.json(
+        { error: "Invalid input", issues },
+        { status: 400 }
+      );
     }
 
     const {
