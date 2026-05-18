@@ -298,7 +298,7 @@ export default function AnketaCardEditable(props: Props) {
                 alt={userName}
                 fill
                 sizes="(max-width: 768px) 100vw, 200px"
-                className="object-cover"
+                className="object-cover object-top"
               />
             ) : (
               <span
